@@ -1,0 +1,74 @@
+#!/bin/bash
+# bashrc_stdlib is a bashrc file reflecting my specific settings
+#
+# Copyright (C) 2015 Andrew Kroshko, all rights reserved.
+#
+# Author: Andrew Kroshko
+# Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
+# Created: Fri Mar 27, 2015
+# Version: 20150327
+# URL: https://github.com/akroshko/bash-stdlib
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at
+# your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see http://www.gnu.org/licenses/.
+# create a really nice prompt for most terminals
+case "$TERM" in
+    "dumb")
+        PS1="> "
+        ;;
+    xterm*|rxvt*|eterm*|screen*)
+        export PS1="${BPurple}\H ${Purple}\j ${BBLue}\w
+${Yellow}[\!] \`exitstatus=\$?;if [[ exitstatus -eq 0 ]];then echo \[\033[32m\]\${exitstatus}\[\e[0m\];else echo \[\033[31m\]\${exitstatus}\[\e[0m\]; fi\` ${Cyan}\t ${Green}\u ${BGreen}\$${Color_Off} "
+        ;;
+    *)
+        PS1="> "
+esac
+
+# Write, then reread the history file with each command
+export PROMPT_COMMAND='history -a; history -n'
+# manage history to sane size
+export HISTCONTROL=ignoreboth
+export HISTSIZE=4096
+export HISTFILESIZE=65536
+shopt -s autocd extglob histappend
+# stop too convenient exiting
+export IGNOREEOF=1
+shopt -s expand_aliases
+force_color_prompt=yes
+# aliases, genrally spice up some already existing commands
+# TODO: evaluate things that really should be functions
+alias bash-debug='set -xv'
+alias bash-nodebug='set +xv'
+alias agu='sudo apt-get update && sudo apt-get upgrade'
+alias al='alias'
+alias dc='aafire -driver curses -extended'
+alias df='df -h'
+alias ds='dropbox status'
+alias du='du -h'
+alias gccr='gcc-compile-run'
+alias gi='grep --color -i'
+alias gpg='gpg2'
+alias grep='grep --color'
+alias f90=gfortran
+alias imgv='feh --scale-down -F'
+alias ls='ls -hF --color'
+alias lst='ls -ltr'
+alias mv='mv --no-clobber'
+alias pd='pushd .'
+alias pc='cmatrix'
+alias pdw='fortune | cowsay'
+# need a fun way to complete aliases
+alias scd='screen -d'
+alias scl='screen -ls'
+alias scr='screen -dr'
+alias scw='screen -wipe'
