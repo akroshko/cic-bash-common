@@ -6,7 +6,7 @@
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Fri Mar 27, 2015
-# Version: 20150327
+# Version: 20150522
 # URL: https://github.com/akroshko/bash-stdlib
 #
 # This program is free software: you can redistribute it and/or modify
@@ -126,6 +126,10 @@ function ag-list () {
     # list files installed by a debian package
     # TODO: make this work with bash_completion
     dpkg-query -L "$1"
+}
+
+function ag-list-installed () {
+    dpkg-query -l
 }
 
 function decrypt-file () {
