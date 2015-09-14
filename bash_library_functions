@@ -1,3 +1,4 @@
+#!/bin/bash
 # bash_library_functions is a set of bash functions for non-specifc
 # functionality.
 #
@@ -6,7 +7,7 @@
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Fri Mar 27, 2015
-# Version: 20150522
+# Version: 20150914
 # URL: https://github.com/akroshko/bash-stdlib
 #
 # This program is free software: you can redistribute it and/or modify
@@ -30,8 +31,8 @@
 # would be desirable to add this to the docstring at some point
 
 function test-fail () {
-    # this function is just a test to judge a scripts behaviour on
-    # return values
+    # this function is just a test to judge a scripts behaviour based
+    # on return values
     # TODO: also need a test error
     if [[ false ]]
     then
@@ -85,19 +86,27 @@ function verify-operation () {
 function home-trash () {
     # delete by moving to a trash file that can be periodically
     # checked
-    # XXXX: creating or using any old file called ~/trash may be bad
     trashfile="$1"
-    if [[ ! -d ~/trash ]]
+    if [[ ! -d ~/tmp ]]
     then
-        mkdir ~/trash
+        mkdir ~/tmp
     fi
-    mv --backup=t -- "$1" ~/trash
+    if [[ ! -d ~/tmp/trash ]]
+    then
+        mkdir ~/tmp/trash
+    fi
+    \mv --backup=t -- "$1" ~/tmp/trash
 }
 
 function date-time-stamp () {
     # return a time-stamp with date in standard format
     echo $(date +%Y%m%d%H%M%S)
 }
+
+function date-stamp () {
+    echo $(date +%Y%m%d)
+}
+
 # move this to function ASAP
 function memory-log () {
     while true; do { cat /proc/meminfo | sed -n 2p ; date ; } | tr "\n" " " ; echo ""; sleep 30; done >> ~/memory-$(date +%Y%m%d%H%M%S).log
@@ -270,28 +279,48 @@ function ssh-host-fingerprint () {
     fi
 }
 
-function ssh-keygen () {
+function ssh-keygen-ed25519 () {
     # generate an ssh key in the current directory based on username and host
     # TODO: update with less suspect, but still universally good ecdsa algorithms
-    ssh-keygen -b 521 -t ecdsa -C"$(id -un)@$(hostname)-$(date --rfc-3339=date)" -f ./id_ecdsa
+    if [[ -z "$1" ]]
+    then
+        ssh-keygen -b 521 -t ed25519 -C "$(id -un)@$(hostname)-$(date --rfc-3339=date)" -f ./id_ed25519
+    else
+        ssh-keygen -b 521 -t ed25519 -C "$(id -un)@$(hostname)-$(date --rfc-3339=date)" -P ${PASSWORD} -f ./id_ed25519
+    fi
 }
 
-function ssh-keygen-pwd () {
+function ssh-keygen-ed25519-pwd () {
     # generate an ssh key in the current directory based on current directory
     # TODO: update with less suspect, but still universally good ecdsa algorithms
-    ssh-keygen -b 521 -t ecdsa -C "${PWD##*/}-$(date --rfc-3339=date)" -f ./id_ecdsa
+    if [[ -z "$1" ]]
+    then
+        ssh-keygen -b 521 -t ed25519 -C "${PWD##*/}-$(date --rfc-3339=date)" -f ./id_ed25519
+    else
+        ssh-keygen -b 521 -t ed25519 -C "${PWD##*/}-$(date --rfc-3339=date)" -P ${PASSWORD} -f ./id_ed25519
+    fi
 }
 
 function ssh-keygen-rsa () {
     # generate an ssh key using rsa in the current directory based on username and host
     # XXXX: generally only used for accessing older hosts
-    ssh-keygen -b 4096 -t rsa -C "$(id -un)@$(hostname)-$(date --rfc-3339=date)" -f ./id_rsa
+    if [[ -z "$1" ]]
+    then
+        ssh-keygen -b 4096 -t rsa -C "$(id -un)@$(hostname)-$(date --rfc-3339=date)" -f ./id_rsa
+    else
+        ssh-keygen -b 4096 -t rsa -C "$(id -un)@$(hostname)-$(date --rfc-3339=date)" -P ${PASSWORD} -f ./id_rsa
+    fi
 }
 
 function ssh-keygen-rsa-pwd () {
     # generate an ssh key using rsa based on current directory
     # XXXX: generally only used for accessing older hosts
-    ssh-keygen -b 4096 -t rsa -C "${PWD##*/}-$(date --rfc-3339=date)" -f ./id_rsa
+    if [[ -z "$1" ]]
+    then
+        ssh-keygen -b 4096 -t rsa -C "${PWD##*/}-$(date --rfc-3339=date)" -f ./id_rsa
+    else
+        ssh-keygen -b 4096 -t rsa -C "${PWD##*/}-$(date --rfc-3339=date)" -P ${PASSWORD} -f ./id_rsa
+    fi
 }
 
 function discover-network () {
@@ -421,6 +450,72 @@ function clean-pwd-files () {
     rename "s|\xe2\x80\x93|-|g" *
     rename "s|\xe2\x80\x94|-|g" *
     rename "s|\xc2\xa1|i|g" *
+}
+
+function ssh-key-info () {
+    ssh-keygen -lf "$1"
+}
+
+function psg () {
+    if [[ -z "$1" ]]
+    then
+        ps -efj | less
+    else
+        # TODO: this can be done better!
+        ps -efj | head -n 1
+        ps -efj | grep "$1"
+    fi
+}
+
+function cpu-throttle-up () {
+    sudo cpufreq-set -c 0 -g performance
+    sudo cpufreq-set -c 1 -g performance
+    sudo cpufreq-set -c 2 -g performance
+    sudo cpufreq-set -c 3 -g performance
+}
+
+function cpu-throttle-down () {
+    sudo cpufreq-set -c 0 -g powersave
+    sudo cpufreq-set -c 1 -g powersave
+    sudo cpufreq-set -c 2 -g powersave
+    sudo cpufreq-set -c 3 -g powersave
+}
+
+function find-broken-symlinks () {
+    # find- for useful find command variations
+    find . -type l -xtype l
+}
+
+function xclip-show-all () {
+    echo "========================================"
+    echo "Primary"
+    xclip -o -selection p
+    echo "========================================"
+    echo "Secondary"
+    xclip -o -selection s
+    echo "========================================"
+    echo "Clipboard"
+    xclip -o -selection c
+}
+
+function du-sort () {
+    # sort by size after using du
+    du --summarize --human-readable * | sort --human-numeric-sort
+}
+
+function youtube-mp3 () {
+    # download mp3 from youtube
+    youtube-dl --extract-audio -audio-format mp3 "$1"
+}
+
+function dconf-grep () {
+    # grep the GNOME config database
+    dconf dump / | grep -i "$1"
+}
+
+function dconf-less () {
+    # use less to view the GNOME config database
+    dconf dump / | less
 }
 
 ################################################################################

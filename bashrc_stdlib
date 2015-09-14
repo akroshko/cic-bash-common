@@ -23,8 +23,6 @@
 # along with this program. If not, see http://www.gnu.org/licenses/.
 # create a really nice prompt for most terminals
 
-
-
 case "$TERM" in
     "dumb")
         PS1="> "
@@ -37,9 +35,18 @@ ${Yellow}[\!] \`exitstatus=\$?;if [[ exitstatus -eq 0 ]];then echo \[\033[32m\]\
         PS1="> "
 esac
 
+# XXXX: only do prompt command in appropriate terminals
+# TODO: enhance the terminals it works for including eterm
+#       do I want to do this with screen
+if [[ "$TERM" =~ xterm*|rxvt* ]]
+then
+    export PROMPT_COMMAND='echo -ne "\033]0;${USER}@${HOSTNAME}:${PWD}\007";history -a; history -n'
+else
+    export PROMPT_COMMAND='history -a; history -n'
+fi
+
 # Write, then reread the history file with each command
-export PROMPT_COMMAND='history -a; history -n'
-# manage history to sane size
+# export PROMPT_COMMAND=''
 export HISTCONTROL=ignoreboth
 export HISTSIZE=4096
 export HISTFILESIZE=65536
