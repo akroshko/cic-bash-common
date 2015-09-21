@@ -72,6 +72,8 @@ case $firstarg in
         then
             emacs --daemon
         fi
+        # TODO: this needs to be here and I cannot remember why
+        exec emacsclient --alternate-editor="" -c "$@"
         # TODO: having no frame is a problem, I would like to be able to run Emacs that way
         # TODO do I want to make zile, mg, or another terminal Emacs version the EDITOR?
         # TODO possibly check display variable?
