@@ -1,11 +1,12 @@
 #!/bin/bash
-# bash_library_functions is a set of bash functions for common operations
+# xclip-base64.sh gets the current X11 clipboard selection encoded as
+# base64
 #
 # Copyright (C) 2015 Andrew Kroshko, all rights reserved.
 #
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
-# Created: Fri Mar 27, 2015
+# Created: Sun Sep 20, 2015
 # Version: 20150920
 # URL: https://github.com/akroshko/bash-stdlib
 #
@@ -21,3 +22,5 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see http://www.gnu.org/licenses/.
+
+echo `xclip -o selection c` | base64

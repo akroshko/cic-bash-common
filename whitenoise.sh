@@ -1,11 +1,12 @@
-#!/bin/bash
-# bash_library_functions is a set of bash functions for common operations
+#!/bin/bash -i
+# whitenoise.sh is a script that runs/pauses/unpauses a playing a
+# particular sound file
 #
 # Copyright (C) 2015 Andrew Kroshko, all rights reserved.
 #
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
-# Created: Fri Mar 27, 2015
+# Created: Sun Sep 20, 2015
 # Version: 20150920
 # URL: https://github.com/akroshko/bash-stdlib
 #
@@ -21,3 +22,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see http://www.gnu.org/licenses/.
+#
+########################################################################
+#
+# This script is often used to quickly play/unplay background noise in
+# file defined by $BACKGROUNDNOISE in my .bashrc currently very nice
+# interacting with xbindkeys or other shortcut managers
+
+if ps -ef | grep "kH-kj6rkQWc" | grep -v grep > /dev/null
+then
+    echo "pause" | nc -q 2 localhost 19000
+else
+    rxvt -title "White noise" -e cvlc --rc-host localhost:19000 --extraintf oldrc --intf dummy "$BACKGROUNDNOISE"
+fi
