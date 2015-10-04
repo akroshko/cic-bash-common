@@ -406,6 +406,11 @@ function du-sort () {
     du --summarize --human-readable * | sort --human-numeric-sort
 }
 
+function dd-progress () {
+    ps auxww | grep " dd " |grep -v grep |awk '{print $2}' |while read pid; do kill -USR1 $pid; done
+}
+
+
 function youtube-mp3 () {
     # download mp3 from youtube
     youtube-dl --extract-audio -audio-format mp3 "$1"
@@ -419,6 +424,102 @@ function dconf-grep () {
 function dconf-less () {
     # use less to view the GNOME config database
     dconf dump / | less
+}
+
+function fdi () {
+    find . -iname "*${1}*"
+}
+
+function fgi () {
+    if [[ -z "${2}" ]]
+    then
+        find . -type f -exec grep -H --color -n "${1}" {}  \;
+    else
+        find . -type f -iname "*${1}*" -exec grep -H --color -n "${2}" {}  \;
+    fi
+}
+
+function harm-bash () {
+    # TODO: check for function and is this appropriate
+    killall xbindkeys
+    source ${HOME}/.bash_profile
+}
+
+function harm-bashrc () {
+    source ${HOME}/.bashrc
+}
+
+function backlight-percentage () {
+    # TODO: very device dependent but useful to include, make more general
+    echo "`cat /sys/class/backlight/intel_backlight/brightness`*100/`cat /sys/class/backlight/intel_backlight/max_brightness`" | bc -l | xargs printf "%1.0f\n"
+}
+
+function vcs-check-root () {
+    # check if a pull is needed for for child directories if they correspond to common version control systems
+    # from https://stackoverflow.com/questions/3258243/git-check-if-pull-needed
+    # TODO: there are probably much nicer ways to do this
+    for dirname in ./*
+    do
+        [[ -d "$dirname" ]] || continue
+        # check for various things
+        if [[ -d "$dirname/.git" ]]
+        then
+            # TODO: exclude lines saying [up to date] and just give a summary of branches
+            echo "==== Checking     $dirname/.git ===========================================================================" | cut -c 1-80
+            pushd . >> /dev/null
+            cd "$dirname"
+            git fetch --dry-run --verbose
+            popd >> /dev/null
+        elif [[ -d "$dirname/.hg" ]]
+        then
+            echo "==== Checking     $dirname/.hg ============================================================================" | cut -c 1-80
+            # TODO: non-functional? I have no remaining hg repos
+            # pushd . >> /dev/null
+            # cd "$dirname"
+            # hg fetch --dry-run --verbose
+            # popd >> /dev/null
+        elif [[ -d "$dirname/.svn" ]]
+        then
+            echo "==== Checking     $dirname/.svn ===========================================================================" | cut -c 1-80
+            pushd . >> /dev/null
+            cd "$dirname"
+            svn status --show-updates
+            popd >> /dev/null
+        else
+            echo "==== Not checking $dirname ================================================================================" | cut -c 1-80
+        fi
+    done
+}
+
+function vcs-diff-public () {
+    # diff the "master" with the "public" branch for all child directories that are github repositories
+    # XXXX: git only for now
+    for dirname in ./*
+    do
+        if [[ -d "$dirname/.git" ]]
+        then
+            pushd . >> /dev/null
+            cd "$dirname"
+            if git rev-parse --verify public >> /dev/null 2>&1
+            then
+                echo "==== Checking $dirname ================================================================================" | cut -c 1-80
+                git diff master..public --stat
+            fi
+            popd >> /dev/null
+        fi
+    done
+}
+
+function fail2ban-check () {
+    # check fail2ban status and show number of banned IPs for each date in the past
+    sudo zcat /var/log/auth.log*.gz | grep 'Failed password' | grep sshd | awk '{print $1,$2}' | sort -k 1,1M -k 2n | uniq -c
+    # a hack to find non-gz logs
+    sudo cat /var/log/auth.lo*[^z] | grep 'Failed password' | grep sshd | awk '{print $1,$2}' | sort -k 1,1M -k 2n | uniq -c
+    sudo fail2ban-client status ssh
+}
+
+function drop-caches () {
+    su -c "free && sync && echo 3 > /proc/sys/vm/drop_caches && free"
 }
 
 ################################################################################
