@@ -522,6 +522,25 @@ function drop-caches () {
     su -c "free && sync && echo 3 > /proc/sys/vm/drop_caches && free"
 }
 
+function mount-disk-uuid () {
+    # find mounted disk or ???
+    UUID="$1"
+    UUIDDEVICE="$(readlink -f /dev/disk/by-uuid/${UUID})"
+    if grep -qs "$UUIDDEVICE" /etc/mtab
+    then
+        echo -e $(grep ^"${UUIDDEVICE}[[:space:]]\+" /etc/mtab | cut -d ' ' -f 2)
+        return 0
+    else
+        # TODO: for now I have gnome mount for me
+        echo "Disk not mounted!!!"
+        return 1
+        # # TODO: mount on a temporary directory
+        # MOUNTPOINT=$(mktemp -d)
+        # sudo mount "${IDDEVICE}" "${MOUNTPOINT}"
+        # echo "${MOUNTPOINT}"
+    fi
+}
+
 ################################################################################
 ## set interesting things for bashrc, should these be here or a seperate file?
 ################################################################################
