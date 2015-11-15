@@ -46,7 +46,6 @@ else
 fi
 
 # Write, then reread the history file with each command
-# export PROMPT_COMMAND=''
 export HISTCONTROL=ignoreboth
 export HISTSIZE=4096
 export HISTFILESIZE=65536
@@ -55,7 +54,7 @@ shopt -s autocd extglob histappend
 export IGNOREEOF=1
 shopt -s expand_aliases
 force_color_prompt=yes
-# aliases, genrally spice up some already existing commands
+# aliases, generally spice up some already existing commands
 # TODO: evaluate things that really should be functions
 alias bash-debug='set -xv'
 alias bash-nodebug='set +xv'

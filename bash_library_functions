@@ -1,5 +1,5 @@
 #!/bin/bash
-# bash_library_functions is a set of bash functions for non-specifc
+# bash_library_functions is a set of bash functions for non-specific
 # functionality.
 #
 # Copyright (C) 2015 Andrew Kroshko, all rights reserved.
@@ -355,10 +355,6 @@ function clean-pwd-files () {
     rename "s|\xc2\xa1|i|g" *
 }
 
-function ssh-key-info () {
-    ssh-keygen -lf "$1"
-}
-
 function psg () {
     if [[ -z "$1" ]]
     then
@@ -407,6 +403,7 @@ function du-sort () {
 }
 
 function dd-progress () {
+    # TODO: spaces after |
     ps auxww | grep " dd " |grep -v grep |awk '{print $2}' |while read pid; do kill -USR1 $pid; done
 }
 
@@ -538,6 +535,39 @@ function mount-disk-uuid () {
         # MOUNTPOINT=$(mktemp -d)
         # sudo mount "${IDDEVICE}" "${MOUNTPOINT}"
         # echo "${MOUNTPOINT}"
+    fi
+}
+
+function git-diff-public () {
+    # show additions (+) and deletions (-) in master branch compared to public branch
+    git diff public..master
+}
+
+function dpkg-purge-all () {
+    # purge all files related to uninstalled packages
+    # TODO: dangerous function, purges all old config files
+    dpkg -l | grep ^rc | cut -d' ' -f3|xargs sudo dpkg -P
+}
+
+function pip-upgrade () {
+    # upgrade all pip packages
+    pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install -U
+}
+
+function git-serve () {
+    # a convienient command to browse code for now
+    git instaweb
+}
+
+function envaddpath() {
+    # based on answer from https://superuser.com/questions/39751/add-directory-to-path-if-its-not-already-there
+    # having environment variable to modify comming first makes my scripts clear
+    if [[ -d "$2" ]] && [[ ":${!1}:" != *":$2:"* ]]; then
+        NEWVARIABLE="${!1}:$2"
+        # strip leading and trailing :
+        NEWVARIABLE=${NEWVARIABLE#:}
+        NEWVARIABLE=${NEWVARIABLE%:}
+        export $1="${NEWVARIABLE}"
     fi
 }
 
