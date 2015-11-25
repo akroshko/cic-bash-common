@@ -488,31 +488,13 @@ function vcs-check-root () {
     done
 }
 
-function vcs-diff-public () {
-    # diff the "master" with the "public" branch for all child directories that are github repositories
-    # XXXX: git only for now
-    for dirname in ./*
-    do
-        if [[ -d "$dirname/.git" ]]
-        then
-            pushd . >> /dev/null
-            cd "$dirname"
-            if git rev-parse --verify public >> /dev/null 2>&1
-            then
-                echo "==== Checking $dirname ================================================================================" | cut -c 1-80
-                git diff master..public --stat
-            fi
-            popd >> /dev/null
-        fi
-    done
-}
-
 function fail2ban-check () {
     # check fail2ban status and show number of banned IPs for each date in the past
     sudo zcat /var/log/auth.log*.gz | grep 'Failed password' | grep sshd | awk '{print $1,$2}' | sort -k 1,1M -k 2n | uniq -c
     # a hack to find non-gz logs
     sudo cat /var/log/auth.lo*[^z] | grep 'Failed password' | grep sshd | awk '{print $1,$2}' | sort -k 1,1M -k 2n | uniq -c
     sudo fail2ban-client status ssh
+    sudo fail2ban-client status ssh-root
 }
 
 function drop-caches () {
@@ -538,9 +520,28 @@ function mount-disk-uuid () {
     fi
 }
 
-function git-diff-public () {
-    # show additions (+) and deletions (-) in master branch compared to public branch
-    git diff public..master
+function vcs-diff-public () {
+    # diff the "master" with the "public" branch for current directory or all child directories that are git repositories
+    # XXXX: git only for now
+    if [[ -d "./.git" ]]
+    then
+        git diff public..master
+    else
+        for dirname in ./*
+        do
+            if [[ -d "$dirname/.git" ]]
+            then
+                pushd . >> /dev/null
+                cd "$dirname"
+                if git rev-parse --verify public >> /dev/null 2>&1
+                then
+                    echo "==== Checking $dirname ================================================================================" | cut -c 1-80
+                    git diff master..public --stat
+                fi
+                popd >> /dev/null
+            fi
+        done
+    fi
 }
 
 function dpkg-purge-all () {
