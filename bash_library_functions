@@ -544,6 +544,35 @@ function vcs-diff-public () {
     fi
 }
 
+function vcs-push-github () {
+    # merge public branch and commit to github
+    # XXXX: repository must be setup properly
+    git checkout public
+    if [[ $? != 0 ]]
+    then
+        echo "Checkout unsuccessful!"
+        return 1
+    fi
+    git merge --squash -X theirs master
+    COMMITCORRECT=n
+    while [[ "$COMMITCORRECT" != "y" ]]
+    do
+        read -p "Enter commit message: " COMMITMESSAGE
+        # TODO: add option for quit
+        read -p "Use commit message (y/n/q)? " COMMITCORRECT
+        if [[ "$COMMITCORRECT" == "q" ]]
+        then
+            echo "Aborting!"
+            git checkout master
+            return 1
+        fi
+    done
+    git commit -a -m "$COMMITMESSAGE"
+    # TODO: eventually go "public" locally to "master" globally
+    git push --force --set-upstream github public
+    git checkout master
+}
+
 function dpkg-purge-all () {
     # purge all files related to uninstalled packages
     # TODO: dangerous function, purges all old config files
