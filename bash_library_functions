@@ -601,6 +601,91 @@ function envaddpath() {
     fi
 }
 
+function harm-id3-audiobook-all () {
+    # set up all audiobooks in immediate subdirectories for my player
+    # (after appropriate file renaming)
+    read -p "Dangerous function! Continue (y/n)? " yn
+    if [[ "$yn" == "y" ]]
+    then
+        for d in ./*
+        do
+            [[ -d "$d" || continue ]]
+            pushd . >> /dev/null
+            cd "${d}"
+            yes | harm-id3-genre-as-audiobook
+            yes | harm-id3-album-as-directory
+            yes | harm-id3-name-as-filename
+            yes | harm-id3-alphabetical-track
+            yes | harm-id3-remove-v1
+            popd >> /dev/null
+        done
+    fi
+}
+
+function harm-id3-genre-as-audiobook () {
+    # set genre of all .mp3 as audiobook
+    read -p "Dangerous function! Continue (y/n)? " yn
+    if [[ "$yn" == "y" ]]
+    then
+        eyeD3 --to-v2.4 --genre="Audiobook" *.mp3
+    fi
+}
+
+function harm-id3-name-as-filename () {
+    # make track name correspond to filename
+    read -p "Dangerous function! Continue (y/n)? " yn
+    if [[ "$yn" == "y" ]]
+    then
+        for f in ./*.mp3
+        do
+            bname="${f%%.mp3}"
+            # XXXX: basename doesn't work with comma in filename
+            bname="${bname##*/}"
+            eyeD3 --to-v2.4 --title="$bname" "$f"
+        done
+    fi
+}
+
+function harm-id3-alphabetical-track () {
+    # number tracks based on the alphabetical sort order
+    read -p "Dangerous function! Continue (y/n)? " yn
+    if [[ "$yn" == "y" ]]
+    then
+        # totals cause confusion
+        eyeD3 --track-total=0 *.mp3
+        COUNT=1
+        for f in ./*.mp3
+        do
+            eyeD3 --to-v2.4 --track=$(printf "%03d\n" $COUNT) "$f"
+            let COUNT+=1
+        done
+    fi
+}
+
+function harm-id3-album-as-directory () {
+    # use directory name for album name as all tracks
+    read -p "Dangerous function! Continue (y/n)? " yn
+    if [[ "$yn" == "y" ]]
+    then
+        ALBUM=$(basename "${PWD}")
+        eyeD3 --to-v2.4 --album "$ALBUM" *.mp3
+    fi
+}
+
+function harm-id3-remove-v1 () {
+    # remove v1 id3 tags because they interfere with some players
+    read -p "Dangerous function! Continue (y/n)? " yn
+    if [[ "$yn" == "y" ]]
+    then
+        eyeD3 --remove-v1 *.mp3
+    fi
+}
+
+function ls-id3 () {
+    # list id3 tags of all mp3s in directory
+    eyeD3 *.mp3
+}
+
 ################################################################################
 ## set interesting things for bashrc, should these be here or a seperate file?
 ################################################################################
