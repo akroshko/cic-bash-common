@@ -276,27 +276,19 @@ function ls-sort-date () {
 }
 
 function need_new_symlink () {
-    # try to create a new symlink between files, if KILLSYMLINKS is
-    # set to 1, then delete old symlinks
-    # XXXX: does not delete files in same place as old symlinks
-    if [[ $KILL_SYMLINKS == 1 ]]
+    # create new symlink deleting old symlinks but not old files
+    # TODO: overwrite and backup files while killing symlinks
+    if [[ -e "$2" && ! -h "$2" ]]
     then
-       if [[ ! -h "$2" ]]
-       then
-           echo "$2 is not a symlink and may not exist!!!"
-       else
-           # XXXX: should only delete if symlink because of conditional
-           rm "$2"
-       fi
-    fi
-    if [[ ! -h "$2" ]]
+        # symlink is a file or something
+        echo "$2: exists but is not a symlink!!!"
+    elif [[ ! -h "$2" ]]
     then
-        # symlink does not exist at all
+        # symlink does not exist at all or is a file
         ln -s "$1" "$2"
     elif [[ -h "$2" && ! -e "$2" ]]
     then
-        # symlink exists but is broken
-        # XXXX: should only delete if symlink because of conditional
+        # symlink exists but is invalid
         rm -f "$2"
         ln -s "$1" "$2"
     fi
@@ -520,7 +512,7 @@ function mount-disk-uuid () {
     fi
 }
 
-device-disk-uuid () {
+function device-disk-uuid () {
     # find mounted disk or ???
     UUID="$1"
     UUIDDEVICE="$(readlink -f /dev/disk/by-uuid/${UUID})"
