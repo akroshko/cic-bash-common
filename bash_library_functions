@@ -520,6 +520,13 @@ function mount-disk-uuid () {
     fi
 }
 
+device-disk-uuid () {
+    # find mounted disk or ???
+    UUID="$1"
+    UUIDDEVICE="$(readlink -f /dev/disk/by-uuid/${UUID})"
+    echo ${UUIDDEVICE}
+}
+
 function vcs-diff-public () {
     # diff the "master" with the "public" branch for current directory or all child directories that are git repositories
     # XXXX: git only for now
@@ -684,6 +691,14 @@ function harm-id3-remove-v1 () {
 function ls-id3 () {
     # list id3 tags of all mp3s in directory
     eyeD3 *.mp3
+}
+
+function ag-list-doc () {
+    apt-cache search . | grep "\-doc " | cut -d' ' -f1
+}
+
+function ag-list-packages-only () {
+    ag-list-installed | cut -d' ' -f3
 }
 
 ################################################################################
