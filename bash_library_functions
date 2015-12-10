@@ -138,7 +138,12 @@ function ag-list () {
 }
 
 function ag-list-installed () {
-    dpkg-query -l
+    if [[ -z "$1" ]]
+    then
+        dpkg-query -l
+    else
+        dpkg-query -l | grep "$1"
+    fi
 }
 
 function scp-lan () {
@@ -174,22 +179,14 @@ function sshx-lan () {
     ssh -X -o "Compression yes" -c arcfour256 "$@"
 }
 
-# TODO make these ssh-auto functions!
-# TODO need rsync autossh lan tunnel
 function autossh-tunnel () {
     # set up a tunnel using autossh
-    # TODO: specify how this is used
-    # XXXX: largely obsolete because best options over LAN or WAN
-    # found to be similar
-    autossh -M 0 -o "BatchMode yes" -o "Compression yes" -c blowfish-cbc -N "$@"
+    autossh -M 0 -o "BatchMode yes" -o "Compression yes" -N "$@"
 }
 
 function autossh-tunnel-lan () {
-    # set up a tunnel using autossh
-    # TODO: specify how this is used
-    # XXXX: largely obsolete because best options over LAN or WAN
-    # found to be similar
-    autossh -M 0 -o "BatchMode yes" -o "Compression yes" -c arcfour256 -N "$@"
+    # set up a tunnel using autossh, compression off best for lan
+    autossh -M 0 -o "BatchMode yes" -o "Compression no" -N "$@"
 }
 
 function transform-resize-web () {
