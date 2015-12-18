@@ -150,17 +150,20 @@ function ssh-batch () {
     ssh -o "BatchMode yes" "$@"
 }
 
-
-function scp-lan () {
-    # use scp over a LAN, sets some good options
-    # XXXX: largely obsolete because best options over LAN or WAN
-    # found to be similar
-    scp -o "Compression yes" "$@"
-}
-
 function ssh-lan () {
     ssh -o "Compression no" "$@"
 }
+
+function scp-lan () {
+    # use scp over a LAN, sets some good options
+    scp -o "Compression no" "$@"
+}
+
+function sftp-lan () {
+    # use sftp over a LAN, sets some good options
+    sftp -o "Compression no" "$@"
+}
+
 
 function sshx () {
     ssh -X -o "Compression yes" "$@"
@@ -168,8 +171,6 @@ function sshx () {
 
 function sshnox () {
     # use ssh and explicitly disable X forwarding
-    # XXXX: largely obsolete because best options over LAN or WAN
-    # found to be similar
     ssh -o "ForwardX11 no" "$@"
 }
 
