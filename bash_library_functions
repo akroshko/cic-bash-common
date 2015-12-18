@@ -146,25 +146,24 @@ function ag-list-installed () {
     fi
 }
 
+function ssh-batch () {
+    ssh -o "BatchMode yes" "$@"
+}
+
+
 function scp-lan () {
     # use scp over a LAN, sets some good options
     # XXXX: largely obsolete because best options over LAN or WAN
     # found to be similar
-    scp -o "Compression yes" -c arcfour256 "$@"
+    scp -o "Compression yes" "$@"
 }
 
 function ssh-lan () {
-    # use ssh over a LAN, sets some good options
-    # XXXX: largely obsolete because best options over LAN or WAN
-    # found to be similar
-    ssh -o "Compression yes" -c arcfour256 "$@"
+    ssh -o "Compression no" "$@"
 }
 
 function sshx () {
-    # use ssh -X over a LAN, sets some good options
-    # XXXX: largely obsolete because best options over LAN or WAN
-    # found to be similar
-    ssh -X -o "Compression yes" -c arcfour256 "$@"
+    ssh -X -o "Compression yes" "$@"
 }
 
 function sshnox () {
@@ -175,8 +174,7 @@ function sshnox () {
 }
 
 function sshx-lan () {
-    # finding compression outweighs cheap NAS for now
-    ssh -X -o "Compression yes" -c arcfour256 "$@"
+    ssh -X -o "Compression no" "$@"
 }
 
 function autossh-tunnel () {
@@ -454,7 +452,10 @@ function vcs-check-root () {
             echo "==== Checking     $dirname/.git ===========================================================================" | cut -c 1-80
             pushd . >> /dev/null
             cd "$dirname"
-            git fetch --dry-run --verbose
+            git fetch
+            git fetch --verbose
+            echo "---- diff origin/master ----------------------------------------" | cut -c 1-40
+            git diff origin/master --summary
             popd >> /dev/null
         elif [[ -d "$dirname/.hg" ]]
         then
