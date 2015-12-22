@@ -30,12 +30,11 @@
 # TODO: the arguments of each function are not specified, however it
 # would be desirable to add this to the docstring at some point
 
-function test-fail () {
+test-fail () {
     # this function is just a test to judge a scripts behaviour based
     # on return values
     # TODO: also need a test error
-    if [[ false ]]
-    then
+    if [[ false ]]; then
         echo "false"
         return 1
     fi
@@ -43,36 +42,35 @@ function test-fail () {
     return 0
 }
 
-function check-host () {
+check-host () {
     # check if current host is a particular host, this will probably
     # become more complex as time goes on
     [[ $(hostname) == "$1" ]]
 }
 
-function need_new_directory () {
+need_new_directory () {
     # create a new directory if it does not already exist
-    if [[ ! -d "$1" ]]
-    then
+    if [[ ! -d "$1" ]]; then
         mkdir -p "$1"
     fi
 }
 
-function verify-operation () {
+verify-operation () {
     # this function verifies a deletion and asks twice to make sure,
     # generally used to ensure an operation is successful before
     # deleting
-    askmessage="$1"
-    suremessage="$2"
-    rmarg="$3"
+    local ASKMESSAGE="$1"
+    local SUREMESSAGE="$2"
+    local RMARG="$3"
     while true; do
-        read -p "$askmessage" yn
-        case $yn in
+        read -p "$ASKMESSAGE" YN
+        case $YN in
             # TODO: make a bit more general so I can select a command
-            [Yy]* ) (home-trash "$rmarg"); break;;
+            [Yy]* ) (home-trash "$RMARG"); break;;
             # are you sure you don't want to delete original
             [Nn]* )
-                read -p "$suremessage" ynt
-                case $ynt in
+                read -p "$SUREMESSAGE" YNT
+                case $YNT in
                     [Yy]* ) return 0;;
                     [Nn]* ) true;;
                     * ) echo "Try again!"
@@ -83,214 +81,207 @@ function verify-operation () {
     done
 }
 
-function home-trash () {
+home-trash () {
     # delete by moving to a trash file that can be periodically
     # checked
-    trashfile="$1"
-    if [[ ! -d ~/tmp ]]
-    then
-        mkdir ~/tmp
-    fi
-    if [[ ! -d ~/tmp/trash ]]
-    then
-        mkdir ~/tmp/trash
-    fi
-    \mv --backup=t -- "$1" ~/tmp/trash
+    local TRASHFILE="$1"
+    mkdir -p ~/tmp/trash
+    \mv --backup=t -- "$TRASHFILE" ~/tmp/trash
 }
 
-function date-time-stamp () {
+date-time-stamp () {
     # return a time-stamp with date in standard format
     echo $(date +%Y%m%d%H%M%S)
 }
 
-function date-stamp () {
+date-stamp () {
     echo $(date +%Y%m%d)
 }
 
 # move this to function ASAP
-function memory-log () {
+memory-log () {
     while true; do { cat /proc/meminfo | sed -n 2p ; date ; } | tr "\n" " " ; echo ""; sleep 30; done >> ~/memory-$(date +%Y%m%d%H%M%S).log
 }
 
-function ag-show () {
+ag-show () {
     # show details of a debian package
     # TODO: make this work with bash_completion
     apt-cache show "$1"
 }
 
-function ag-search () {
+ag-search () {
     # search for a debian package
     # TODO: make this work with bash_completion
     apt-cache search "$1"
 }
 
-function ag-install () {
+ag-install () {
     # install a debian package
     # TODO: make this work with bash_completion
     sudo apt-get install "$1"
 
 }
 
-function ag-list () {
+ag-list () {
     # list files installed by a debian package
     # TODO: make this work with bash_completion
     dpkg-query -L "$1"
 }
 
-function ag-list-installed () {
-    if [[ -z "$1" ]]
-    then
+ag-list-installed () {
+    if [[ -z "$1" ]]; then
         dpkg-query -l
     else
         dpkg-query -l | grep "$1"
     fi
 }
 
-function ssh-batch () {
+ssh-batch () {
     ssh -o "BatchMode yes" "$@"
 }
 
-function ssh-lan () {
+ssh-batch-lan () {
+    ssh -o "BatchMode yes" -o "Compression no" -c aes256-gcm@openssh.com "$@"
+}
+
+ssh-lan () {
     ssh -o "Compression no" "$@"
 }
 
-function scp-lan () {
+scp-lan () {
     # use scp over a LAN, sets some good options
     scp -o "Compression no" "$@"
 }
 
-function sftp-lan () {
+sftp-lan () {
     # use sftp over a LAN, sets some good options
     sftp -o "Compression no" "$@"
 }
 
 
-function sshx () {
+sshx () {
     ssh -X -o "Compression yes" "$@"
 }
 
-function sshnox () {
+sshnox () {
     # use ssh and explicitly disable X forwarding
     ssh -o "ForwardX11 no" "$@"
 }
 
-function sshx-lan () {
+sshx-lan () {
     ssh -X -o "Compression no" "$@"
 }
 
-function autossh-tunnel () {
+autossh-tunnel () {
     # set up a tunnel using autossh
     autossh -M 0 -o "BatchMode yes" -o "Compression yes" -N "$@"
 }
 
-function autossh-tunnel-lan () {
+autossh-tunnel-lan () {
     # set up a tunnel using autossh, compression off best for lan
     autossh -M 0 -o "BatchMode yes" -o "Compression no" -N "$@"
 }
 
-function transform-resize-web () {
+transform-resize-web () {
     # resize photos to a nice size for the web
     # TODO: change the output name?
     convert "$1" -resize 1200x800 "resize_$1"
 }
 
 # transform anything to mp3 using ffmpeg
-function transform-ffmpeg-mp3 () {
+transform-ffmpeg-mp3 () {
     # convert any media file to an mp3
     # TODO: ffmpeg not on debian
     ffmpeg -i "$1" -f mp3 "${1%.*}.mp3"
 }
 
-function transform-rotate-right () {
+transform-rotate-right () {
     # rotate a photo right 90 degrees
     convert "$1" -rotate 90 "rotate_$1"
 }
 
-function transform-rotate-180 () {
+transform-rotate-180 () {
     # flip a photo 180 degrees
     convert "$1" -rotate 180 "rotate_$1"
 }
 
-function transform-rotate-left () {
+transform-rotate-left () {
     # rotate a photo left 90 degrees
     convert "$1" -rotate 270 "rotate_$1"
 }
 
-function serve-here () {
+serve-here () {
     # serve the current directory here on port 8080
     ifconfig
     python -m SimpleHTTPServer 8080
 }
 
-function discover-network () {
+discover-network () {
     # use nmap to show network interfaces
     nmap --iflist
 }
 
-function discover-lan () {
+discover-lan () {
     # scan current network, based on common home router addresses,
     # quickly using nmap
     # XXXX: generally takes less than a minute
     time nmap -sP 192.168.0-1.0-255
 }
 
-function discover-lan-super () {
+discover-lan-super () {
     # scan current network, based on common home router addresses,
     # slowly using nmap
     # XXXX: generally takes less than a 10 minutes
     time sudo nmap -sS 192.168.0-1.0-255
 }
 
-function discover-lan-complete () {
+discover-lan-complete () {
     # scan current network completely using nmap
     time sudo nmap -sP 192.168.0.0/16
 }
 
-function discover-lan-complete-super () {
+discover-lan-complete-super () {
     # scan current network completely and slowly using nmap
     time sudo nmap -sS 192.168.0.0/16
 }
 
-function discover-connections () {
+discover-connections () {
     # check current networking connections
     netstat -untap
 }
 
-function lpr-double-sided-portrait () {
+lpr-double-sided-portrait () {
     # print file as double-sided in portrait mode
     lpr -o sides=two-sided-long-edge "$1"
 }
 
-function lpr-double-sided-landscape () {
+lpr-double-sided-landscape () {
     # print file as double-sided in landscape mode
     lpr -o sides=two-sided-short-edge "$1"
 }
 
-function ls-sort-date () {
+ls-sort-date () {
     # ls and sort by reverse date
     ls -ltr
 }
 
-function need_new_symlink () {
+need_new_symlink () {
     # create new symlink deleting old symlinks but not old files
     # TODO: overwrite and backup files while killing symlinks
-    if [[ -e "$2" && ! -h "$2" ]]
-    then
+    if [[ -e "$2" && ! -h "$2" ]]; then
         # symlink is a file or something
         echo "$2: exists but is not a symlink!!!"
-    elif [[ ! -h "$2" ]]
-    then
+    elif [[ ! -h "$2" ]]; then
         # symlink does not exist at all or is a file
         ln -s "$1" "$2"
-    elif [[ -h "$2" && ! -e "$2" ]]
-    then
+    elif [[ -h "$2" && ! -e "$2" ]]; then
         # symlink exists but is invalid
         rm -f "$2"
         ln -s "$1" "$2"
     fi
 }
 
-function match_string_array () {
+match_string_array () {
     # check if a given string is in a given array
     # string in $1, array in $2
     local e
@@ -298,7 +289,7 @@ function match_string_array () {
     return 1
 }
 
-function not_match_string_array () {
+not_match_string_array () {
     # check if a given string is not in a given array
     # string in $1, array in $2
     local e
@@ -306,22 +297,21 @@ function not_match_string_array () {
     return 0
 }
 
-function view-def () {
+view-def () {
     # view the definition of a bash function
     declare -f "$1"
 }
 
-function read-file-regexp () {
+read-file-regexp () {
     # read lines from a file and merge them into a regexp
-    newregexp=""
-    while read line
-    do
-        newregexp+=$line"|"
+    local NEWREGEXP=""
+    while read line; do
+        NEWREGEXP+=$line"|"
     done < "$1"
-    echo ${newregexp::-1}
+    echo ${NEWREGEXP::-1}
 }
 
-function clean-pwd-files-pretend () {
+clean-pwd-files-pretend () {
     # see if files in current directory can be renamed to be safe from
     # punctuation and unicode boogeymen
     rename -n "s|'||g" *
@@ -332,7 +322,7 @@ function clean-pwd-files-pretend () {
     rename -n "s|\xc2\xa1|-|g" *
 }
 
-function clean-pwd-files () {
+clean-pwd-files () {
     # actually rename files in current directory to be safe from
     # punctuation and unicode boogeymen
     rename "s|'||g" *
@@ -343,9 +333,8 @@ function clean-pwd-files () {
     rename "s|\xc2\xa1|i|g" *
 }
 
-function psg () {
-    if [[ -z "$1" ]]
-    then
+psg () {
+    if [[ -z "$1" ]]; then
         ps -efj | less
     else
         # TODO: this can be done better!
@@ -354,26 +343,26 @@ function psg () {
     fi
 }
 
-function cpu-throttle-up () {
+cpu-throttle-up () {
     sudo cpufreq-set -c 0 -g performance
     sudo cpufreq-set -c 1 -g performance
     sudo cpufreq-set -c 2 -g performance
     sudo cpufreq-set -c 3 -g performance
 }
 
-function cpu-throttle-down () {
+cpu-throttle-down () {
     sudo cpufreq-set -c 0 -g powersave
     sudo cpufreq-set -c 1 -g powersave
     sudo cpufreq-set -c 2 -g powersave
     sudo cpufreq-set -c 3 -g powersave
 }
 
-function find-broken-symlinks () {
+find-broken-symlinks () {
     # find- for useful find command variations
     find . -type l -xtype l
 }
 
-function xclip-show-all () {
+xclip-show-all () {
     echo "========================================"
     echo "Primary"
     xclip -o -selection p
@@ -385,70 +374,67 @@ function xclip-show-all () {
     xclip -o -selection c
 }
 
-function du-sort () {
+du-sort () {
     # sort by size after using du
     du --summarize --human-readable * | sort --human-numeric-sort
 }
 
-function dd-progress () {
+dd-progress () {
     # TODO: spaces after |
     ps auxww | grep " dd " |grep -v grep |awk '{print $2}' |while read pid; do kill -USR1 $pid; done
 }
 
 
-function youtube-mp3 () {
+youtube-mp3 () {
     # download mp3 from youtube
     youtube-dl --extract-audio -audio-format mp3 "$1"
 }
 
-function dconf-grep () {
+dconf-grep () {
     # grep the GNOME config database
     dconf dump / | grep -i "$1"
 }
 
-function dconf-less () {
+dconf-less () {
     # use less to view the GNOME config database
     dconf dump / | less
 }
 
-function fdi () {
+fdi () {
     find . -iname "*${1}*"
 }
 
-function fgi () {
-    if [[ -z "${2}" ]]
-    then
+fgi () {
+    if [[ -z "${2}" ]]; then
         find . -type f -exec grep -H --color -n "${1}" {}  \;
     else
         find . -type f -iname "*${1}*" -exec grep -H --color -n "${2}" {}  \;
     fi
 }
 
-function harm-bash () {
+harm-bash () {
     # TODO: check for function and is this appropriate
     killall xbindkeys
     source ${HOME}/.bash_profile
 }
 
-function harm-bashrc () {
+harm-bashrc () {
     source ${HOME}/.bashrc
 }
 
-function backlight-percentage () {
+backlight-percentage () {
     # TODO: very device dependent but useful to include, make more general
     echo "`cat /sys/class/backlight/intel_backlight/brightness`*100/`cat /sys/class/backlight/intel_backlight/max_brightness`" | bc -l | xargs printf "%1.0f\n"
 }
 
-function vcs-check-root () {
+vcs-check-root () {
     # check if a pull is needed for for child directories if they correspond to common version control systems
     # from https://stackoverflow.com/questions/3258243/git-check-if-pull-needed
     # TODO: there are probably much nicer ways to do this
-    for dirname in ./*
-    do
+    for dirname in ./*; do
         [[ -d "$dirname" ]] || continue
         # check for various things
-        if [[ -d "$dirname/.git" ]]
-        then
+        if [[ -d "$dirname/.git" ]]; then
             # TODO: exclude lines saying [up to date] and just give a summary of branches
             echo "==== Checking     $dirname/.git ===========================================================================" | cut -c 1-80
             pushd . >> /dev/null
@@ -458,16 +444,14 @@ function vcs-check-root () {
             echo "---- diff origin/master ----------------------------------------" | cut -c 1-40
             git diff origin/master --summary
             popd >> /dev/null
-        elif [[ -d "$dirname/.hg" ]]
-        then
+        elif [[ -d "$dirname/.hg" ]]; then
             echo "==== Checking     $dirname/.hg ============================================================================" | cut -c 1-80
             # TODO: non-functional? I have no remaining hg repos
             # pushd . >> /dev/null
             # cd "$dirname"
             # hg fetch --dry-run --verbose
             # popd >> /dev/null
-        elif [[ -d "$dirname/.svn" ]]
-        then
+        elif [[ -d "$dirname/.svn" ]]; then
             echo "==== Checking     $dirname/.svn ===========================================================================" | cut -c 1-80
             pushd . >> /dev/null
             cd "$dirname"
@@ -479,7 +463,7 @@ function vcs-check-root () {
     done
 }
 
-function fail2ban-check () {
+fail2ban-check () {
     # check fail2ban status and show number of banned IPs for each date in the past
     sudo zcat /var/log/auth.log*.gz | grep 'Failed password' | grep sshd | awk '{print $1,$2}' | sort -k 1,1M -k 2n | uniq -c
     # a hack to find non-gz logs
@@ -488,16 +472,15 @@ function fail2ban-check () {
     sudo fail2ban-client status ssh-root
 }
 
-function drop-caches () {
+drop-caches () {
     su -c "free && sync && echo 3 > /proc/sys/vm/drop_caches && free"
 }
 
-function mount-disk-uuid () {
+mount-disk-uuid () {
     # find mounted disk or ???
-    UUID="$1"
-    UUIDDEVICE="$(readlink -f /dev/disk/by-uuid/${UUID})"
-    if grep -qs "$UUIDDEVICE" /etc/mtab
-    then
+    local UUID="$1"
+    local UUIDDEVICE="$(readlink -f /dev/disk/by-uuid/${UUID})"
+    if grep -qs "$UUIDDEVICE" /etc/mtab; then
         echo -e $(grep ^"${UUIDDEVICE}[[:space:]]\+" /etc/mtab | cut -d ' ' -f 2)
         return 0
     else
@@ -511,28 +494,24 @@ function mount-disk-uuid () {
     fi
 }
 
-function device-disk-uuid () {
+device-disk-uuid () {
     # find mounted disk or ???
-    UUID="$1"
-    UUIDDEVICE="$(readlink -f /dev/disk/by-uuid/${UUID})"
+    local UUID="$1"
+    local UUIDDEVICE="$(readlink -f /dev/disk/by-uuid/${UUID})"
     echo ${UUIDDEVICE}
 }
 
-function vcs-diff-public () {
+vcs-diff-public () {
     # diff the "master" with the "public" branch for current directory or all child directories that are git repositories
     # XXXX: git only for now
-    if [[ -d "./.git" ]]
-    then
+    if [[ -d "./.git" ]]; then
         git diff public..master
     else
-        for dirname in ./*
-        do
-            if [[ -d "$dirname/.git" ]]
-            then
+        for dirname in ./*; do
+            if [[ -d "$dirname/.git" ]]; then
                 pushd . >> /dev/null
                 cd "$dirname"
-                if git rev-parse --verify public >> /dev/null 2>&1
-                then
+                if git rev-parse --verify public >> /dev/null 2>&1; then
                     echo "==== Checking $dirname ================================================================================" | cut -c 1-80
                     git diff master..public --stat
                 fi
@@ -542,24 +521,21 @@ function vcs-diff-public () {
     fi
 }
 
-function vcs-push-github () {
+vcs-push-github () {
     # merge public branch and commit to github
     # XXXX: repository must be setup properly
     git checkout public
-    if [[ $? != 0 ]]
-    then
+    if [[ $? != 0 ]]; then
         echo "Checkout unsuccessful!"
         return 1
     fi
     git merge --squash -X theirs master
-    COMMITCORRECT=n
-    while [[ "$COMMITCORRECT" != "y" ]]
-    do
+    local COMMITCORRECT=n
+    while [[ "$COMMITCORRECT" != "y" ]]; do
         read -p "Enter commit message: " COMMITMESSAGE
         # TODO: add option for quit
         read -p "Use commit message (y/n/q)? " COMMITCORRECT
-        if [[ "$COMMITCORRECT" == "q" ]]
-        then
+        if [[ "$COMMITCORRECT" == "q" ]]; then
             echo "Aborting!"
             git checkout master
             return 1
@@ -571,27 +547,27 @@ function vcs-push-github () {
     git checkout master
 }
 
-function dpkg-purge-all () {
+dpkg-purge-all () {
     # purge all files related to uninstalled packages
     # TODO: dangerous function, purges all old config files
     dpkg -l | grep ^rc | cut -d' ' -f3|xargs sudo dpkg -P
 }
 
-function pip-upgrade () {
+pip-upgrade () {
     # upgrade all pip packages
     pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install -U
 }
 
-function git-serve () {
+git-serve () {
     # a convienient command to browse code for now
     git instaweb
 }
 
-function envaddpath() {
+envaddpath() {
     # based on answer from https://superuser.com/questions/39751/add-directory-to-path-if-its-not-already-there
     # having environment variable to modify comming first makes my scripts clear
     if [[ -d "$2" ]] && [[ ":${!1}:" != *":$2:"* ]]; then
-        NEWVARIABLE="${!1}:$2"
+        local NEWVARIABLE="${!1}:$2"
         # strip leading and trailing :
         NEWVARIABLE=${NEWVARIABLE#:}
         NEWVARIABLE=${NEWVARIABLE%:}
@@ -599,14 +575,12 @@ function envaddpath() {
     fi
 }
 
-function harm-id3-audiobook-all () {
+harm-id3-audiobook-all () {
     # set up all audiobooks in immediate subdirectories for my player
     # (after appropriate file renaming)
-    read -p "Dangerous function! Continue (y/n)? " yn
-    if [[ "$yn" == "y" ]]
-    then
-        for d in ./*
-        do
+    read -p "Dangerous function! Continue (y/n)? " YN
+    if [[ "$YN" == "y" ]]; then
+        for d in ./*; do
             [[ -d "$d" || continue ]]
             pushd . >> /dev/null
             cd "${d}"
@@ -620,75 +594,68 @@ function harm-id3-audiobook-all () {
     fi
 }
 
-function harm-id3-genre-as-audiobook () {
+harm-id3-genre-as-audiobook () {
     # set genre of all .mp3 as audiobook
-    read -p "Dangerous function! Continue (y/n)? " yn
-    if [[ "$yn" == "y" ]]
-    then
+    read -p "Dangerous function! Continue (y/n)? " YN
+    if [[ "$YN" == "y" ]]; then
         eyeD3 --to-v2.4 --genre="Audiobook" *.mp3
     fi
 }
 
-function harm-id3-name-as-filename () {
+harm-id3-name-as-filename () {
     # make track name correspond to filename
-    read -p "Dangerous function! Continue (y/n)? " yn
-    if [[ "$yn" == "y" ]]
-    then
-        for f in ./*.mp3
-        do
-            bname="${f%%.mp3}"
+    read -p "Dangerous function! Continue (y/n)? " YN
+    if [[ "$YN" == "y" ]]; then
+        for F in ./*.mp3; do
+            local BNAME="${f%%.mp3}"
             # XXXX: basename doesn't work with comma in filename
-            bname="${bname##*/}"
-            eyeD3 --to-v2.4 --title="$bname" "$f"
+            BNAME="${bname##*/}"
+            eyeD3 --to-v2.4 --title="$BNAME" "$F"
         done
     fi
 }
 
-function harm-id3-alphabetical-track () {
+harm-id3-alphabetical-track () {
     # number tracks based on the alphabetical sort order
-    read -p "Dangerous function! Continue (y/n)? " yn
-    if [[ "$yn" == "y" ]]
-    then
+    read -p "Dangerous function! Continue (y/n)? " YN
+    if [[ "$YN" == "y" ]]; then
         # totals cause confusion
         eyeD3 --track-total=0 *.mp3
-        COUNT=1
-        for f in ./*.mp3
-        do
-            eyeD3 --to-v2.4 --track=$(printf "%03d\n" $COUNT) "$f"
+        local COUNT=1
+        for F in ./*.mp3; do
+            eyeD3 --to-v2.4 --track=$(printf "%03d\n" $COUNT) "$F"
             let COUNT+=1
         done
     fi
 }
 
-function harm-id3-album-as-directory () {
+harm-id3-album-as-directory () {
     # use directory name for album name as all tracks
-    read -p "Dangerous function! Continue (y/n)? " yn
-    if [[ "$yn" == "y" ]]
-    then
-        ALBUM=$(basename "${PWD}")
+    read -p "Dangerous function! Continue (y/n)? " YN
+    if [[ "$YN" == "y" ]]; then
+        local ALBUM=$(basename "${PWD}")
         eyeD3 --to-v2.4 --album "$ALBUM" *.mp3
     fi
 }
 
-function harm-id3-remove-v1 () {
+harm-id3-remove-v1 () {
     # remove v1 id3 tags because they interfere with some players
-    read -p "Dangerous function! Continue (y/n)? " yn
-    if [[ "$yn" == "y" ]]
-    then
+    read -p "Dangerous function! Continue (y/n)? " YN
+    if [[ "$YN" == "y" ]]; then
         eyeD3 --remove-v1 *.mp3
     fi
 }
 
-function ls-id3 () {
+ls-id3 () {
     # list id3 tags of all mp3s in directory
     eyeD3 *.mp3
 }
 
-function ag-list-doc () {
+ag-list-doc () {
     apt-cache search . | grep "\-doc " | cut -d' ' -f1
 }
 
-function ag-list-packages-only () {
+ag-list-packages-only () {
     ag-list-installed | cut -d' ' -f3
 }
 

@@ -29,15 +29,13 @@ firstarg=$1
 shift
 case $firstarg in
     batch )
-        if ! ps -ef | grep "emacs --daemon" | grep -v grep > /dev/null
-        then
+        if ! ps -ef | grep "emacs --daemon" | grep -v grep >> /dev/null; then
             emacs --daemon
             sleep 10
         fi ;;
     maximized )
         # check if the server is running, if not start the server
-        if ! ps -ef | grep "emacs --daemon" | grep -v grep > /dev/null
-        then
+        if ! ps -ef | grep "emacs --daemon" | grep -v grep > /dev/null; then
             emacs --daemon
             exec emacsclient --alternate-editor="" -c --eval "(make-frame '((name . \"maximized\") (top . 40) (left . 40) (width . 200) (height . 60)))" --eval "(select-frame-by-name \"maximized\")" "$@"
         else
@@ -52,13 +50,12 @@ case $firstarg in
         export VISUAL=emacsclient
         ;;
     noframe )
-        if ! ps -ef | grep "emacs --daemon" | grep -v grep > /dev/null
-        then
+        if ! ps -ef | grep "emacs --daemon" | grep -v grep >> /dev/null; then
             emacs --daemon
             exec emacsclient --alternate-editor="" -c "$@"
         else
             emacsclient -n -e "(if (> (length (frame-list)) 1) 't)" | grep t
-            if [ "$?" = "1" ]; then
+            if [[ $? = "1" ]]; then
                 emacsclient -c -n -a "" "$@"
             else
                 emacsclient -n -a "" "$@"
@@ -68,8 +65,7 @@ case $firstarg in
         fi
         ;;
     * )
-        if ! ps -ef | grep "emacs --daemon" | grep -v grep > /dev/null
-        then
+        if ! ps -ef | grep "emacs --daemon" | grep -v grep >> /dev/null; then
             emacs --daemon
         fi
         # TODO: this needs to be here and I cannot remember why

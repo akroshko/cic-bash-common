@@ -24,20 +24,20 @@
 # along with this program. If not, see http://www.gnu.org/licenses/.
 # create a really nice prompt for most terminals
 
-function google () {
-    CLIPBOARD=`xclip -o selection c`
+google () {
+    local CLIPBOARD=`xclip -o selection c`
     CLIPBOARD="${CLIPBOARD// /+}"
     conkeror "https://google.ca/search?q=$CLIPBOARD"
 }
 
-function scholar () {
-    CLIPBOARD=`xclip -o selection c`
+scholar () {
+    local CLIPBOARD=`xclip -o selection c`
     CLIPBOARD="${CLIPBOARD// /+}"
     conkeror "https://scholar.google.ca/scholar?q=$CLIPBOARD"
 }
 
-function wikipedia () {
-    CLIPBOARD=`xclip -o selection c`
+wikipedia () {
+    local CLIPBOARD=`xclip -o selection c`
     CLIPBOARD="${CLIPBOARD// /+}"
     conkeror "https://en.wikipedia.org/w/index.php?search=$CLIPBOARD"
 }

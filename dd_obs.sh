@@ -19,7 +19,7 @@ do
   # Calculate number of segments required to copy
   COUNT=$(($TEST_FILE_SIZE / $BLOCK_SIZE))
 
-  if [ $COUNT -le 0 ]; then
+  if [[ $COUNT -le 0 ]]; then
     echo "Block size of $BLOCK_SIZE estimated to require $COUNT blocks, aborting further tests."
     break
   fi
@@ -31,7 +31,7 @@ do
   TRANSFER_RATE=$(echo $DD_RESULT | \grep --only-matching -E '[0-9.]+ ([MGk]?B|bytes)/s(ec)?')
 
   # Clean up the test file if we created one
-  [ $TEST_FILE_EXISTS -ne 0 ] && rm $TEST_FILE
+  [[ $TEST_FILE_EXISTS -ne 0 ]] && rm $TEST_FILE
 
   # Output the result
   printf "$PRINTF_FORMAT" "$BLOCK_SIZE" "$TRANSFER_RATE"
