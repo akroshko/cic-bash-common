@@ -85,8 +85,8 @@ home-trash () {
     # delete by moving to a trash file that can be periodically
     # checked
     local TRASHFILE="$1"
-    mkdir -p ~/tmp/trash
-    \mv --backup=t -- "$TRASHFILE" ~/tmp/trash
+    mkdir -p ${HOME}/tmp/trash
+    \mv --backup=t -- "$TRASHFILE" ${HOME}/tmp/trash
 }
 
 date-time-stamp () {
@@ -100,7 +100,7 @@ date-stamp () {
 
 # move this to function ASAP
 memory-log () {
-    while true; do { cat /proc/meminfo | sed -n 2p ; date ; } | tr "\n" " " ; echo ""; sleep 30; done >> ~/memory-$(date +%Y%m%d%H%M%S).log
+    while true; do { cat /proc/meminfo | sed -n 2p ; date ; } | tr "\n" " " ; echo ""; sleep 30; done >> ${HOME}/memory-$(date +%Y%m%d%H%M%S).log
 }
 
 ag-show () {
