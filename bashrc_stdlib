@@ -28,8 +28,8 @@ case "$TERM" in
         PS1="> "
         ;;
     linux|xterm*|rxvt*|eterm*|screen*)
-        export PS1="${BPurple}\H $(if [[ -n $SSH_CLIENT && $TERM == screen ]];then echo -n '(ssh,screen) ';elif [[ -n $SSH_CLIENT ]];then echo -n '(ssh) ';elif [[ $TERM == screen ]];then echo -n '(screen) ';fi)${Purple}\j ${BBLue}\w
-${Yellow}[\!] \`exitstatus=\$?;if [[ exitstatus -eq 0 ]];then echo \[\033[32m\]\${exitstatus}\[\e[0m\];else echo \[\033[31m\]\${exitstatus}\[\e[0m\]; fi\` ${Cyan}\t ${Green}\u ${BGreen}\$${Color_Off} "
+        export PS1="\[${BPurple}\]\H $(if [[ -n $SSH_CLIENT && $TERM == screen ]];then echo -n '(ssh,screen) ';elif [[ -n $SSH_CLIENT ]];then echo -n '(ssh) ';elif [[ $TERM == screen ]];then echo -n '(screen) ';fi)\[${Purple}\]\j \[${BBLue}\]\w
+\[${Yellow}\][\!] \`exitstatus=\$?;if [[ exitstatus -eq 0 ]];then echo \[\033[32m\]\${exitstatus}\[\e[0m\];else echo \[\033[31m\]\${exitstatus}\[\e[0m\]; fi\` ${Cyan}\t \[${Green}\]\u \[${BGreen}\]\$\[${Color_Off}\] "
         ;;
     *)
         PS1="> "
