@@ -103,26 +103,28 @@ memory-log () {
 
 ag-show () {
     # show details of a debian package
-    # TODO: make this work with bash_completion
     apt-cache show "$1"
 }
+# XXXX: only different when using bash completion
+alias ag-show-installed=ag-show
 
 ag-search () {
     # search for a debian package
-    # TODO: make this work with bash_completion
     apt-cache search "$1"
 }
 
 ag-install () {
     # install a debian package
-    # TODO: make this work with bash_completion
     sudo apt-get install "$1"
+}
 
+ag-remove () {
+    # uninstall a debian package
+    sudo apt-get remove "$1"
 }
 
 ag-list () {
     # list files installed by a debian package
-    # TODO: make this work with bash_completion
     dpkg-query -L "$1"
 }
 
@@ -414,11 +416,29 @@ harm-bash () {
     if ps -ef | grep "xbindkeys" | grep -v grep >> /dev/null; then
         killall xbindkeys
     fi
+    fix-gpg-ssh-permissions
     source ${HOME}/.bash_profile
 }
 
 harm-bashrc () {
+    fix-gpg-ssh-permissions
     source ${HOME}/.bashrc
+}
+
+fix-crypt-permissions () {
+    # fix the permissions on a cryptography-relevant directory
+    if [[ -z "$1" ]]; then
+        yell "Must have a directory to fix!"
+    fi
+    chmod -R g-rwx "$1"
+    chmod -R o-rwx "$1"
+    chmod u+rwX --recursive "$1"
+}
+
+fix-gpg-ssh-permissions () {
+    # fix the permissions on the standard gpg and ssh directory
+    fix-crypt-permissions "${HOME}"/.gnupg
+    fix-crypt-permissions "${HOME}"/.ssh
 }
 
 backlight-percentage () {
@@ -565,13 +585,18 @@ git-serve () {
 envaddpath() {
     # based on answer from https://superuser.com/questions/39751/add-directory-to-path-if-its-not-already-there
     # having environment variable to modify comming first makes my scripts clear
-    if [[ -d "$2" ]] && [[ ":${!1}:" != *":$2:"* ]]; then
-        local NEWVARIABLE="${!1}:$2"
-        # strip leading and trailing :
-        NEWVARIABLE=${NEWVARIABLE#:}
-        NEWVARIABLE=${NEWVARIABLE%:}
-        export $1="${NEWVARIABLE}"
-    fi
+    ENVVARIABLE="$1"
+    shift
+    local NEWVARIABLE="${!ENVVARIABLE}"
+    for VALUE in $@; do
+        if [[ -d "$VALUE" ]] && [[ ":${NEWVARIABLE}:" != *":$VALUE:"* ]]; then
+            NEWVARIABLE="${NEWVARIABLE}:$VALUE"
+            # strip leading and trailing :
+            NEWVARIABLE=${NEWVARIABLE#:}
+            NEWVARIABLE=${NEWVARIABLE%:}
+        fi
+    done
+    export $(echo $ENVVARIABLE)="${NEWVARIABLE}"
 }
 
 harm-id3-audiobook-all () {
@@ -716,6 +741,10 @@ h2 () {
         OUTSTR=$(echo "---- $* ----------------------------------------" | cut -c 1-60)
     fi
     echo -e "${White}${On_Purple}$OUTSTR${Color_Off}" >&2
+}
+
+git-ls () {
+    git ls-tree -r master --name-only
 }
 
 ################################################################################

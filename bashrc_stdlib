@@ -29,7 +29,7 @@ case "$TERM" in
         ;;
     linux|xterm*|rxvt*|eterm*|screen*)
         export PS1="\[${BPurple}\]\H $(if [[ -n $SSH_CLIENT && $TERM == screen ]];then echo -n '(ssh,screen) ';elif [[ -n $SSH_CLIENT ]];then echo -n '(ssh) ';elif [[ $TERM == screen ]];then echo -n '(screen) ';fi)\[${Purple}\]\j \[${BBLue}\]\w
-\[${Yellow}\][\!] \`exitstatus=\$?;if [[ exitstatus -eq 0 ]];then echo \[\033[32m\]\${exitstatus}\[\e[0m\];else echo \[\033[31m\]\${exitstatus}\[\e[0m\]; fi\` ${Cyan}\t \[${Green}\]\u \[${BGreen}\]\$\[${Color_Off}\] "
+\[${Yellow}\][\!] \`exitstatus=\$?;if [[ exitstatus -eq 0 ]];then echo \[\033[32m\]\${exitstatus}\[\e[0m\];else echo \[\033[31m\]\${exitstatus}\[\e[0m\]; fi\` \[${Cyan}\]\t \[${Green}\]\u \[${BGreen}\]\$\[${Color_Off}\] "
         ;;
     *)
         PS1="> "
@@ -40,7 +40,28 @@ esac
 #       do I want to do this with screen
 if [[ "$TERM" =~ xterm*|rxvt* ]]
 then
-    export PROMPT_COMMAND='echo -ne "\033]0;${USER}@${HOSTNAME}:${PWD}\007";history -a; history -n'
+    # export PROMPT_COMMAND='history -a; history -n;echo -ne "\033]0;${USER}@${HOSTNAME}:${PWD}\007"'
+    # XXXX: username is unnecessary for my purposes
+    export PROMPT_COMMAND='history -a; history -n;echo -ne "\033]0;${HOSTNAME}:${PWD}\007"'
+    # see http://askubuntu.com/questions/126737/make-gnome-terminal-show-the-command-running-as-title
+    show_command_in_title_bar()
+    {
+        case "$BASH_COMMAND" in
+            *"\033]0"*)
+                # The command is trying to set the title bar as well;
+                # this is most likely the execution of $PROMPT_COMMAND.
+                # In any case nested escapes confuse the terminal, so don't
+                # output them.
+                ;;
+            *)
+                # echo -ne "\033]0;${BASH_COMMAND}: ${USER}@${HOSTNAME}\007"
+                # XXXX: user is unnecessary for my purposes
+                echo -ne "\033]0;${BASH_COMMAND}: ${HOSTNAME}\007"
+                ;;
+        esac
+    }
+    trap show_command_in_title_bar DEBUG
+    # TODO: is there ever a nicer way to do this?
 else
     export PROMPT_COMMAND='history -a; history -n'
 fi
