@@ -747,10 +747,116 @@ git-ls () {
     git ls-tree -r master --name-only
 }
 
+test-all-colors () {
+    # http://askubuntu.com/questions/27314/script-to-display-all-terminal-colors
+    for x in 0 1 4 5 7 8; do for i in `seq 30 37`; do for a in `seq 40 47`; do echo -ne "\e[$x;$i;$a""m\\\e[$x;$i;$a""m\e[0;37;40m "; done; echo; done; done; echo "";
+}
+
+aloopback () {
+    arecord -vv | sox -t wav - -t wav - highpass 300 | aplay
+}
+
+aloopback-high () {
+    arecord -vv | sox -t wav - -t wav - highpass 300 | aplay
+}
+
+aloopback-low () {
+    arecord -vv | sox -t wav - -t wav - lowpass 300 | aplay
+}
+
+vcs-clone-to-bare () {
+    # https://stackoverflow.com/questions/4142936/git-clone-from-local-to-remote
+    # TODO: add remote properly?
+    # git clone --bare -l "$1" "$1".git
+    # on .git
+    if check-host-main && [[ -d ./"$1" ]]; then
+        local REALPATH="$(realpath $1)"
+        REALPATH=${REALPATH%/}
+        pushd . >> /dev/null
+        if [[ -e "$REALPATH".git ]]
+        then
+            msg "$1.git already exists!"
+            return 1
+        fi
+        mkdir -p "$REALPATH".git
+        cd "$REALPATH".git
+        git init --bare
+        popd >> /dev/null
+        pushd . >> /dev/null
+        cd "$REALPATH"
+        # on desired branch
+        git remote add origin "$REALPATH".git/
+        git push --all origin
+        git branch --set-upstream-to=origin/master master
+        popd >> /dev/null
+    fi
+}
+
+vcs-init-full () {
+    git init && git add * && git commit -a -m 'initial commit'
+}
+
+check-emacs-daemon () {
+    ps -ef | grep "emacs --daemon" | grep -v grep > /dev/null
+    return $?
+}
+
+disk-info () {
+    if [[ -b "$1" ]]; then
+        h1
+        msg "$1"
+        sudo smartctl -A "$1"
+    fi
+}
+
+monitor-disks () {
+    disk-info /dev/sda
+    disk-info /dev/sdb
+    disk-info /dev/sdc
+    disk-info /dev/sdd
+    disk-info /dev/sde
+    disk-info /dev/sdf
+}
+
+
+disk-temp () {
+    if [[ -b "$1" ]]; then
+        h1
+        msg "$1"
+        sudo hddtemp "$1"
+        sudo smartctl -A "$1" | grep -i temperature
+    fi
+}
+
+monitor-disk-temp () {
+    disk-temp /dev/sda
+    disk-temp /dev/sdb
+    disk-temp /dev/sdc
+    disk-temp /dev/sdd
+    disk-temp /dev/sde
+    disk-temp /dev/sdf
+}
+
+monitor-disk-speed () {
+    # https://www.webhostingtalk.com/showthread.php?t=906573
+    # http://www.yasith.info/2010/01/how-to-check-hard-disk-performance-and.html
+    sudo hdparm -tT /dev/"$1"
+}
+
+fix-permissive-permissions () {
+    if [[ -e "$1" ]]; then
+        chmod 755 "$1"
+    fi
+}
+
+fix-permissive-permissions-recursive () {
+    if [[ -d "$1" ]]; then
+        chmod -R 755 "$1"
+    fi
+}
+
 ################################################################################
 ## set interesting things for bashrc, should these be here or a seperate file?
-################################################################################
-# https://wiki.archlinux.org/index.php/Color_Bash_Prompt
 # XXXX: is it likely this may clobber other things in the namespace?
 # Reset
 Color_Off='\e[0m'       # Text Reset
