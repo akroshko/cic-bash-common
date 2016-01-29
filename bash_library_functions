@@ -855,6 +855,16 @@ fix-permissive-permissions-recursive () {
     fi
 }
 
+add-line-if-not-exist () {
+    THEFILE="$1"
+    NEWLINE="$2"
+    grep -q -F "$NEWLINE" "$THEFILE" || echo "$NEWLINE" >> "$THEFILE"
+}
+
+kill-blank-lines () {
+    sed -n -e '/^\s*$/d' "$1"
+}
+
 ################################################################################
 ## set interesting things for bashrc, should these be here or a seperate file?
 # XXXX: is it likely this may clobber other things in the namespace?

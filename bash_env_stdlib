@@ -1,0 +1,11 @@
+#!/bin/bash
+# some common environment variable settings that are good on any machine
+# set up sage if it is installed locally: http://www.sagemath.org/
+SAGEINSTALLATION=
+for f in ~/sage-*; do
+    [[ -d "$f" ]] || continue
+    SAGEINSTALLATION="$f"
+done
+if [[ -n "$SAGEINSTALLATION" ]]; then
+    envaddpath PATH "$SAGEINSTALLATION"
+fi

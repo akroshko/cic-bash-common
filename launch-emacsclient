@@ -26,39 +26,37 @@
 # see http://www.emacswiki.org/emacs/EmacsClient
 
 firstarg=$1
-shift
 case $firstarg in
     batch )
+        shift
         if ! ps -ef | grep "emacs --daemon" | grep -v grep >> /dev/null; then
             emacs --daemon
             sleep 10
         fi ;;
     maximized )
+        shift
         # check if the server is running, if not start the server
         if ! ps -ef | grep "emacs --daemon" | grep -v grep > /dev/null; then
             emacs --daemon
-            exec emacsclient --alternate-editor="" -c --eval "(make-frame '((name . \"maximized\") (top . 40) (left . 40) (width . 200) (height . 60)))" --eval "(select-frame-by-name \"maximized\")" "$@"
+            exec emacsclient --alternate-editor="" --create-frame --eval "(make-frame '((name . \"maximized\") (top . 40) (left . 40) (width . 200) (height . 60)))" --eval "(select-frame-by-name \"maximized\")" "$@"
         else
             exec emacsclient --alternate-editor="" --eval "(make-frame '((name . \"maximized\") (top . 40) (left . 40) (width . 200) (height . 60)))" --eval "(select-frame-by-name \"maximized\")" "$@"
         fi
-        # XXXX: this was unsuitable for a reason I can't remember
-        # exec emacsclient --alternate-editor="" -c --eval "(maximize-frame)" "$@"
-        # TODO do I want to make zile, mg, or another terminal Emacs version the EDITOR?
-        # TODO possibly check display variable?
         export EDITOR=launch-emacsclient
         export ALTERNATE_EDITOR=launch-emacsclient
         export VISUAL=emacsclient
         ;;
     noframe )
+        shift
         if ! ps -ef | grep "emacs --daemon" | grep -v grep >> /dev/null; then
             emacs --daemon
             exec emacsclient --alternate-editor="" -c "$@"
         else
-            emacsclient -n -e "(if (> (length (frame-list)) 1) 't)" | grep t
+            emacsclient --no-wait --eval "(if (> (length (frame-list)) 1) 't)" | grep t
             if [[ $? = "1" ]]; then
-                emacsclient -c -n -a "" "$@"
+                emacsclient --create-frame --no-wait --alternate-editor="" "$@"
             else
-                emacsclient -n -a "" "$@"
+                emacsclient --no-wait -a --alternate-editor="" "$@"
             fi
             # XXXX: this was unsuitable for a reason I can't remember
             # exec emacsclient --alternate-editor="" "$@"
@@ -67,15 +65,14 @@ case $firstarg in
     * )
         if ! ps -ef | grep "emacs --daemon" | grep -v grep >> /dev/null; then
             emacs --daemon
+            exec emacsclient --alternate-editor="" --create-frame "$@"
+        else
+            exec emacsclient --alternate-editor="" --create-frame "$@"
+            export EDITOR=launch-emacsclient
+            export ALTERNATE_EDITOR=launch-emacsclient
+            export VISUAL=emacsclient
         fi
-        # TODO: this needs to be here and I cannot remember why
-        exec emacsclient --alternate-editor="" -c "$@"
-        # TODO: having no frame is a problem, I would like to be able to run Emacs that way
         # TODO do I want to make zile, mg, or another terminal Emacs version the EDITOR?
         # TODO possibly check display variable?
-        export EDITOR=launch-emacsclient
-        export ALTERNATE_EDITOR=launch-emacsclient
-        export VISUAL=emacsclient
-        exec emacsclient --alternate-editor="" "$@"
         ;;
 esac
