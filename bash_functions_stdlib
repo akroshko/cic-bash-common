@@ -1,0 +1,954 @@
+#!/bin/bash
+# bash_functions_stdlib is a set of bash functions for non-specific
+# functionality.
+#
+# Copyright (C) 2015-2016 Andrew Kroshko, all rights reserved.
+#
+# Author: Andrew Kroshko
+# Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
+# Created: Fri Mar 27, 2015
+# Version: 20160130
+# URL: https://github.com/akroshko/bash-stdlib
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at
+# your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see http://www.gnu.org/licenses/.
+
+# WARNING: most of this code has not been rigorously tested or
+# verified, use at own risk if working with important data or in
+# production settings
+
+# TODO: the arguments of each function are not specified, however it
+# would be desirable to add this to the docstring at some point
+
+test-fail () {
+    # this function is just a test to judge a scripts behaviour based
+    # on return values
+    # TODO: also need a test error
+    if [[ false ]]; then
+        echo "false"
+        return 1
+    fi
+    echo "not false"
+    return 0
+}
+
+check-host () {
+    # check if current host is a particular host, this will probably
+    # become more complex as time goes on
+    [[ $(hostname) == "$1" ]]
+}
+
+need_new_directory () {
+    # create a new directory if it does not already exist
+    mkdir -p "$1"
+}
+
+verify-operation () {
+    # this function verifies a deletion and asks twice to make sure,
+    # generally used to ensure an operation is successful before
+    # deleting
+    local ASKMESSAGE="$1"
+    local SUREMESSAGE="$2"
+    local RMARG="$3"
+    while true; do
+        read -p "$ASKMESSAGE" YN
+        case $YN in
+            # TODO: make a bit more general so I can select a command
+            [Yy]* ) (home-trash "$RMARG"); break;;
+            # are you sure you don't want to delete original
+            [Nn]* )
+                read -p "$SUREMESSAGE" YNT
+                case $YNT in
+                    [Yy]* ) return 0;;
+                    [Nn]* ) true;;
+                    * ) warn "Try again!"
+                esac
+                ;;
+            * ) warn "Please answer yes or no.";;
+        esac
+    done
+}
+
+home-trash () {
+    # delete by moving to a trash file that can be periodically
+    # checked
+    local TRASHFILE="$1"
+    mkdir -p ${HOME}/tmp/trash
+    \mv --backup=t -- "$TRASHFILE" ${HOME}/tmp/trash
+}
+
+date-time-stamp () {
+    # return a time-stamp with date in standard format
+    echo $(date +%Y%m%d%H%M%S)
+}
+
+date-stamp () {
+    echo $(date +%Y%m%d)
+}
+
+# move this to function ASAP
+memory-log () {
+    while true; do { cat /proc/meminfo | sed -n 2p ; date ; } | tr "\n" " " ; echo ""; sleep 30; done >> ${HOME}/memory-$(date +%Y%m%d%H%M%S).log
+}
+
+ag-show () {
+    # show details of a debian package
+    apt-cache show "$1"
+}
+# XXXX: only different when using bash completion
+alias ag-show-installed=ag-show
+
+ag-search () {
+    # search for a debian package
+    apt-cache search "$1"
+}
+
+ag-install () {
+    # install a debian package
+    sudo apt-get install "$1"
+}
+
+ag-remove () {
+    # uninstall a debian package
+    sudo apt-get remove "$1"
+}
+
+ag-list () {
+    # list files installed by a debian package
+    dpkg-query -L "$1"
+}
+
+ag-list-installed () {
+    if [[ -z "$1" ]]; then
+        dpkg-query -l
+    else
+        dpkg-query -l | grep "$1"
+    fi
+}
+
+ssh-batch () {
+    ssh -o "BatchMode yes" "$@"
+}
+
+ssh-batch-lan () {
+    ssh -o "BatchMode yes" -o "Compression no" -c aes256-gcm@openssh.com "$@"
+}
+
+ssh-lan () {
+    ssh -o "Compression no" "$@"
+}
+
+scp-lan () {
+    # use scp over a LAN, sets some good options
+    scp -o "Compression no" "$@"
+}
+
+sftp-lan () {
+    # use sftp over a LAN, sets some good options
+    sftp -o "Compression no" "$@"
+}
+
+
+sshx () {
+    ssh -X -o "Compression yes" "$@"
+}
+
+sshnox () {
+    # use ssh and explicitly disable X forwarding
+    ssh -o "ForwardX11 no" "$@"
+}
+
+sshx-lan () {
+    ssh -X -o "Compression no" "$@"
+}
+
+autossh-tunnel () {
+    # set up a tunnel using autossh
+    autossh -M 0 -o "BatchMode yes" -o "Compression yes" -N "$@"
+}
+
+autossh-tunnel-lan () {
+    # set up a tunnel using autossh, compression off best for lan
+    autossh -M 0 -o "BatchMode yes" -o "Compression no" -N "$@"
+}
+
+transform-resize-web () {
+    # resize photos to a nice size for the web
+    # TODO: change the output name?
+    convert "$1" -resize 1200x800 "resize_$1"
+}
+
+# transform anything to mp3 using ffmpeg
+transform-ffmpeg-mp3 () {
+    # convert any media file to an mp3
+    # TODO: ffmpeg not on debian
+    ffmpeg -i "$1" -f mp3 "${1%.*}.mp3"
+}
+
+transform-rotate-right () {
+    # rotate a photo right 90 degrees
+    convert "$1" -rotate 90 "rotate_$1"
+}
+
+transform-rotate-180 () {
+    # flip a photo 180 degrees
+    convert "$1" -rotate 180 "rotate_$1"
+}
+
+transform-rotate-left () {
+    # rotate a photo left 90 degrees
+    convert "$1" -rotate 270 "rotate_$1"
+}
+
+serve-here () {
+    # serve the current directory here on port 8080
+    ifconfig
+    python -m SimpleHTTPServer 8080
+}
+
+discover-network () {
+    # use nmap to show network interfaces
+    nmap --iflist
+}
+
+discover-lan () {
+    # scan current network, based on common home router addresses,
+    # quickly using nmap
+    # XXXX: generally takes less than a minute
+    time nmap -sP 192.168.0-1.0-255
+}
+
+discover-lan-super () {
+    # scan current network, based on common home router addresses,
+    # slowly using nmap
+    # XXXX: generally takes less than a 10 minutes
+    time sudo nmap -sS 192.168.0-1.0-255
+}
+
+discover-lan-complete () {
+    # scan current network completely using nmap
+    time sudo nmap -sP 192.168.0.0/16
+}
+
+discover-lan-complete-super () {
+    # scan current network completely and slowly using nmap
+    time sudo nmap -sS 192.168.0.0/16
+}
+
+discover-connections () {
+    # check current networking connections
+    netstat -untap
+}
+
+lpr-double-sided-portrait () {
+    # print file as double-sided in portrait mode
+    lpr -o sides=two-sided-long-edge "$1"
+}
+
+lpr-double-sided-landscape () {
+    # print file as double-sided in landscape mode
+    lpr -o sides=two-sided-short-edge "$1"
+}
+
+ls-sort-date () {
+    # ls and sort by reverse date
+    ls -ltr
+}
+
+need_new_symlink () {
+    # create new symlink deleting old symlinks but not old files
+    # TODO: overwrite and backup files while killing symlinks
+    if [[ -e "$2" && ! -h "$2" ]]; then
+        # symlink is a file or something
+        yell "$2: exists but is not a symlink!!!"
+    elif [[ ! -h "$2" ]]; then
+        # symlink does not exist at all or is a file
+        ln -s "$1" "$2"
+    elif [[ -h "$2" && ! -e "$2" ]]; then
+        # symlink exists but is invalid
+        rm -f "$2"
+        ln -s "$1" "$2"
+    fi
+}
+
+match_string_array () {
+    # check if a given string is in a given array
+    # string in $1, array in $2
+    local e
+    for e in "${@:2}"; do [[ "$e" =~ "$1" ]] && return 0; done
+    return 1
+}
+
+not_match_string_array () {
+    # check if a given string is not in a given array
+    # string in $1, array in $2
+    local e
+    for e in "${@:2}"; do [[ "$e" =~ "$1" ]] && return 1; done
+    return 0
+}
+
+view-def () {
+    # view the definition of a bash function
+    declare -f "$1"
+}
+
+read-file-regexp () {
+    # read lines from a file and merge them into a regexp
+    local NEWREGEXP=""
+    while read line; do
+        NEWREGEXP+=$line"|"
+    done < "$1"
+    echo ${NEWREGEXP::-1}
+}
+
+clean-pwd-files-pretend () {
+    # see if files in current directory can be renamed to be safe from
+    # punctuation and unicode boogeymen
+    rename -n "s|'||g" *
+    rename -n "s|:||g" *
+    rename -n "s|\xe2\x80\x99||g" *
+    rename -n "s|\xe2\x80\x93|-|g" *
+    rename -n "s|\xe2\x80\x94|-|g" *
+    rename -n "s|\xc2\xa1|-|g" *
+}
+
+clean-pwd-files () {
+    # actually rename files in current directory to be safe from
+    # punctuation and unicode boogeymen
+    rename "s|'||g" *
+    rename "s|:||g" *
+    rename "s|\xe2\x80\x99||g" *
+    rename "s|\xe2\x80\x93|-|g" *
+    rename "s|\xe2\x80\x94|-|g" *
+    rename "s|\xc2\xa1|i|g" *
+}
+
+psg () {
+    if [[ -z "$1" ]]; then
+        ps -efj | less
+    else
+        # TODO: this can be done better!
+        ps -efj | head -n 1
+        ps -efj | grep "$1"
+    fi
+}
+
+cpu-throttle-up () {
+    sudo cpufreq-set -c 0 -g performance
+    sudo cpufreq-set -c 1 -g performance
+    sudo cpufreq-set -c 2 -g performance
+    sudo cpufreq-set -c 3 -g performance
+}
+
+cpu-throttle-down () {
+    sudo cpufreq-set -c 0 -g powersave
+    sudo cpufreq-set -c 1 -g powersave
+    sudo cpufreq-set -c 2 -g powersave
+    sudo cpufreq-set -c 3 -g powersave
+}
+
+find-broken-symlinks () {
+    # find- for useful find command variations
+    find . -type l -xtype l
+}
+
+xclip-show-all () {
+    h1
+    msg "Primary"
+    xclip -o -selection p
+    h1
+    msg "Secondary"
+    xclip -o -selection s
+    h1
+    msg "Clipboard"
+    xclip -o -selection c
+}
+
+du-sort () {
+    # sort by size after using du
+    du --summarize --human-readable * | sort --human-numeric-sort
+}
+
+dd-progress () {
+    # TODO: spaces after |
+    ps auxww | grep " dd " |grep -v grep |awk '{print $2}' |while read pid; do kill -USR1 $pid; done
+}
+
+
+youtube-mp3 () {
+    # download mp3 from youtube
+    youtube-dl --extract-audio -audio-format mp3 "$1"
+}
+
+dconf-grep () {
+    # grep the GNOME config database
+    dconf dump / | grep -i "$1"
+}
+
+dconf-less () {
+    # use less to view the GNOME config database
+    dconf dump / | less
+}
+
+fdi () {
+    find . -iname "*${1}*"
+}
+
+fgi () {
+    if [[ -z "${2}" ]]; then
+        find . -type f -exec grep -H --color -n "${1}" {}  \;
+    else
+        find . -type f -iname "*${1}*" -exec grep -H --color -n "${2}" {}  \;
+    fi
+}
+
+harm-bash () {
+    if ps -ef | grep "xbindkeys" | grep -v grep >> /dev/null; then
+        killall xbindkeys
+    fi
+    fix-gpg-ssh-permissions
+    source ${HOME}/.bash_profile
+}
+
+harm-bashrc () {
+    fix-gpg-ssh-permissions
+    source ${HOME}/.bashrc
+}
+
+fix-crypt-permissions () {
+    # fix the permissions on a cryptography-relevant directory
+    if [[ -z "$1" ]]; then
+        yell "Must have a directory to fix!"
+    fi
+    chmod -R g-rwx "$1"
+    chmod -R o-rwx "$1"
+    chmod u+rwX --recursive "$1"
+}
+
+fix-gpg-ssh-permissions () {
+    # fix the permissions on the standard gpg and ssh directory
+    fix-crypt-permissions "${HOME}"/.gnupg
+    fix-crypt-permissions "${HOME}"/.ssh
+}
+
+backlight-percentage () {
+    # TODO: very device dependent but useful to include, make more general
+    echo "`cat /sys/class/backlight/intel_backlight/brightness`*100/`cat /sys/class/backlight/intel_backlight/max_brightness`" | bc -l | xargs printf "%1.0f\n"
+}
+
+vcs-check-root () {
+    # check if a pull is needed for for child directories if they correspond to common version control systems
+    # from https://stackoverflow.com/questions/3258243/git-check-if-pull-needed
+    # TODO: there are probably much nicer ways to do this
+    for dirname in ./*; do
+        [[ -d "$dirname" ]] || continue
+        # check for various things
+        if [[ -d "$dirname/.git" ]]; then
+            # TODO: exclude lines saying [up to date] and just give a summary of branches
+            h1 "Checking $dirname/.git"
+            pushd . >> /dev/null
+            cd "$dirname"
+            git fetch
+            git fetch --verbose
+            h2 "diff origin/master"
+            git diff origin/master --summary
+            popd >> /dev/null
+        elif [[ -d "$dirname/.hg" ]]; then
+            h1 "Checking $dirname/.hg"
+            # TODO: non-functional? I have no remaining hg repos
+            # pushd . >> /dev/null
+            # cd "$dirname"
+            # hg fetch --dry-run --verbose
+            # popd >> /dev/null
+        elif [[ -d "$dirname/.svn" ]]; then
+            h1 "Checking $dirname/.svn"
+            pushd . >> /dev/null
+            cd "$dirname"
+            svn status --show-updates
+            popd >> /dev/null
+        else
+            h1 "Not checking $dirname"
+        fi
+    done
+}
+
+fail2ban-check () {
+    # check fail2ban status and show number of banned IPs for each date in the past
+    sudo zcat /var/log/auth.log*.gz | grep 'Failed password' | grep sshd | awk '{print $1,$2}' | sort -k 1,1M -k 2n | uniq -c
+    # a hack to find non-gz logs
+    sudo cat /var/log/auth.lo*[^z] | grep 'Failed password' | grep sshd | awk '{print $1,$2}' | sort -k 1,1M -k 2n | uniq -c
+    sudo fail2ban-client status ssh
+    sudo fail2ban-client status ssh-root
+}
+
+drop-caches () {
+    su -c "free && sync && echo 3 > /proc/sys/vm/drop_caches && free"
+}
+
+mount-disk-uuid () {
+    # find mounted disk or ???
+    local UUID="$1"
+    local UUIDDEVICE="$(readlink -f /dev/disk/by-uuid/${UUID})"
+    if grep -qs "$UUIDDEVICE" /etc/mtab; then
+        echo -e $(grep ^"${UUIDDEVICE}[[:space:]]\+" /etc/mtab | cut -d ' ' -f 2)
+        return 0
+    else
+        # TODO: for now I have gnome mount for me
+        yell "Disk not mounted!!!"
+        return 1
+        # # TODO: mount on a temporary directory
+        # MOUNTPOINT=$(mktemp -d)
+        # sudo mount "${IDDEVICE}" "${MOUNTPOINT}"
+        # echo "${MOUNTPOINT}"
+    fi
+}
+
+device-disk-uuid () {
+    # find mounted disk or ???
+    local UUID="$1"
+    local UUIDDEVICE="$(readlink -f /dev/disk/by-uuid/${UUID})"
+    echo ${UUIDDEVICE}
+}
+
+vcs-diff-public () {
+    # diff the "master" with the "public" branch for current directory or all child directories that are git repositories
+    # XXXX: git only for now
+    if [[ -d "./.git" ]]; then
+        git diff public..master
+    else
+        for dirname in ./*; do
+            if [[ -d "$dirname/.git" ]]; then
+                pushd . >> /dev/null
+                cd "$dirname"
+                if git rev-parse --verify public >> /dev/null 2>&1; then
+                    h1 "Checking $dirname"
+                    git diff master..public --stat
+                fi
+                popd >> /dev/null
+            fi
+        done
+    fi
+}
+
+vcs-push-github () {
+    # merge public branch and commit to github
+    # XXXX: repository must be setup properly
+    git checkout public
+    if [[ $? != 0 ]]; then
+        yell "Checkout unsuccessful!"
+        return 1
+    fi
+    git merge --squash -X theirs master
+    local COMMITCORRECT=n
+    while [[ "$COMMITCORRECT" != "y" ]]; do
+        read -p "Enter commit message: " COMMITMESSAGE
+        # TODO: add option for quit
+        read -p "Use commit message (y/n/q)? " COMMITCORRECT
+        if [[ "$COMMITCORRECT" == "q" ]]; then
+            yell "Aborting!"
+            git checkout master
+            return 1
+        fi
+    done
+    git commit -a -m "$COMMITMESSAGE"
+    # TODO: eventually go "public" locally to "master" globally
+    git push --force --set-upstream github public
+    git checkout master
+}
+
+dpkg-purge-all () {
+    # purge all files related to uninstalled packages
+    # TODO: dangerous function, purges all old config files
+    dpkg -l | grep ^rc | cut -d' ' -f3|xargs sudo dpkg -P
+}
+
+pip-upgrade () {
+    # upgrade all pip packages
+    pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install -U
+}
+
+git-serve () {
+    # a convienient command to browse code for now
+    git instaweb
+}
+
+envaddpath() {
+    # based on answer from https://superuser.com/questions/39751/add-directory-to-path-if-its-not-already-there
+    # having environment variable to modify comming first makes my scripts clear
+    ENVVARIABLE="$1"
+    shift
+    local NEWVARIABLE="${!ENVVARIABLE}"
+    for VALUE in $@; do
+        if [[ -d "$VALUE" ]] && [[ ":${NEWVARIABLE}:" != *":$VALUE:"* ]]; then
+            NEWVARIABLE="${NEWVARIABLE}:$VALUE"
+            # strip leading and trailing :
+            NEWVARIABLE=${NEWVARIABLE#:}
+            NEWVARIABLE=${NEWVARIABLE%:}
+        fi
+    done
+    export $(echo $ENVVARIABLE)="${NEWVARIABLE}"
+}
+
+harm-id3-audiobook-all () {
+    # set up all audiobooks in immediate subdirectories for my player
+    # (after appropriate file renaming)
+    read -p "Dangerous function! Continue (y/n)? " YN
+    if [[ "$YN" == "y" ]]; then
+        for d in ./*; do
+            [[ -d "$d" || continue ]]
+            pushd . >> /dev/null
+            cd "${d}"
+            yes | harm-id3-genre-as-audiobook
+            yes | harm-id3-album-as-directory
+            yes | harm-id3-name-as-filename
+            yes | harm-id3-alphabetical-track
+            yes | harm-id3-remove-v1
+            popd >> /dev/null
+        done
+    fi
+}
+
+harm-id3-genre-as-audiobook () {
+    # set genre of all .mp3 as audiobook
+    read -p "Dangerous function! Continue (y/n)? " YN
+    if [[ "$YN" == "y" ]]; then
+        eyeD3 --to-v2.4 --genre="Audiobook" *.mp3
+    fi
+}
+
+harm-id3-name-as-filename () {
+    # make track name correspond to filename
+    read -p "Dangerous function! Continue (y/n)? " YN
+    if [[ "$YN" == "y" ]]; then
+        for F in ./*.mp3; do
+            local BNAME="${f%%.mp3}"
+            # XXXX: basename doesn't work with comma in filename
+            BNAME="${bname##*/}"
+            eyeD3 --to-v2.4 --title="$BNAME" "$F"
+        done
+    fi
+}
+
+harm-id3-alphabetical-track () {
+    # number tracks based on the alphabetical sort order
+    read -p "Dangerous function! Continue (y/n)? " YN
+    if [[ "$YN" == "y" ]]; then
+        # totals cause confusion
+        eyeD3 --track-total=0 *.mp3
+        local COUNT=1
+        for F in ./*.mp3; do
+            eyeD3 --to-v2.4 --track=$(printf "%03d\n" $COUNT) "$F"
+            let COUNT+=1
+        done
+    fi
+}
+
+harm-id3-album-as-directory () {
+    # use directory name for album name as all tracks
+    read -p "Dangerous function! Continue (y/n)? " YN
+    if [[ "$YN" == "y" ]]; then
+        local ALBUM=$(basename "${PWD}")
+        eyeD3 --to-v2.4 --album "$ALBUM" *.mp3
+    fi
+}
+
+harm-id3-remove-v1 () {
+    # remove v1 id3 tags because they interfere with some players
+    read -p "Dangerous function! Continue (y/n)? " YN
+    if [[ "$YN" == "y" ]]; then
+        eyeD3 --remove-v1 *.mp3
+    fi
+}
+
+ls-id3 () {
+    # list id3 tags of all mp3s in directory
+    eyeD3 *.mp3
+}
+
+ag-list-doc () {
+    apt-cache search . | grep "\-doc " | cut -d' ' -f1
+}
+
+ag-list-packages-only () {
+    ag-list-installed | cut -d' ' -f3
+}
+
+
+# the three-fingered claw, see https://stackoverflow.com/questions/1378274/in-a-bash-script-how-can-i-exit-the-entire-script-if-a-certain-condition-occurs
+yell () {
+    echo -e "${BRed}$0${Red}: $*${Color_Off}" >&2
+}
+
+die () {
+    yell "$*"; exit 111
+}
+
+try () {
+    "$@" || die "cannot $*"
+}
+
+warn () {
+    echo -e "${BYellow}$0${Yellow}: $*${Color_Off}" >&2
+}
+
+msg () {
+    echo -e "${BGreen}$0${Green}: $*${Color_Off}" >&2
+}
+
+h1 () {
+    if [[ -z "$*" ]]; then
+        OUTSTR=$(echo "================================================================================" | cut -c 1-80)
+    else
+        OUTSTR=$(echo "==== $* ================================================================================" | cut -c 1-80)
+    fi
+    echo -e "${BWhite}${On_Blue}$OUTSTR${Color_Off}" >&2
+}
+
+h1-end () {
+    if [[ -z "$*" ]]; then
+        OUTSTR=$(echo "" | cut -c 1-80)
+    else
+        OUTSTR=$(echo "$*" | cut -c 1-80)
+    fi
+    echo -e "${BWhite}${On_Blue}<<<<${Color_Off} ${BWhite}$OUTSTR${Color_Off}" >&2
+}
+
+h1-script () {
+    OUTSTR=$(echo "==== Running $(basename $0) ================================================================================" | cut -c 1-80)
+    echo -e "${BWhite}${On_Blue}$OUTSTR${Color_Off}" >&2
+}
+
+h1-script-end () {
+    OUTSTR=$(echo "Finishing $(basename $0)" | cut -c 1-80)
+    echo -e "${BWhite}${On_Blue}<<<<${Color_Off} ${BWhite}$OUTSTR${Color_Off}" >&2
+}
+
+h2 () {
+   if [[ -z "$*" ]]
+    then
+        OUTSTR=$(echo "----------------------------------------" | cut -c 1-60)
+    else
+        OUTSTR=$(echo "---- $* ----------------------------------------" | cut -c 1-60)
+    fi
+    echo -e "${White}${On_Purple}$OUTSTR${Color_Off}" >&2
+}
+
+git-ls () {
+    git ls-tree -r master --name-only
+}
+
+test-all-colors () {
+    # http://askubuntu.com/questions/27314/script-to-display-all-terminal-colors
+    for x in 0 1 4 5 7 8; do for i in `seq 30 37`; do for a in `seq 40 47`; do echo -ne "\e[$x;$i;$a""m\\\e[$x;$i;$a""m\e[0;37;40m "; done; echo; done; done; echo "";
+}
+
+aloopback () {
+    arecord -vv | sox -t wav - -t wav - highpass 300 | aplay
+}
+
+aloopback-high () {
+    arecord -vv | sox -t wav - -t wav - highpass 300 | aplay
+}
+
+aloopback-low () {
+    arecord -vv | sox -t wav - -t wav - lowpass 300 | aplay
+}
+
+vcs-clone-to-bare () {
+    # https://stackoverflow.com/questions/4142936/git-clone-from-local-to-remote
+    # TODO: add remote properly?
+    # git clone --bare -l "$1" "$1".git
+    # on .git
+    if check-host-main && [[ -d ./"$1" ]]; then
+        local REALPATH="$(realpath $1)"
+        REALPATH=${REALPATH%/}
+        pushd . >> /dev/null
+        if [[ -e "$REALPATH".git ]]
+        then
+            msg "$1.git already exists!"
+            return 1
+        fi
+        mkdir -p "$REALPATH".git
+        cd "$REALPATH".git
+        git init --bare
+        popd >> /dev/null
+        pushd . >> /dev/null
+        cd "$REALPATH"
+        # on desired branch
+        git remote add origin "$REALPATH".git/
+        git push --all origin
+        git branch --set-upstream-to=origin/master master
+        popd >> /dev/null
+    fi
+}
+
+vcs-init-full () {
+    git init && git add * && git commit -a -m 'initial commit'
+}
+
+check-emacs-daemon () {
+    ps -ef | grep "emacs --daemon" | grep -v grep > /dev/null
+    return $?
+}
+
+disk-info () {
+    if [[ -b "$1" ]]; then
+        h1
+        msg "$1"
+        sudo smartctl -A "$1"
+    fi
+}
+
+monitor-disks () {
+    disk-info /dev/sda
+    disk-info /dev/sdb
+    disk-info /dev/sdc
+    disk-info /dev/sdd
+    disk-info /dev/sde
+    disk-info /dev/sdf
+}
+
+
+disk-temp () {
+    if [[ -b "$1" ]]; then
+        h1
+        msg "$1"
+        sudo hddtemp "$1"
+        sudo smartctl -A "$1" | grep -i temperature
+    fi
+}
+
+monitor-disk-temp () {
+    disk-temp /dev/sda
+    disk-temp /dev/sdb
+    disk-temp /dev/sdc
+    disk-temp /dev/sdd
+    disk-temp /dev/sde
+    disk-temp /dev/sdf
+}
+
+monitor-disk-speed () {
+    # https://www.webhostingtalk.com/showthread.php?t=906573
+    # http://www.yasith.info/2010/01/how-to-check-hard-disk-performance-and.html
+    sudo hdparm -tT /dev/"$1"
+}
+
+fix-permissive-permissions () {
+    if [[ -e "$1" ]]; then
+        chmod 755 "$1"
+    fi
+}
+
+fix-permissive-permissions-recursive () {
+    if [[ -d "$1" ]]; then
+        chmod -R 755 "$1"
+    fi
+}
+
+add-line-if-not-exist () {
+    THEFILE="$1"
+    NEWLINE="$2"
+    grep -q -F "$NEWLINE" "$THEFILE" || echo "$NEWLINE" >> "$THEFILE"
+}
+
+kill-blank-lines () {
+    sed -n -e '/^\s*$/d' "$1"
+}
+
+screen-select () {
+    # TODO: do I want letters instead???
+    local SCREENSESSIONS=$(screen -ls | grep pts | cut -f1 -d"." | sed -e 's/^[[:space:]]*//g')
+    if [[ -n "$SCREENSESSIONS" ]]; then
+        #Set the field separator to new line
+        IFS=$'\n'
+        #Try to iterate over each line
+        local count=1
+        for item in $SCREENSESSIONS; do
+            echo "$count) $item"
+            count=$(( $count + 1 ))
+        done
+        read -p "Enter the screen session: " SCREENSELECT
+        scr -dr $(sed -n "${SCREENSELECT}"p <<< "${SCREENSESSIONS}")
+    else
+        false
+    fi
+}
+
+################################################################################
+## set interesting things for bashrc, should these be here or a seperate file?
+# XXXX: is it likely this may clobber other things in the namespace?
+# Reset
+Color_Off='\e[0m'       # Text Reset
+# Regular Colors
+Black='\e[0;30m'        # Black
+Red='\e[0;31m'          # Red
+Green='\e[0;32m'        # Green
+Yellow='\e[0;33m'       # Yellow
+Blue='\e[0;34m'         # Blue
+Purple='\e[0;35m'       # Purple
+Cyan='\e[0;36m'         # Cyan
+White='\e[0;37m'        # White
+# Bold
+BBlack='\e[1;30m'       # Black
+BRed='\e[1;31m'         # Red
+BGreen='\e[1;32m'       # Green
+BYellow='\e[1;33m'      # Yellow
+BBlue='\e[1;34m'        # Blue
+BPurple='\e[1;35m'      # Purple
+BCyan='\e[1;36m'        # Cyan
+BWhite='\e[1;37m'       # White
+# Underline
+UBlack='\e[4;30m'       # Black
+URed='\e[4;31m'         # Red
+UGreen='\e[4;32m'       # Green
+UYellow='\e[4;33m'      # Yellow
+UBlue='\e[4;34m'        # Blue
+UPurple='\e[4;35m'      # Purple
+UCyan='\e[4;36m'        # Cyan
+UWhite='\e[4;37m'       # White
+# Background
+On_Black='\e[40m'       # Black
+On_Red='\e[41m'         # Red
+On_Green='\e[42m'       # Green
+On_Yellow='\e[43m'      # Yellow
+On_Blue='\e[44m'        # Blue
+On_Purple='\e[45m'      # Purple
+On_Cyan='\e[46m'        # Cyan
+On_White='\e[47m'       # White
+# High Intensity
+IBlack='\e[0;90m'       # Black
+IRed='\e[0;91m'         # Red
+IGreen='\e[0;92m'       # Green
+IYellow='\e[0;93m'      # Yellow
+IBlue='\e[0;94m'        # Blue
+IPurple='\e[0;95m'      # Purple
+ICyan='\e[0;96m'        # Cyan
+IWhite='\e[0;97m'       # White
+# Bold High Intensity
+BIBlack='\e[1;90m'      # Black
+BIRed='\e[1;91m'        # Red
+BIGreen='\e[1;92m'      # Green
+BIYellow='\e[1;93m'     # Yellow
+BIBlue='\e[1;94m'       # Blue
+BIPurple='\e[1;95m'     # Purple
+BICyan='\e[1;96m'       # Cyan
+BIWhite='\e[1;97m'      # White
+# High Intensity backgrounds
+On_IBlack='\e[0;100m'   # Black
+On_IRed='\e[0;101m'     # Red
+On_IGreen='\e[0;102m'   # Green
+On_IYellow='\e[0;103m'  # Yellow
+On_IBlue='\e[0;104m'    # Blue
+On_IPurple='\e[10;95m'  # Purple
+On_ICyan='\e[0;106m'    # Cyan
+On_IWhite='\e[0;107m'   # White

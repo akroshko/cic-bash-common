@@ -1,0 +1,55 @@
+#!/bin/bash
+# bash_completion_stdlib is a set of useful bash completion functions.
+#
+# Copyright (C) 2015-2016 Andrew Kroshko, all rights reserved.
+#
+# Author: Andrew Kroshko
+# Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
+# Created: Sat Jan 30, 2015
+# Version: 20160130
+# URL: https://github.com/akroshko/bash-stdlib
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at
+# your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see http://www.gnu.org/licenses/.
+
+# https://www.debian-administration.org/article/317/An_introduction_to_bash_completion_part_2
+
+_bash_functions () {
+    IFS=$(echo -en "\n\b")
+    COMPREPLY=( $(compgen -A function | grep "${COMP_WORDS[COMP_CWORD]}") )
+}
+
+_apt_all_packages () {
+    IFS=$(echo -en "\n\b")
+    COMPREPLY=( $(apt-cache search "${COMP_WORDS[COMP_CWORD]}" | cut -d' ' -f1 | grep "${COMP_WORDS[COMP_CWORD]}") )
+}
+
+_apt_installed_packages () {
+    IFS=$(echo -en "\n\b")
+    COMPREPLY=( $(dpkg-query -l | cut -d' ' -f3 | grep "${COMP_WORDS[COMP_CWORD]}") )
+}
+
+_screen_sockets () {
+    # or tr -d "[:space:]"
+    IFS=$(echo -en "\n\b")
+    # TODO: only want one, not others after
+    COMPREPLY=( $(screen -ls | grep pts | cut -f1 -d"." | sed -e 's/^[[:space:]]*//g' | grep "${COMP_WORDS[COMP_CWORD]}") )
+}
+
+complete -F _bash_functions view-def
+complete -F _apt_installed_packages ag-list
+complete -F _apt_installed_packages ag-remove
+complete -F _apt_installed_packages ag-show-installed
+complete -F _apt_all_packages ag-show
+complete -F _apt_all_packages ag-install
+complete -F _screen_sockets scr
