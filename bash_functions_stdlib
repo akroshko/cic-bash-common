@@ -7,7 +7,7 @@
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Fri Mar 27, 2015
-# Version: 20160130
+# Version: 20160131
 # URL: https://github.com/akroshko/bash-stdlib
 #
 # This program is free software: you can redistribute it and/or modify
@@ -480,6 +480,37 @@ vcs-check-root () {
             h1 "Not checking $dirname"
         fi
     done
+}
+
+vcs-update-all-file-versions () {
+    # should be done before committing public versions
+    # TODO: make sure we are in a git tree
+    if [[ -d "./.git" ]]; then
+       find . -not -path "*git*" -type f -exec bash -c 'source ~/.bash_libenv;vcs-update-file-version "{}"'  \;
+    else
+        echo "Not in a version controlled directory!!!"
+    fi
+}
+
+vcs-update-file-version () {
+    # update versions of all files in current directory tree
+    # file types hardcoded for sanity
+    if [[ -f "$1" ]]
+    then
+        local VERSIONFILE="$1"
+        local FILETYPE=$(file -L "$1")
+        local DATESTAMP=$(date-time-stamp)
+        if [[ $FILETYPE =~ "shell script" ]] || [[ $FILETYPE =~ "Python script" ]];then
+            # script file (with # comment)
+            # -i
+            sed -i "s/^# Version: [[:digit:]]*/# Version: $(date-stamp)/" "$VERSIONFILE"
+        elif [[ $FILETYPE =~ "Lisp/Scheme program" ]] || [[ $VERSIONFILE =~ .*\.el ]]; then
+            # lisp file
+            sed -i "s/^;; Version: [[:digit:]]*/;; Version: $(date-stamp)/" "$VERSIONFILE"
+        fi
+    else
+        return 1
+    fi
 }
 
 fail2ban-check () {
