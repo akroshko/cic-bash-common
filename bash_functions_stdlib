@@ -268,6 +268,7 @@ ls-sort-date () {
 need_new_symlink () {
     # create new symlink deleting old symlinks but not old files
     # TODO: overwrite and backup files while killing symlinks
+    # TODO: do I want to move symlink even if it is valid?
     if [[ -e "$2" && ! -h "$2" ]]; then
         # symlink is a file or something
         yell "$2: exists but is not a symlink!!!"
@@ -913,6 +914,57 @@ screen-select () {
     else
         false
     fi
+}
+
+sage-notebook () {
+    # open a Sage notebook and browser securely on port 18080
+    # XXXX: requires defining of ${PYTHON_NOTEBOOK_ROOT} before calling
+    if [[ -n "${PYTHON_NOTEBOOK_ROOT}" ]]; then
+       bleachbit --overwrite --clean epiphany.* google_chrome.*
+       local NBPATH="${PYTHON_NOTEBOOK_ROOT}/sage-notebooks-${HOSTNAME}.sagenb"
+       mkdir -p "${NBPATH}"
+       # XXXX: grep to avoid just sage-notebook from scripts that might run this
+       if ps -ef | grep "src/bin/sage-notebook" | grep -v grep > /dev/null; then
+           sage-notebook-browser
+       else
+           SAGE_BROWSER="nohup chromium" sage --notebook=sagenb secure=True port=18080 automatic_login=True interface='' directory="${NBPATH}"
+       fi
+    else
+        yell '${PYTHON_NOTEBOOK_ROOT} not defined!!!'
+    fi
+}
+
+# TODO: support multiple browsers?
+sage-notebook-browser () {
+    # open just the browser for a running Sage notebook
+    bleachbit --overwrite --clean epiphany.* google_chrome.*
+    chromium https://localhost:18080/
+}
+
+sage-ipython-notebook () {
+    # open an iPython notebook and browser using the Sage platorm on port 18888
+    # XXXX: requires defining of ${PYTHON_NOTEBOOK_ROOT} before calling
+    if [[ -n "${PYTHON_NOTEBOOK_ROOT}" ]]; then
+        bleachbit --overwrite --clean epiphany.* google_chrome.*
+        # set a good directory for these
+        local NBPATH="${PYTHON_NOTEBOOK_ROOT}/sage-ipython-notebooks-${HOSTNAME}"
+        mkdir -p "${NBPATH}"
+        # TODO: subsitute for --deep-reload --automagic --secure --pprint depricated options
+        if ps -ef | grep "ipython notebook" | grep -v grep > /dev/null; then
+            sage-ipython-notebook-browser
+        else
+            sage -ipython notebook --notebook-dir="${NBPATH}" --browser="chromium" --port=18888
+        fi
+    else
+        yell '${PYTHON_NOTEBOOK_ROOT} not defined!!!'
+    fi
+}
+
+# TODO: support multiple browsers?
+sage-ipython-notebook-browser () {
+    # open just the browser for a running iPython notebook
+    bleachbit --overwrite --clean epiphany.* google_chrome.*
+    chromium http://localhost:18888/
 }
 
 ################################################################################
