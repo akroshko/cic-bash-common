@@ -27,9 +27,6 @@
 # verified, use at own risk if working with important data or in
 # production settings
 
-# TODO: the arguments of each function are not specified, however it
-# would be desirable to add this to the docstring at some point
-
 test-fail () {
     # this function is just a test to judge a scripts behaviour based
     # on return values
@@ -184,14 +181,14 @@ autossh-tunnel-lan () {
 
 transform-resize-web () {
     # resize photos to a nice size for the web
-    # TODO: change the output name?
+    # TODO: change the prefix name?
     convert "$1" -resize 1200x800 "resize_$1"
 }
 
 # transform anything to mp3 using ffmpeg
 transform-ffmpeg-mp3 () {
     # convert any media file to an mp3
-    # TODO: ffmpeg not on debian
+    # TODO: ffmpeg not on debian currently (8.3)
     ffmpeg -i "$1" -f mp3 "${1%.*}.mp3"
 }
 
@@ -268,7 +265,7 @@ ls-sort-date () {
 need_new_symlink () {
     # create new symlink deleting old symlinks but not old files
     # TODO: overwrite and backup files while killing symlinks
-    # TODO: do I want to move symlink even if it is valid?
+    # TODO: do I want to remove and replace symlink even if it is valid?
     if [[ -e "$2" && ! -h "$2" ]]; then
         # symlink is a file or something
         yell "$2: exists but is not a symlink!!!"
@@ -381,10 +378,10 @@ du-sort () {
 }
 
 dd-progress () {
-    # TODO: spaces after |
+    # TODO: spaces after | ???
+    #       try on next big dd
     ps auxww | grep " dd " |grep -v grep |awk '{print $2}' |while read pid; do kill -USR1 $pid; done
 }
-
 
 youtube-mp3 () {
     # download mp3 from youtube
@@ -402,6 +399,7 @@ dconf-less () {
 }
 
 fdi () {
+    # search for file matching first argument in tree
     find . -iname "*${1}*"
 }
 
@@ -443,14 +441,13 @@ fix-gpg-ssh-permissions () {
 }
 
 backlight-percentage () {
-    # TODO: very device dependent but useful to include, make more general
+    # XXXX: very device dependent but useful to include, make more general
     echo "`cat /sys/class/backlight/intel_backlight/brightness`*100/`cat /sys/class/backlight/intel_backlight/max_brightness`" | bc -l | xargs printf "%1.0f\n"
 }
 
 vcs-check-root () {
     # check if a pull is needed for for child directories if they correspond to common version control systems
     # from https://stackoverflow.com/questions/3258243/git-check-if-pull-needed
-    # TODO: there are probably much nicer ways to do this
     for dirname in ./*; do
         [[ -d "$dirname" ]] || continue
         # check for various things
@@ -485,7 +482,6 @@ vcs-check-root () {
 
 vcs-update-all-file-versions () {
     # should be done before committing public versions
-    # TODO: make sure we are in a git tree
     if [[ -d "./.git" ]]; then
        find . -not -path "*git*" -type f -exec bash -c 'source ~/.bash_libenv;vcs-update-file-version "{}"'  \;
     else
@@ -535,7 +531,7 @@ mount-disk-uuid () {
         echo -e $(grep ^"${UUIDDEVICE}[[:space:]]\+" /etc/mtab | cut -d ' ' -f 2)
         return 0
     else
-        # TODO: for now I have gnome mount for me
+        # TODO: for now I have gnome mount for me but would like to change this
         yell "Disk not mounted!!!"
         return 1
         # # TODO: mount on a temporary directory
@@ -600,8 +596,10 @@ vcs-push-github () {
 
 dpkg-purge-all () {
     # purge all files related to uninstalled packages
-    # TODO: dangerous function, purges all old config files
-    dpkg -l | grep ^rc | cut -d' ' -f3|xargs sudo dpkg -P
+    read -p "Dangerous function! Continue (y/n)? " YN
+    if [[ "$YN" == "y" ]]; then
+        dpkg -l | grep ^rc | cut -d' ' -f3|xargs sudo dpkg -P
+    fi
 }
 
 pip-upgrade () {
@@ -965,6 +963,11 @@ sage-ipython-notebook-browser () {
     # open just the browser for a running iPython notebook
     bleachbit --overwrite --clean epiphany.* google_chrome.*
     chromium http://localhost:18888/
+}
+
+file-mimetype () {
+    # quick way to get mimetype
+    file --mime-type "$1"
 }
 
 ################################################################################

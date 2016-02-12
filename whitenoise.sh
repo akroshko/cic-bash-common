@@ -26,11 +26,11 @@
 ########################################################################
 #
 # This script is often used to quickly play/unplay background noise in
-# file defined by $BACKGROUNDNOISE in my .bashrc currently very nice
-# interacting with xbindkeys or other shortcut managers
+# file defined by $BACKGROUNDNOISE in my .bashrc currently.  Use
+# $BACKGROUNDNOISESUBSTRING to define a unique substring for nice
+# interaction with xbindkeys or other shortcut managers.
 
-# TODO: configure this?
-if ps -ef | grep "kH-kj6rkQWc" | grep -v grep > /dev/null
+if ps -ef | grep "${BACKGROUNDNOISESUBSTRING}" | grep -v grep > /dev/null
 then
     echo "pause" | nc -q 2 localhost 19000
 else

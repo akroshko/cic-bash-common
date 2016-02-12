@@ -61,7 +61,7 @@ then
         esac
     }
     trap show_command_in_title_bar DEBUG
-    # TODO: is there ever a nicer way to do this?
+    # XXXX: is there ever a nicer way to do this?
 else
     export PROMPT_COMMAND='history -a; history -n'
 fi
@@ -76,7 +76,6 @@ export IGNOREEOF=1
 shopt -s expand_aliases
 force_color_prompt=yes
 # aliases, generally spice up some already existing commands
-# TODO: evaluate things that really should be functions
 alias bash-debug='set -xv'
 alias bash-nodebug='set +xv'
 alias agu='sudo apt-get update && sudo apt-get upgrade'

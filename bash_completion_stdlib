@@ -42,7 +42,7 @@ _apt_installed_packages () {
 _screen_sockets () {
     # or tr -d "[:space:]"
     IFS=$(echo -en "\n\b")
-    # TODO: only want one, not others after
+    # TODO: only want for first argument, not others after
     COMPREPLY=( $(screen -ls | grep pts | cut -f1 -d"." | sed -e 's/^[[:space:]]*//g' | grep "${COMP_WORDS[COMP_CWORD]}") )
 }
 
