@@ -58,7 +58,8 @@ verify-operation () {
     local SUREMESSAGE="$2"
     local RMARG="$3"
     while true; do
-        read -p "$ASKMESSAGE" YN
+        read -n 1 -p "$ASKMESSAGE" YN
+        echo ""
         case $YN in
             # TODO: make a bit more general so I can select a command
             [Yy]* ) (home-trash "$RMARG"); break;;
@@ -596,7 +597,8 @@ vcs-push-github () {
 
 dpkg-purge-all () {
     # purge all files related to uninstalled packages
-    read -p "Dangerous function! Continue (y/n)? " YN
+    read -n 1 -p "Dangerous function! Continue (y/n)? " YN
+    echo ""
     if [[ "$YN" == "y" ]]; then
         dpkg -l | grep ^rc | cut -d' ' -f3|xargs sudo dpkg -P
     fi
@@ -632,7 +634,8 @@ envaddpath() {
 harm-id3-audiobook-all () {
     # set up all audiobooks in immediate subdirectories for my player
     # (after appropriate file renaming)
-    read -p "Dangerous function! Continue (y/n)? " YN
+    read -n 1 -p "Dangerous function! Continue (y/n)? " YN
+    echo ""
     if [[ "$YN" == "y" ]]; then
         for d in ./*; do
             [[ -d "$d" || continue ]]
@@ -650,7 +653,8 @@ harm-id3-audiobook-all () {
 
 harm-id3-genre-as-audiobook () {
     # set genre of all .mp3 as audiobook
-    read -p "Dangerous function! Continue (y/n)? " YN
+    read -n 1 -p "Dangerous function! Continue (y/n)? " YN
+    echo ""
     if [[ "$YN" == "y" ]]; then
         eyeD3 --to-v2.4 --genre="Audiobook" *.mp3
     fi
@@ -658,7 +662,8 @@ harm-id3-genre-as-audiobook () {
 
 harm-id3-name-as-filename () {
     # make track name correspond to filename
-    read -p "Dangerous function! Continue (y/n)? " YN
+    read -n 1 -p "Dangerous function! Continue (y/n)? " YN
+    echo ""
     if [[ "$YN" == "y" ]]; then
         for F in ./*.mp3; do
             local BNAME="${f%%.mp3}"
@@ -671,7 +676,8 @@ harm-id3-name-as-filename () {
 
 harm-id3-alphabetical-track () {
     # number tracks based on the alphabetical sort order
-    read -p "Dangerous function! Continue (y/n)? " YN
+    read -n 1 -p "Dangerous function! Continue (y/n)? " YN
+    echo ""
     if [[ "$YN" == "y" ]]; then
         # totals cause confusion
         eyeD3 --track-total=0 *.mp3
@@ -685,7 +691,8 @@ harm-id3-alphabetical-track () {
 
 harm-id3-album-as-directory () {
     # use directory name for album name as all tracks
-    read -p "Dangerous function! Continue (y/n)? " YN
+    read -n 1 -p "Dangerous function! Continue (y/n)? " YN
+    echo ""
     if [[ "$YN" == "y" ]]; then
         local ALBUM=$(basename "${PWD}")
         eyeD3 --to-v2.4 --album "$ALBUM" *.mp3
@@ -694,7 +701,8 @@ harm-id3-album-as-directory () {
 
 harm-id3-remove-v1 () {
     # remove v1 id3 tags because they interfere with some players
-    read -p "Dangerous function! Continue (y/n)? " YN
+    read -n 1 -p "Dangerous function! Continue (y/n)? " YN
+    echo ""
     if [[ "$YN" == "y" ]]; then
         eyeD3 --remove-v1 *.mp3
     fi
@@ -907,8 +915,9 @@ screen-select () {
             echo "$count) $item"
             count=$(( $count + 1 ))
         done
-        read -p "Enter the screen session: " SCREENSELECT
-        scr -dr $(sed -n "${SCREENSELECT}"p <<< "${SCREENSESSIONS}")
+        read -n 1 -p "Enter the screen session: " SCREENSELECT
+        echo ""
+        screen -dr $(sed -n "${SCREENSELECT}"p <<< "${SCREENSESSIONS}")
     else
         false
     fi
@@ -968,6 +977,13 @@ sage-ipython-notebook-browser () {
 file-mimetype () {
     # quick way to get mimetype
     file --mime-type "$1"
+}
+
+ssh-scs () {
+    # XXXX: this one autodetaches after exit from screen session
+    ssh "$@" -t "bash --rcfile ~/.bash_libenv -li -c \"screen-select\""
+    # XXXX: this one stays attached after exit from screen session
+    # ssh "$@" -t "bash --rcfile ~/.bash_libenv -li -c \"screen-select;/bin/bash\""
 }
 
 ################################################################################
