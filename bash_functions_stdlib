@@ -582,7 +582,7 @@ vcs-push-github () {
     while [[ "$COMMITCORRECT" != "y" ]]; do
         read -p "Enter commit message: " COMMITMESSAGE
         # TODO: add option for quit
-        read -p "Use commit message (y/n/q)? " COMMITCORRECT
+        read -n  1 -p "Use commit message (y/n/q)? " COMMITCORRECT
         if [[ "$COMMITCORRECT" == "q" ]]; then
             yell "Aborting!"
             git checkout master
@@ -592,6 +592,33 @@ vcs-push-github () {
     git commit -a -m "$COMMITMESSAGE"
     # TODO: eventually go "public" locally to "master" globally
     git push --force --set-upstream github public
+    git checkout master
+}
+
+vcs-push-github-public-master () {
+    # merge public branch and commit to github
+    # XXXX: repository must be setup properly
+    # TODO: do not replicate code above
+    git checkout public
+    if [[ $? != 0 ]]; then
+        yell "Checkout unsuccessful!"
+        return 1
+    fi
+    git merge --squash -X theirs master
+    local COMMITCORRECT=n
+    while [[ "$COMMITCORRECT" != "y" ]]; do
+        read -p "Enter commit message: " COMMITMESSAGE
+        # TODO: add option for quit
+        read -n 1 -p "Use commit message (y/n/q)? " COMMITCORRECT
+        if [[ "$COMMITCORRECT" == "q" ]]; then
+            yell "Aborting!"
+            git checkout master
+            return 1
+        fi
+    done
+    git commit -a -m "$COMMITMESSAGE"
+    # TODO: eventually go "public" locally to "master" globally
+    git push --force --set-upstream github public:master
     git checkout master
 }
 
