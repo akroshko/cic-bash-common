@@ -583,6 +583,7 @@ vcs-push-github () {
         read -p "Enter commit message: " COMMITMESSAGE
         # TODO: add option for quit
         read -n  1 -p "Use commit message (y/n/q)? " COMMITCORRECT
+        echo ""
         if [[ "$COMMITCORRECT" == "q" ]]; then
             yell "Aborting!"
             git checkout master
@@ -610,6 +611,7 @@ vcs-push-github-public-master () {
         read -p "Enter commit message: " COMMITMESSAGE
         # TODO: add option for quit
         read -n 1 -p "Use commit message (y/n/q)? " COMMITCORRECT
+        echo ""
         if [[ "$COMMITCORRECT" == "q" ]]; then
             yell "Aborting!"
             git checkout master
