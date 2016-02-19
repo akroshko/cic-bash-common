@@ -633,7 +633,7 @@ dpkg-purge-all () {
 
 pip-upgrade () {
     # upgrade all pip packages
-    pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install -U
+    sudo pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo pip install -U
 }
 
 git-serve () {
