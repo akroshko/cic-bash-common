@@ -1015,6 +1015,76 @@ ssh-scs () {
     # ssh "$@" -t "bash --rcfile ~/.bash_libenv -li -c \"screen-select;/bin/bash\""
 }
 
+master-boss-key () {
+    # kill volume
+    amixer set Master mute
+    # https://askubuntu.com/questions/26068/how-do-you-mute-from-the-command-line
+    # amixer -c 0 set Master playback 0% mute
+    # minimize browser windows, do they ever not have their name in title?
+    # TODO: remove from taskbar
+    # TODO: try out with windowclass too
+    xdotool search --onlyvisible --name conkeror | while IFS= read -r line; do
+        xdotool windowminimize "${line}"
+    done
+    xdotool search --onlyvisible --name firefox | while IFS= read -r line; do
+        xdotool windowminimize "${line}"
+    done
+    xdotool search --onlyvisible --name iceweasel | while IFS= read -r line; do
+        xdotool windowminimize "${line}"
+    done
+}
+
+master-unboss-key () {
+    # kill volume
+    amixer set Master unmute
+    # unminimize all windows
+    # TODO: use xdotool to restore instead?
+    # TODO: at least add back to taskbar
+    # wmctrl -r conkeror  -b remove,shaded,skip_taskbar
+    # wmctrl -r firefox   -b remove,shaded,skip_taskbar
+    # wmctrl -r remove   -b remove,shaded,skip_taskbar
+}
+
+focus-emacs-window () {
+    # TODO: do something a little nicer, maybe use xdotool
+    wmctrl -x -a emacs.Emacs
+}
+
+################################################################################
+## enumerate things like block devices
+
+enumerate-physical-disks () {
+    # find all physical disks
+    # TODO: will likely need to be improved for all appropriate uses
+    for d in /dev/sd*; do
+        [[ -b "$d" && ! "$d" =~ .*[[:digit:]] ]] || continue
+        echo "$d"
+    done
+}
+
+enumerate-crypt-disks () {
+    # find all decrypted block devices
+    # TODO: will likely need to be improved for all appropriate uses
+    for d in /dev/mapper/crypt--*; do
+        [[ -b "$d" ]] || continue
+        echo "$d"
+    done
+}
+
+df-crypt-disks () {
+    # get information on decrypted block devices
+    df -h $(enumerate-crypt-disks)
+}
+
+smartctl-disks () {
+    # check overall health of all disks
+    for d in $(enumerate-physical-disks); do
+        echo -n "$d: "
+        # XXXX: to use this in scripts I have to add smartctl to no password sudo files
+        sudo smartctl -H "$d" | grep --color=never "overall-health"
+    done
+}
+
 ################################################################################
 ## set interesting things for bashrc, should these be here or a seperate file?
 # XXXX: is it likely this may clobber other things in the namespace?
