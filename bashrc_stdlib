@@ -82,6 +82,7 @@ alias agu='sudo apt-get update && sudo apt-get upgrade'
 alias al='alias'
 alias dc='aafire -driver curses -extended'
 alias df='df -h'
+alias df-all='df -aTh'
 # alias ds='dropbox status'
 alias du='du -h'
 alias f90=gfortran

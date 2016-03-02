@@ -430,9 +430,16 @@ fix-crypt-permissions () {
     if [[ -z "$1" ]]; then
         yell "Must have a directory to fix!"
     fi
-    chmod -R g-rwx "$1"
-    chmod -R o-rwx "$1"
-    chmod u+rwX --recursive "$1"
+    if [[ -d "$1" ]]; then
+        chmod -R g-rwx "$1"
+        chmod -R o-rwx "$1"
+        chmod u+rwX --recursive "$1"
+    else
+        return 1
+        # XXXX: made silent because used in many places... and missing
+        # crypt directories cause obvious errors elsewhere
+        # warn "Directory $1 does not exist!!!"
+    fi
 }
 
 fix-gpg-ssh-permissions () {
@@ -527,7 +534,12 @@ drop-caches () {
 mount-disk-uuid () {
     # find mounted disk or ???
     local UUID="$1"
-    local UUIDDEVICE="$(readlink -f /dev/disk/by-uuid/${UUID})"
+    # allow full UUID path to be given
+    if [[ "$UUID" == /dev/disk/by-uuid/* ]]; then
+        local UUIDDEVICE="$(readlink -f ${UUID})"
+    else
+        local UUIDDEVICE="$(readlink -f /dev/disk/by-uuid/${UUID})"
+    fi
     if grep -qs "$UUIDDEVICE" /etc/mtab; then
         echo -e $(grep ^"${UUIDDEVICE}[[:space:]]\+" /etc/mtab | cut -d ' ' -f 2)
         return 0
@@ -667,7 +679,7 @@ harm-id3-audiobook-all () {
     echo ""
     if [[ "$YN" == "y" ]]; then
         for d in ./*; do
-            [[ -d "$d" || continue ]]
+            [[ -d "$d" ]] || continue
             pushd . >> /dev/null
             cd "${d}"
             yes | harm-id3-genre-as-audiobook
@@ -1079,10 +1091,82 @@ df-crypt-disks () {
 smartctl-disks () {
     # check overall health of all disks
     for d in $(enumerate-physical-disks); do
-        echo -n "$d: "
-        # XXXX: to use this in scripts I have to add smartctl to no password sudo files
-        sudo smartctl -H "$d" | grep --color=never "overall-health"
+        SMARTOUTPUT=$(sudo smartctl -H "$d")
+        if [[ $(($? & 1)) ]]; then
+            echo -n "$d: "
+            # XXXX: to use this in scripts I have to add smartctl to no password sudo files
+            echo "$SMARTOUTPUT" | grep --color=never "overall-health"
+        fi
     done
+}
+
+select-disk-uuid-usb () {
+    # select a usb disk by UUID or alternately any other mounted drive
+    # XXXX: doesn't work with more than 9 drives, but could be fixed
+    # TODO: are usb always UUID
+    # create array
+    local USBARRAY=()
+    if [[ -n "$1" ]]; then
+        if [[ -e /dev/disk/by-uuid/"$1" ]]; then
+            if grep -qs $(readlink -f /dev/disk/by-uuid/"$1") /proc/mounts; then
+                echo "0) $1 (default, mounted)" >&2
+            else
+                echo "0) $1 (default, not mounted)" >&2
+            fi
+        else
+            echo "0) $1 (default, not found)" >&2
+        fi
+    fi
+    local count=1
+    for d in /dev/disk/by-uuid/*; do
+        [[ "$d" == "/dev/disk/by-uuid/$1" ]] && continue
+        if /sbin/udevadm info --query=all --name=$(readlink -f $d) | grep ID_BUS >> /dev/null; then
+            printf "$count) %-55s  %s\n" "$d" "$(df -H $d | grep -v ^Filesystem)"
+            count=$(( $count + 1 ))
+            USBARRAY+=("$d")
+        fi
+    done
+    echo "$count) Non-USB drive" >&2
+    echo "-) Cancel" >&2
+    read -n 1 -p "Enter the USB drive: " USBSELECT >&2
+    echo "" >&2
+    if [[ $USBSELECT == "-" ]]; then
+        echo "Canceled!" >&2
+        return 1
+    fi
+    # TODO: remove home and root mount once I test more, these will almost never be the right answer
+    local count=1
+    if [[ $USBSELECT == "0" && -n "$1" ]]; then
+        echo "/dev/disk/by-uuid/$1"
+        return 0
+    elif [[ $USBSELECT == "$count" ]]; then
+        echo "Non-USB alternate!" >&2
+        IFS=$(echo -en "\n\b")
+        local ALTERNATEARRAY=()
+        local count=1
+
+        for a in $(df | grep -v "udev\|tmpfs\|^Filesystem"); do
+            echo "$count) $a" >&2
+            ALTERNATEARRAY+=("$a")
+            count=$(( $count + 1 ))
+        done
+        read -n 1 -p "Enter an alternate drive: " ALTERNATESELECT >&2
+        echo "" >&2
+        if [[ $ALTERNATESELECT == "0" ]] || ! [[ $ALTERNATESELECT =~ ^[0-9]+$ ]] || (( $ALTERNATESELECT >= $count )); then
+            return 1
+        fi
+        ALTERNATESELECT=$(( $ALTERNATESELECT - 1 ))
+        # XXXX: get first column because we use df for this
+        echo ${ALTERNATEARRAY[$ALTERNATESELECT]} | cut -d' ' -f1
+        return 0
+    fi
+    if ! [[ $USBSELECT =~ ^[0-9]$ ]] || (( $USBSELECT >= $count )); then
+        return 1
+    fi
+    USBSELECT=$(( $USBSELECT - 1 ))
+    # TODO: keep ensuring only proper thing is every returned
+    echo ${USBARRAY[$USBSELECT]}
+    return 0
 }
 
 ################################################################################
