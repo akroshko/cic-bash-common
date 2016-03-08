@@ -32,3 +32,4 @@ done
 if [[ -n "$SAGEINSTALLATION" ]]; then
     envaddpath PATH "$SAGEINSTALLATION"
 fi
+export GIT_SSH_COMMAND="ssh -o \"BatchMode yes\""
