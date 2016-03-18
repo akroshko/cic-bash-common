@@ -267,6 +267,9 @@ need_new_symlink () {
     # create new symlink deleting old symlinks but not old files
     # TODO: overwrite and backup files while killing symlinks
     # TODO: do I want to remove and replace symlink even if it is valid?
+    # if [[ ! -e "$1" ]]; then
+    #     yell "Source $1 does not exist!"
+    # fi
     if [[ -e "$2" && ! -h "$2" ]]; then
         # symlink is a file or something
         yell "$2: exists but is not a symlink!!!"
@@ -414,7 +417,11 @@ fgi () {
 
 harm-bash () {
     if ps -ef | grep "xbindkeys" | grep -v grep >> /dev/null; then
-        killall xbindkeys
+        if [[ -t 0 && -n "$DISPLAY" ]]; then
+            killall xbindkeys
+        else
+            warn "Shell not interactive or no display! Not killing xbindkeys!"
+        fi
     fi
     fix-gpg-ssh-permissions
     source ${HOME}/.bash_profile
@@ -466,8 +473,17 @@ vcs-check-root () {
             cd "$dirname"
             git fetch
             git fetch --verbose
-            h2 "diff origin/master"
-            git diff origin/master --summary
+            # h2 "diff origin/master"
+            # git diff origin/master --summary
+            h2 "pull needed?"
+            # TODO: indicate no pull needed
+            local STATUS=$(git status -uno)
+            if echo "$STATUS" | grep "up-to-date" >> /dev/null; then
+                msg "Seems up to date!"
+            else
+                yell "Not up to date!"
+            fi
+            echo "$STATUS"
             popd >> /dev/null
         elif [[ -d "$dirname/.hg" ]]; then
             h1 "Checking $dirname/.hg"
@@ -638,9 +654,7 @@ vcs-push-github-public-master () {
 
 dpkg-purge-all () {
     # purge all files related to uninstalled packages
-    read -n 1 -p "Dangerous function! Continue (y/n)? " YN
-    echo ""
-    if [[ "$YN" == "y" ]]; then
+    if dangerous-function-ask; then
         dpkg -l | grep ^rc | cut -d' ' -f3|xargs sudo dpkg -P
     fi
 }
@@ -675,9 +689,7 @@ envaddpath() {
 harm-id3-audiobook-all () {
     # set up all audiobooks in immediate subdirectories for my player
     # (after appropriate file renaming)
-    read -n 1 -p "Dangerous function! Continue (y/n)? " YN
-    echo ""
-    if [[ "$YN" == "y" ]]; then
+    if dangerous-function-ask; then
         for d in ./*; do
             [[ -d "$d" ]] || continue
             pushd . >> /dev/null
@@ -694,18 +706,14 @@ harm-id3-audiobook-all () {
 
 harm-id3-genre-as-audiobook () {
     # set genre of all .mp3 as audiobook
-    read -n 1 -p "Dangerous function! Continue (y/n)? " YN
-    echo ""
-    if [[ "$YN" == "y" ]]; then
+    if dangerous-function-ask; then
         eyeD3 --to-v2.4 --genre="Audiobook" *.mp3
     fi
 }
 
 harm-id3-name-as-filename () {
     # make track name correspond to filename
-    read -n 1 -p "Dangerous function! Continue (y/n)? " YN
-    echo ""
-    if [[ "$YN" == "y" ]]; then
+    if dangerous-function-ask; then
         for F in ./*.mp3; do
             local BNAME="${f%%.mp3}"
             # XXXX: basename doesn't work with comma in filename
@@ -717,9 +725,7 @@ harm-id3-name-as-filename () {
 
 harm-id3-alphabetical-track () {
     # number tracks based on the alphabetical sort order
-    read -n 1 -p "Dangerous function! Continue (y/n)? " YN
-    echo ""
-    if [[ "$YN" == "y" ]]; then
+    if dangerous-function-ask; then
         # totals cause confusion
         eyeD3 --track-total=0 *.mp3
         local COUNT=1
@@ -732,9 +738,7 @@ harm-id3-alphabetical-track () {
 
 harm-id3-album-as-directory () {
     # use directory name for album name as all tracks
-    read -n 1 -p "Dangerous function! Continue (y/n)? " YN
-    echo ""
-    if [[ "$YN" == "y" ]]; then
+    if dangerous-function-ask; then
         local ALBUM=$(basename "${PWD}")
         eyeD3 --to-v2.4 --album "$ALBUM" *.mp3
     fi
@@ -742,9 +746,7 @@ harm-id3-album-as-directory () {
 
 harm-id3-remove-v1 () {
     # remove v1 id3 tags because they interfere with some players
-    read -n 1 -p "Dangerous function! Continue (y/n)? " YN
-    echo ""
-    if [[ "$YN" == "y" ]]; then
+    if dangerous-function-ask; then
         eyeD3 --remove-v1 *.mp3
     fi
 }
@@ -765,7 +767,8 @@ ag-list-packages-only () {
 
 # the three-fingered claw, see https://stackoverflow.com/questions/1378274/in-a-bash-script-how-can-i-exit-the-entire-script-if-a-certain-condition-occurs
 yell () {
-    echo -e "${BRed}$0${Red}: $*${Color_Off}" >&2
+    local NEWCOM=$(echo "$0" | sed -r 's|'"${HOME}"'|~|g')
+    echo -e "${BRed}$NEWCOM${Red}: $*${Color_Off}" >&2
 }
 
 die () {
@@ -777,11 +780,14 @@ try () {
 }
 
 warn () {
-    echo -e "${BYellow}$0${Yellow}: $*${Color_Off}" >&2
+    # XXXX: not good because it starts up a new command, but avoids escaping slashes
+    local NEWCOM=$(echo "$0" | sed -r 's|'"${HOME}"'|~|g')
+    echo -e "${BYellow}$NEWCOM${Yellow}: $*${Color_Off}" >&2
 }
 
 msg () {
-    echo -e "${BGreen}$0${Green}: $*${Color_Off}" >&2
+    local NEWCOM=$(echo "$0" | sed -r 's|'"${HOME}"'|~|g')
+    echo -e "${BGreen}$NEWCOM${Green}: $*${Color_Off}" >&2
 }
 
 h1 () {
@@ -1167,6 +1173,26 @@ select-disk-uuid-usb () {
     # TODO: keep ensuring only proper thing is every returned
     echo ${USBARRAY[$USBSELECT]}
     return 0
+}
+
+dangerous-function-ask () {
+    read -n 1 -p "Dangerous function! Continue (y/n)? " YN
+    echo ""
+    if [[ "$YN" == "y" ]]; then
+        true
+    else
+        false
+    fi
+}
+
+continue-ask () {
+    read -n 1 -p "Continue (y/n)? " YN
+    echo ""
+    if [[ "$YN" == "y" ]]; then
+        true
+    else
+        false
+    fi
 }
 
 ################################################################################
