@@ -42,9 +42,10 @@ case $firstarg in
         else
             exec emacsclient --alternate-editor="" --eval "(make-frame '((name . \"maximized\") (top . 40) (left . 40) (width . 200) (height . 60)))" --eval "(select-frame-by-name \"maximized\")" "$@"
         fi
-        export EDITOR=launch-emacsclient
-        export ALTERNATE_EDITOR=launch-emacsclient
-        export VISUAL=emacsclient
+        # TODO: might want to make sure these work without server?
+        export EDITOR="launch-emacsclient -nw"
+        export ALTERNATE_EDITOR="launch-emacsclient -nw"
+        export VISUAL="launch-emacsclient -nw"
         ;;
     noframe )
         shift
@@ -68,9 +69,10 @@ case $firstarg in
             exec emacsclient --alternate-editor="" --create-frame "$@"
         else
             exec emacsclient --alternate-editor="" --create-frame "$@"
-            export EDITOR=launch-emacsclient
-            export ALTERNATE_EDITOR=launch-emacsclient
-            export VISUAL=emacsclient
+            # TODO: might want to make sure these work without server?
+            export EDITOR="launch-emacsclient -nw"
+            export ALTERNATE_EDITOR="launch-emacsclient -nw"
+            export VISUAL="launch-emacsclient -nw"
         fi
         # TODO do I want to make zile, mg, or another terminal Emacs version the EDITOR?
         # TODO possibly check display variable?

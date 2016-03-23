@@ -1195,6 +1195,13 @@ continue-ask () {
     fi
 }
 
+vcs-grep-conflicted () {
+    # find git conflicted markers in current directory tree
+    # TODO: proper return values?
+    # TODO: avoid running /home or above... takes way too long!
+    find . -not -path "*.git*" -type f -exec grep -nH --color "^<<<<<<< \|^>>>>>>> \|^=======$\|^####### " {} \;
+}
+
 ################################################################################
 ## set interesting things for bashrc, should these be here or a seperate file?
 # XXXX: is it likely this may clobber other things in the namespace?
