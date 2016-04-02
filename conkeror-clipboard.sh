@@ -24,6 +24,13 @@
 # along with this program. If not, see http://www.gnu.org/licenses/.
 # create a really nice prompt for most terminals
 
+dictionary () {
+    local CLIPBOARD=`xclip -o selection c`
+    CLIPBOARD="${CLIPBOARD// /+}"
+    # TODO: https broken when testing
+    conkeror "http://www.dictionary.com/browse/$CLIPBOARD?s=t"
+}
+
 google () {
     local CLIPBOARD=`xclip -o selection c`
     CLIPBOARD="${CLIPBOARD// /+}"
@@ -34,6 +41,14 @@ scholar () {
     local CLIPBOARD=`xclip -o selection c`
     CLIPBOARD="${CLIPBOARD// /+}"
     conkeror "https://scholar.google.ca/scholar?q=$CLIPBOARD"
+}
+
+thesaurus () {
+    local CLIPBOARD=`xclip -o selection c`
+    CLIPBOARD="${CLIPBOARD// /+}"
+    # TODO: https broken when testing
+    conkeror "http://www.thesaurus.com/browse/$CLIPBOARD?s=t"
+
 }
 
 wikipedia () {
