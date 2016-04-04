@@ -1033,7 +1033,51 @@ ssh-scs () {
     # ssh "$@" -t "bash --rcfile ~/.bash_libenv -li -c \"screen-select;/bin/bash\""
 }
 
+youtube-pause () {
+    # global function to pause a running Youtube in Conkeror
+    # get current window
+    CURRENTWINDOW=$(xdotool getwindowfocus)
+    xdotool search --onlyvisible --name youtube | while IFS= read -r line; do
+        if xdotool search --class conkeror | grep "${line}" >> /dev/null; then
+            xdotool windowminimize "${line}"
+        fi
+    done
+    # turn off youtube
+    # TODO: limit to conkeror
+    xdotool search --name youtube | while IFS= read -r line; do
+        if xdotool search --class conkeror | grep "${line}" >> /dev/null; then
+            xdotool windowfocus --sync "${line}";
+            sleep 0.05
+            conkeror -f youtube-pause
+        fi
+    done
+    # restore focus
+    xdotool windowactivate --sync ${CURRENTWINDOW}
+}
+
+youtube-restore () {
+    # global function to restore a running Youtube in Conkeror
+    CURRENTWINDOW=$(xdotool getwindowfocus)
+    xdotool search --onlyvisible --name youtube | while IFS= read -r line; do
+        if xdotool search --class conkeror | grep "${line}" >> /dev/null; then
+            xdotool windowfocus --sync "${line}"
+            xdotool windowactivate --sync "${line}"
+        fi
+    done
+    xdotool search --name youtube | while IFS= read -r line; do
+        if xdotool search --class conkeror | grep "${line}" >> /dev/null; then
+            xdotool windowfocus --sync "${line}";
+            sleep 0.05
+            conkeror -f youtube-play
+        fi
+    done
+    # restore focus
+    xdotool windowactivate --sync ${CURRENTWINDOW}
+}
+
 master-boss-key () {
+    # get current window
+    CURRENTWINDOW=$(xdotool getwindowfocus)
     # kill volume
     amixer set Master mute
     # https://askubuntu.com/questions/26068/how-do-you-mute-from-the-command-line
@@ -1050,6 +1094,17 @@ master-boss-key () {
     xdotool search --onlyvisible --name iceweasel | while IFS= read -r line; do
         xdotool windowminimize "${line}"
     done
+    # turn off youtube
+    # TODO: limit to conkeror
+    xdotool search --name youtube | while IFS= read -r line; do
+        if xdotool search --class conkeror | grep "${line}" >> /dev/null; then
+            xdotool windowfocus --sync "${line}";
+            sleep 0.05
+            conkeror -f youtube-pause
+        fi
+    done
+    # restore focus
+    xdotool windowactivate --sync ${CURRENTWINDOW}
 }
 
 master-unboss-key () {
