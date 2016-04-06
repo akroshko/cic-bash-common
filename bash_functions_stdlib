@@ -600,8 +600,8 @@ vcs-diff-public () {
 vcs-push-github () {
     # merge public branch and commit to github
     # XXXX: repository must be setup properly
-    git checkout public
-    if [[ $? != 0 ]]; then
+
+    if ! git checkout public; then
         yell "Checkout unsuccessful!"
         return 1
     fi
@@ -628,8 +628,8 @@ vcs-push-github-public-master () {
     # merge public branch and commit to github
     # XXXX: repository must be setup properly
     # TODO: do not replicate code above
-    git checkout public
-    if [[ $? != 0 ]]; then
+
+    if ! git checkout public; then
         yell "Checkout unsuccessful!"
         return 1
     fi
@@ -1072,6 +1072,32 @@ youtube-restore () {
         fi
     done
     # restore focus
+    xdotool windowactivate --sync ${CURRENTWINDOW}
+}
+
+youtube-previous () {
+    # global function to see previous video in youtube playlist
+    CURRENTWINDOW=$(xdotool getwindowfocus)
+    xdotool search --name youtube | while IFS= read -r line; do
+        if xdotool search --class conkeror | grep "${line}" >> /dev/null; then
+            xdotool windowfocus --sync "${line}";
+            sleep 0.05
+            conkeror -f youtube-previous
+        fi
+    done
+    xdotool windowactivate --sync ${CURRENTWINDOW}
+}
+
+youtube-next () {
+    # global function to see previous video in youtube playlist
+    CURRENTWINDOW=$(xdotool getwindowfocus)
+    xdotool search --name youtube | while IFS= read -r line; do
+        if xdotool search --class conkeror | grep "${line}" >> /dev/null; then
+            xdotool windowfocus --sync "${line}";
+            sleep 0.05
+            conkeror -f youtube-next
+        fi
+    done
     xdotool windowactivate --sync ${CURRENTWINDOW}
 }
 
