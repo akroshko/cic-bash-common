@@ -134,12 +134,26 @@ ag-list-installed () {
     fi
 }
 
+# TODO: see if I can use aes256-gcm@openssh.com for everything
+
 ssh-batch () {
     ssh -o "BatchMode yes" "$@"
 }
 
 ssh-batch-lan () {
-    ssh -o "BatchMode yes" -o "Compression no" -c aes256-gcm@openssh.com "$@"
+    ssh -o "Compression no" -c aes256-gcm@openssh.com -o "BatchMode yes" "$@"
+}
+
+ssh-batch-interact () {
+    # go in in batch mode but allow interaction
+    # generally want things to fail when authentication agents not working
+    ssh -o "BatchMode yes" -t "$@"
+}
+
+ssh-batch-interact-lan () {
+    # go in in batch mode but allow interaction
+    # generally want things to fail when authentication agents not working
+    ssh -o "Compression no" -c aes256-gcm@openssh.com -o "BatchMode yes" -t "$@"
 }
 
 ssh-lan () {
@@ -851,18 +865,17 @@ aloopback-low () {
 
 vcs-clone-to-bare () {
     # https://stackoverflow.com/questions/4142936/git-clone-from-local-to-remote
-    # TODO: add remote properly?
-    # git clone --bare -l "$1" "$1".git
-    # on .git
+    # TODO: need to add a file before I can do anything
+    # TODO: this is my own check for my own system, need to generalize
     if check-host-main && [[ -d ./"$1" ]]; then
         local REALPATH="$(realpath $1)"
         REALPATH=${REALPATH%/}
-        pushd . >> /dev/null
         if [[ -e "$REALPATH".git ]]
         then
             msg "$1.git already exists!"
             return 1
         fi
+        pushd . >> /dev/null
         mkdir -p "$REALPATH".git
         cd "$REALPATH".git
         git init --bare
@@ -878,6 +891,7 @@ vcs-clone-to-bare () {
 }
 
 vcs-init-full () {
+    # TODO: check for files existing
     git init && git add * && git commit -a -m 'initial commit'
 }
 
@@ -1036,7 +1050,8 @@ ssh-scs () {
 youtube-pause () {
     # global function to pause a running Youtube in Conkeror
     # get current window
-    CURRENTWINDOW=$(xdotool getwindowfocus)
+    local CURRENTWINDOW=$(xdotool getwindowfocus)
+    local CURRENTYOUTUBE=
     xdotool search --onlyvisible --name youtube | while IFS= read -r line; do
         if xdotool search --class conkeror | grep "${line}" >> /dev/null; then
             xdotool windowminimize "${line}"
@@ -1047,17 +1062,23 @@ youtube-pause () {
     xdotool search --name youtube | while IFS= read -r line; do
         if xdotool search --class conkeror | grep "${line}" >> /dev/null; then
             xdotool windowfocus --sync "${line}";
+            # TODO: very arbitrary delay, perhaps wait for something to return
             sleep 0.05
             conkeror -f youtube-pause
+            if [[ "${line}" == "${CURRENTWINDOW}" ]]; then
+                CURRENTYOUTUBE=1
+            fi
         fi
     done
-    # restore focus
-    xdotool windowactivate --sync ${CURRENTWINDOW}
+    # restore focus if not youtube window
+    if [[ -n "$CURRENTYOUTUBE" ]]; then
+        xdotool windowactivate --sync ${CURRENTWINDOW}
+    fi
 }
 
 youtube-restore () {
     # global function to restore a running Youtube in Conkeror
-    CURRENTWINDOW=$(xdotool getwindowfocus)
+    local CURRENTWINDOW=$(xdotool getwindowfocus)
     xdotool search --onlyvisible --name youtube | while IFS= read -r line; do
         if xdotool search --class conkeror | grep "${line}" >> /dev/null; then
             xdotool windowfocus --sync "${line}"
@@ -1067,6 +1088,7 @@ youtube-restore () {
     xdotool search --name youtube | while IFS= read -r line; do
         if xdotool search --class conkeror | grep "${line}" >> /dev/null; then
             xdotool windowfocus --sync "${line}";
+            # TODO: very arbitrary delay, perhaps wait for something to return
             sleep 0.05
             conkeror -f youtube-play
         fi
@@ -1077,27 +1099,36 @@ youtube-restore () {
 
 youtube-previous () {
     # global function to see previous video in youtube playlist
-    CURRENTWINDOW=$(xdotool getwindowfocus)
+    # TODO: if no window here
+    local CURRENTWINDOW=$(xdotool getwindowfocus)
     xdotool search --name youtube | while IFS= read -r line; do
         if xdotool search --class conkeror | grep "${line}" >> /dev/null; then
             xdotool windowfocus --sync "${line}";
-            sleep 0.05
+            xdotool windowactivate --sync "${line}"
+            # TODO: very arbitrary delay, perhaps wait for something to return
+            sleep 0.1
             conkeror -f youtube-previous
         fi
     done
+    # TODO: very arbitrary, perhaps wait for something to return
+    sleep 0.5
     xdotool windowactivate --sync ${CURRENTWINDOW}
 }
 
 youtube-next () {
     # global function to see previous video in youtube playlist
-    CURRENTWINDOW=$(xdotool getwindowfocus)
+    # TODO: if no window here
+    local CURRENTWINDOW=$(xdotool getwindowfocus)
     xdotool search --name youtube | while IFS= read -r line; do
         if xdotool search --class conkeror | grep "${line}" >> /dev/null; then
-            xdotool windowfocus --sync "${line}";
-            sleep 0.05
+            xdotool windowfocus --sync "${line}"
+            # TODO: very arbitrary delay, perhaps wait for something to return
+            sleep 0.1
             conkeror -f youtube-next
         fi
     done
+    # TODO: very arbitrary delay, perhaps wait for something to return
+    sleep 0.5
     xdotool windowactivate --sync ${CURRENTWINDOW}
 }
 
@@ -1281,6 +1312,10 @@ vcs-grep-conflicted () {
     # TODO: proper return values?
     # TODO: avoid running /home or above... takes way too long!
     find . -not -path "*.git*" -type f -exec grep -nH --color "^<<<<<<< \|^>>>>>>> \|^=======$\|^####### " {} \;
+}
+
+flashplayer-update () {
+    sudo update-flashplugin-nonfree --install --verbose
 }
 
 ################################################################################
