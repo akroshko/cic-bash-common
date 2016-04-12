@@ -58,6 +58,7 @@ verify-operation () {
     local SUREMESSAGE="$2"
     local RMARG="$3"
     while true; do
+        while read -r -t 0;do read -r; done;
         read -n 1 -p "$ASKMESSAGE" YN
         echo ""
         case $YN in
@@ -65,6 +66,7 @@ verify-operation () {
             [Yy]* ) (home-trash "$RMARG"); break;;
             # are you sure you don't want to delete original
             [Nn]* )
+                while read -r -t 0;do read -r; done;
                 read -p "$SUREMESSAGE" YNT
                 case $YNT in
                     [Yy]* ) return 0;;
@@ -622,8 +624,10 @@ vcs-push-github () {
     git merge --squash -X theirs master
     local COMMITCORRECT=n
     while [[ "$COMMITCORRECT" != "y" ]]; do
+        while read -r -t 0;do read -r; done;
         read -p "Enter commit message: " COMMITMESSAGE
         # TODO: add option for quit
+        while read -r -t 0;do read -r; done;
         read -n  1 -p "Use commit message (y/n/q)? " COMMITCORRECT
         echo ""
         if [[ "$COMMITCORRECT" == "q" ]]; then
@@ -650,8 +654,10 @@ vcs-push-github-public-master () {
     git merge --squash -X theirs master
     local COMMITCORRECT=n
     while [[ "$COMMITCORRECT" != "y" ]]; do
+        while read -r -t 0;do read -r; done;
         read -p "Enter commit message: " COMMITMESSAGE
         # TODO: add option for quit
+        while read -r -t 0;do read -r; done;
         read -n 1 -p "Use commit message (y/n/q)? " COMMITCORRECT
         echo ""
         if [[ "$COMMITCORRECT" == "q" ]]; then
@@ -976,6 +982,7 @@ screen-select () {
             echo "$count) $item"
             count=$(( $count + 1 ))
         done
+        while read -r -t 0;do read -r; done;
         read -n 1 -p "Enter the screen session: " SCREENSELECT
         echo ""
         screen -dr $(sed -n "${SCREENSELECT}"p <<< "${SCREENSESSIONS}")
@@ -1246,6 +1253,7 @@ select-disk-uuid-usb () {
     done
     echo "$count) Non-USB drive" >&2
     echo "-) Cancel" >&2
+    while read -r -t 0;do read -r; done;
     read -n 1 -p "Enter the USB drive: " USBSELECT >&2
     echo "" >&2
     if [[ $USBSELECT == "-" ]]; then
@@ -1268,6 +1276,7 @@ select-disk-uuid-usb () {
             ALTERNATEARRAY+=("$a")
             count=$(( $count + 1 ))
         done
+        while read -r -t 0;do read -r; done;
         read -n 1 -p "Enter an alternate drive: " ALTERNATESELECT >&2
         echo "" >&2
         if [[ $ALTERNATESELECT == "0" ]] || ! [[ $ALTERNATESELECT =~ ^[0-9]+$ ]] || (( $ALTERNATESELECT >= $count )); then
@@ -1288,6 +1297,7 @@ select-disk-uuid-usb () {
 }
 
 dangerous-function-ask () {
+    while read -r -t 0;do read -r; done;
     read -n 1 -p "Dangerous function! Continue (y/n)? " YN
     echo ""
     if [[ "$YN" == "y" ]]; then
@@ -1298,6 +1308,7 @@ dangerous-function-ask () {
 }
 
 continue-ask () {
+    while read -r -t 0;do read -r; done;
     read -n 1 -p "Continue (y/n)? " YN
     echo ""
     if [[ "$YN" == "y" ]]; then
@@ -1316,6 +1327,36 @@ vcs-grep-conflicted () {
 
 flashplayer-update () {
     sudo update-flashplugin-nonfree --install --verbose
+}
+
+mdstat-status () {
+    local MDSTAT="$(cat /proc/mdstat | sed -n '/^md\|^[[:space:]]*\[\|blocks/p')"
+    local FIRST=1
+    # get rid of everything I do not want
+    # echo "${MDSTAT}"
+    # echo "${MDSTAT}" | while IFS= read -r line; do
+    # XXXX: IFS is a silly thing
+    IFS=$'\n'
+    for i in $(echo "${MDSTAT}"); do
+        if [[ "$i" =~ ^m.* ]]; then
+            printf "$i"
+        else
+            echo " $(echo "$i" | grep --color=never -Eo "\[[A-Za-z]*\]$")"
+        fi
+    done
+}
+
+repl-restartable () {
+    # restart a repl over and over again if desired
+    local TRYAGAIN=" "
+    while [[ "${TRYAGAIN}" == " " ]]; do
+        ($@)
+        while read -r -t 0;do read -r; done;
+        IFS= read -n 1 -p 'Press [Enter] to exit or [Space] to restart...' TRYAGAIN
+        if [[ "${TRYAGAIN}" == " " ]]; then
+            reset
+        fi
+    done
 }
 
 ################################################################################
