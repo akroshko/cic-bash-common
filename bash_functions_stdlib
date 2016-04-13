@@ -616,7 +616,6 @@ vcs-diff-public () {
 vcs-push-github () {
     # merge public branch and commit to github
     # XXXX: repository must be setup properly
-
     if ! git checkout public; then
         yell "Checkout unsuccessful!"
         return 1
@@ -1332,16 +1331,15 @@ flashplayer-update () {
 mdstat-status () {
     local MDSTAT="$(cat /proc/mdstat | sed -n '/^md\|^[[:space:]]*\[\|blocks/p')"
     local FIRST=1
-    # get rid of everything I do not want
-    # echo "${MDSTAT}"
-    # echo "${MDSTAT}" | while IFS= read -r line; do
-    # XXXX: IFS is a silly thing
     IFS=$'\n'
     for i in $(echo "${MDSTAT}"); do
         if [[ "$i" =~ ^m.* ]]; then
             printf "$i"
         else
-            echo " $(echo "$i" | grep --color=never -Eo "\[[A-Za-z]*\]$")"
+            SELECTED=$(echo "$i" | grep --color=never -Eo "\[[A-Za-z]*\]$")
+            if [[ -n "$SELECTED" ]]; then
+                echo " $SELECTED"
+            fi
         fi
     done
 }
