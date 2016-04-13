@@ -643,36 +643,6 @@ vcs-push-github () {
     done
     git commit -a -m "$COMMITMESSAGE"
     # TODO: eventually go "public" locally to "master" globally
-    git push --force --set-upstream github public
-    git checkout master
-}
-
-vcs-push-github-public-master () {
-    # merge public branch and commit to github
-    # XXXX: repository must be setup properly
-    # TODO: do not replicate code above
-
-    if ! git checkout public; then
-        yell "Checkout unsuccessful!"
-        return 1
-    fi
-    git merge --squash -X theirs master
-    local COMMITCORRECT=n
-    while [[ "$COMMITCORRECT" != "y" ]]; do
-        while read -r -t 0;do read -r; done;
-        read -p "Enter commit message: " COMMITMESSAGE
-        # TODO: add option for quit
-        while read -r -t 0;do read -r; done;
-        read -n 1 -p "Use commit message (y/n/q)? " COMMITCORRECT
-        echo ""
-        if [[ "$COMMITCORRECT" == "q" ]]; then
-            yell "Aborting!"
-            git checkout master
-            return 1
-        fi
-    done
-    git commit -a -m "$COMMITMESSAGE"
-    # TODO: eventually go "public" locally to "master" globally
     git push --force --set-upstream github public:master
     git checkout master
 }
