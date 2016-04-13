@@ -616,10 +616,16 @@ vcs-diff-public () {
 vcs-push-github () {
     # merge public branch and commit to github
     # XXXX: repository must be setup properly
+
+    if ! ssh-batch -T git@github.com 2>&1 | grep --color=never "success"; then
+        yell "Error connecting to github! Aborting!"
+        return 1
+    fi
     if ! git checkout public; then
         yell "Checkout unsuccessful!"
         return 1
     fi
+    # test the connection before doing any funny business
     git merge --squash -X theirs master
     local COMMITCORRECT=n
     while [[ "$COMMITCORRECT" != "y" ]]; do
