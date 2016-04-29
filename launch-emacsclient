@@ -42,10 +42,6 @@ case $firstarg in
         else
             exec emacsclient --alternate-editor="" --eval "(make-frame '((name . \"maximized\") (top . 40) (left . 40) (width . 200) (height . 60)))" --eval "(select-frame-by-name \"maximized\")" "$@"
         fi
-        # TODO: might want to make sure these work without server?
-        export EDITOR="launch-emacsclient -nw"
-        export ALTERNATE_EDITOR="launch-emacsclient -nw"
-        export VISUAL="launch-emacsclient -nw"
         ;;
     noframe )
         shift
@@ -57,10 +53,21 @@ case $firstarg in
             if [[ $? = "1" ]]; then
                 emacsclient --create-frame --no-wait --alternate-editor="" "$@"
             else
-                emacsclient --no-wait -a --alternate-editor="" "$@"
+                emacsclient --no-wait --alternate-editor="" "$@"
             fi
-            # XXXX: this was unsuitable for a reason I can't remember
-            # exec emacsclient --alternate-editor="" "$@"
+        fi
+        ;;
+    protocol )
+        if ! ps -ef | grep "emacs --daemon" | grep -v grep >> /dev/null; then
+            emacs --daemon
+            exec emacsclient --create-frame --no-wait --alternate-editor="" -c "$@"
+        else
+            emacsclient --no-wait --eval "(if (> (length (frame-list)) 1) 't)" | grep t
+            if [[ $? = "1" ]]; then
+                emacsclient --create-frame --no-wait --alternate-editor="" "$@"
+            else
+                emacsclient --no-wait --alternate-editor="" "$@"
+            fi
         fi
         ;;
     * )
@@ -69,12 +76,12 @@ case $firstarg in
             exec emacsclient --alternate-editor="" --create-frame "$@"
         else
             exec emacsclient --alternate-editor="" --create-frame "$@"
-            # TODO: might want to make sure these work without server?
-            export EDITOR="launch-emacsclient -nw"
-            export ALTERNATE_EDITOR="launch-emacsclient -nw"
-            export VISUAL="launch-emacsclient -nw"
         fi
-        # TODO do I want to make zile, mg, or another terminal Emacs version the EDITOR?
-        # TODO possibly check display variable?
         ;;
 esac
+# TODO: might want to make sure these work without server?
+# TODO do I want to make zile, mg, or another terminal Emacs version the EDITOR?
+# TODO possibly check display variable?
+export EDITOR="launch-emacsclient -nw"
+export ALTERNATE_EDITOR="launch-emacsclient -nw"
+export VISUAL="launch-emacsclient -nw"
