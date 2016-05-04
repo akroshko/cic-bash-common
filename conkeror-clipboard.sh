@@ -2,7 +2,7 @@
 # conkeror-clipboard.sh is a bash script that calls various search
 # engines using the contents of the X11 clipboard
 #
-# Copyright (C) 2015-2016 Andrew Kroshko, all rights reserved.
+# Copyright (C) 2015-2016, Andrew Kroshko, all rights reserved.
 #
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>

@@ -2,7 +2,7 @@
 # bash_env_stdlib sets some useful environment variable settings that
 # are good on any machine.
 #
-# Copyright (C) 2015-2016 Andrew Kroshko, all rights reserved.
+# Copyright (C) 2015-2016, Andrew Kroshko, all rights reserved.
 #
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
