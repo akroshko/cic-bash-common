@@ -819,6 +819,17 @@ h2 () {
         OUTSTR=$(echo "----------------------------------------" | cut -c 1-60)
     else
         OUTSTR=$(echo "---- $* ----------------------------------------" | cut -c 1-60)
+   fi
+   # TODO: probably want different color than cyan
+   echo -e "${BWhite}${On_Cyan}$OUTSTR${Color_Off}" >&2
+}
+
+h3 () {
+   if [[ -z "$*" ]]
+    then
+        OUTSTR=$(echo "----")
+    else
+        OUTSTR=$(echo "---- $*")
     fi
     echo -e "${White}${On_Purple}$OUTSTR${Color_Off}" >&2
 }
@@ -1331,6 +1342,138 @@ repl-restartable () {
             reset
         fi
     done
+}
+
+vcs-attr () {
+    # https://stackoverflow.com/questions/6855712/why-does-git-treat-this-text-file-as-a-binary-file
+    # check attributes
+    git check-attr --all -- "$1"
+}
+
+################################################################################
+## genric download for Canada NTS topo maps
+## good scripts for slurping data from other ftp websites
+
+wget-download-canmatrix2-doc () {
+    NEWDIR="${HOME}/mnt/"
+    mkdir -p "$NEWDIR"
+    pushd . >> /dev/null
+    cd "$NEWDIR"
+    wget \
+      --execute robots=off \
+      --user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.73 Safari/537.36" \
+      --recursive \
+      --no-parent \
+      --level=inf \
+      --restrict-file-names=unix \
+      --random-wait \
+      --continue \
+      --limit-rate=300k \
+      --wait=300 \
+      --waitretry=60 \
+      ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/doc/
+    popd >> /dev/null
+}
+
+wget-download-canmatrix2-50k-preview () {
+    NEWDIR="${HOME}/mnt/"
+    mkdir -p "$NEWDIR"
+    pushd . >> /dev/null
+    cd "$NEWDIR"
+    popd >> /dev/null
+    wget \
+      --execute robots=off \
+      --user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.73 Safari/537.36" \
+      --recursive \
+      --no-parent \
+      --level=inf \
+      --restrict-file-names=unix \
+      --random-wait \
+      --continue \
+      --limit-rate=300k \
+      --wait=600 \
+      --waitretry=60 \
+      ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k/
+}
+
+wget-download-canmatrix2-250k-preview () {
+    NEWDIR="${HOME}/mnt/"
+    mkdir -p "$NEWDIR"
+    pushd . >> /dev/null
+    cd "$NEWDIR"
+    popd >> /dev/null
+    wget \
+      --execute robots=off \
+      --user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.73 Safari/537.36" \
+      --recursive \
+      --no-parent \
+      --level=inf \
+      --restrict-file-names=unix \
+      --random-wait \
+      --continue \
+      --limit-rate=300k \
+      --wait=600 \
+      --waitretry=60 \
+      ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/250k/
+}
+
+wget-download-canmatrix2 () {
+    NEWDIR="${HOME}/mnt/"
+    mkdir -p "$NEWDIR"
+    pushd . >> /dev/null
+    cd "$NEWDIR"
+    # TODO: need an alias for this type of download
+    wget \
+      --execute robots=off \
+      --user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.73 Safari/537.36" \
+      --recursive \
+      --no-parent \
+      --level=inf \
+      --random-wait \
+      --continue \
+      --limit-rate=300k \
+      --wait=600 \
+      --waitretry=60 \
+      "$1"
+    popd >> /dev/null
+}
+
+wget-current-canmatrix () {
+    # expect to take about 16*((16 * 12) + 60) per large grid = 4032min per large numbered grid
+    # generally run this on my server to an external hard drive at ~/mnt
+    if ! type send-returncode-mail >> /dev/null; then
+        warn "No text message progress reports, send-returncode-mail function not configured."
+    fi
+    if grep -qs ${HOME}/mnt /proc/self/mounts >> /dev/null; then
+        {
+            time {
+                mkdir -p ~/mnt
+                URLS=("ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/092/i" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/092/j" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/092/k" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/092/l" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/092/m" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/092/n" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/092/o" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/092/p")
+                h1 "Starting!!!"
+                for URL in "${URLS[@]}"; do
+                    h2 "Next!!!"
+                    h3 "$URL"
+                    wget-download-canmatrix2 "$URL"
+                    send-returncode-mail "Canmatrix- done another grid!"
+                    sleep $(( $RANDOM % 60 + 30 ))m
+                    # test code
+                    # echo "$URL"
+                    # sleep $(( $RANDOM % 60 + 30 ))s
+                done
+            }
+        } 2>&1 | tee -a ~/mnt/canmatrix2-$(date-time-stamp).log
+        # TODO: check if exists
+        if type send-returncode-text >> /dev/null; then
+            send-returncode-mail "Canmatrix- done grid script!"
+        fi
+    else
+        yell "Nothing mounted to collect data!!!"
+    fi
+}
+
+wget-check-log () {
+    # do a quick check of a log file to make sure everything is saved properly
+    cat "$1" | grep saved | grep -v listing
 }
 
 ################################################################################
