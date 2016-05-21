@@ -1441,20 +1441,26 @@ wget-download-canmatrix2 () {
 wget-current-canmatrix () {
     # expect to take about 16*((16 * 12) + 60) per large grid = 4032min per large numbered grid
     # generally run this on my server to an external hard drive at ~/mnt
+    local URLS=("ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/083/a" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/083/b" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/083/c" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/083/d" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/083/e" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/083/f" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/083/g" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/083/h" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/083/i" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/083/j" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/083/k" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/083/l" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/083/m" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/083/n" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/083/o" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/083/p")
     if ! type send-returncode-mail >> /dev/null; then
         warn "No text message progress reports, send-returncode-mail function not configured."
+        alias send-returncode-mail="false"
+    else
+        true
+        send-returncode-mail "Canmatrix- starting!"
     fi
     if grep -qs ${HOME}/mnt /proc/self/mounts >> /dev/null; then
         {
             time {
                 mkdir -p ~/mnt
-                URLS=("ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/092/i" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/092/j" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/092/k" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/092/l" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/092/m" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/092/n" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/092/o" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/092/p")
+                # 83 urls, area around edmonton
                 h1 "Starting!!!"
                 for URL in "${URLS[@]}"; do
                     h2 "Next!!!"
                     h3 "$URL"
                     wget-download-canmatrix2 "$URL"
-                    send-returncode-mail "Canmatrix- done another grid!"
+                    # TODO: fix this, probably by aliasing send-returncode-mail to false if not exist
+                    send-returncode-mail "Canmatrix- done another grid!" "$URL"
                     sleep $(( $RANDOM % 60 + 30 ))m
                     # test code
                     # echo "$URL"
@@ -1463,9 +1469,7 @@ wget-current-canmatrix () {
             }
         } 2>&1 | tee -a ~/mnt/canmatrix2-$(date-time-stamp).log
         # TODO: check if exists
-        if type send-returncode-text >> /dev/null; then
-            send-returncode-mail "Canmatrix- done grid script!"
-        fi
+        send-returncode-mail "Canmatrix- done grid script!"
     else
         yell "Nothing mounted to collect data!!!"
     fi
