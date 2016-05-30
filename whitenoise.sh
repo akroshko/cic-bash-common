@@ -34,5 +34,5 @@ if ps -ef | grep "${BACKGROUNDNOISESUBSTRING}" | grep -v grep > /dev/null
 then
     echo "pause" | nc -q 2 localhost 19000
 else
-    gnome-terminal --title="White noise" --execute cvlc --rc-host localhost:19000 --extraintf oldrc --intf dummy "$BACKGROUNDNOISE"
+    rxvt-unicode -title "White noise" -e cvlc --rc-host localhost:19000 --extraintf oldrc --intf dummy "$BACKGROUNDNOISE"
 fi

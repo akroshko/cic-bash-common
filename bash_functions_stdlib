@@ -1092,11 +1092,12 @@ youtube-restore () {
         fi
     done
     xdotool search --name youtube | while IFS= read -r line; do
-        if xdotool search --class conkeror | grep "${line}" >> /dev/null; then
-            xdotool windowfocus --sync "${line}";
-            # TODO: very arbitrary delay, perhaps wait for something to return
-            sleep 0.05
-            conkeror -f youtube-play
+       if xdotool search --class conkeror | grep "${line}" >> /dev/null; then
+           xdotool windowfocus --sync "${line}";
+           xdotool windowactivate --sync "${line}"
+           # TODO: very arbitrary delay, perhaps wait for something to return
+           sleep 0.05
+           conkeror -f youtube-play
         fi
     done
     # restore focus
@@ -1454,7 +1455,7 @@ wget-download-canmatrix2 () {
 wget-current-canmatrix () {
     # expect to take about 16*((16 * 12) + 60) per large grid = 4032min per large numbered grid
     # generally run this on my server to an external hard drive at ~/mnt
-    local URLS=("ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/094/a" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/094/b" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/094/c" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/094/d" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/094/e" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/094/f" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/094/g" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/094/h" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/094/i" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/094/j" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/094/k" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/094/l" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/094/m" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/094/n" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/094/o" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/094/p")
+    local URLS=("ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/a" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/b" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/c" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/d" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/e" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/f" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/g" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/h" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/i" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/j" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/k" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/l" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/m" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/n" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/o" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/p")
     if ! type send-returncode-mail >> /dev/null; then
         warn "No text message progress reports, send-returncode-mail function not configured."
         alias send-returncode-mail="false"
@@ -1512,51 +1513,6 @@ gpg-decrypt () {
     gpg --batch --no-verbose --quiet --decrypt "$1" 2>/dev/null
 }
 
-preview-current-directory () {
-    if [[ -n "$1" ]]; then
-        pushd . >> /dev/null
-        cd "$1"
-    fi
-    local screenheight=0
-    # get maximum screen height
-    for z in $(xrandr --current | grep '*' | uniq | awk '{print $1}' | cut -d 'x' -f2); do
-        if [[ $(( $z > $screenheight )) == 1 ]]; then
-            screenheight=$z
-        fi
-    done
-    local previewheight=$(( $screenheight / 2 ))
-    msg "Using preview height: $previewheight"
-    for f in ${PWD}/*; do
-        if [[ "$f" =~ \.jpg$ && "$f" =~ \.jpeg$ && "$f" =~ \.tif$ && "$f" =~ \.tiff$ ]]; then
-            fthumbnail=/home/akroshko/tmp/cic-thumbnail-preview/$(md5sum "$f" | awk '{ print $1 }').png
-            if [[ ! -f "$fthumbnail" ]]; then
-                msg "Previewing: $f"
-                convert -thumbnail x"$previewheight" -background white -alpha remove "$f" "$fthumbnail" &
-            else
-                msg "Already previewed: $f"
-            fi
-        elif [[ "$f" =~ \.pdf ]]; then
-            fthumbnail=/home/akroshko/tmp/cic-thumbnail-preview/$(md5sum "$f" | awk '{ print $1 }').png
-            fthumbnailfirst=/home/akroshko/tmp/cic-thumbnail-preview/$(md5sum "$f" | awk '{ print $1 }')-0.png
-            if [[ ! -f "$fthumbnailfirst" ]]; then
-                msg "Previewing: $f"
-                convert -thumbnail x"$previewheight" -background white -alpha remove "$f"[0-4] "$fthumbnail" &
-            else
-                msg "Already previewed: $f"
-            fi
-        fi
-        # sleep if too many jobs
-        jobs=1000
-        while [[ $jobs -gt 8 ]]; do
-              jobs=$(pgrep 'convert' | wc -l)
-              sleep 0.1
-        done
-    done
-    if [[ -n "$1" ]]; then
-        popd >> /dev/null
-    fi
-}
-
 svg2png-hq () {
     if [[ -z "$1" ]]; then
         yell "No input!"
@@ -1569,6 +1525,10 @@ svg2png-hq () {
     else
         convert -density 300 -resize 2000x "$1" "$OUTPUT"
     fi
+}
+
+function ls-cron () {
+    crontab -u ${USERNAME} -l
 }
 
 ################################################################################
