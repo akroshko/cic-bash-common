@@ -1531,6 +1531,39 @@ function ls-cron () {
     crontab -u ${USERNAME} -l
 }
 
+function ag-rdep () {
+    apt-cache rdepends "$1"
+}
+
+function ls-mime-files () {
+    # list mime settings
+    # https://wiki.archlinux.org/index.php/default_applications
+    THEFILES=("$HOME/.config/$desktop-mimeapps.list" "$HOME/.config/mimeapps.list" "/etc/xdg/mimeapps.list" "$HOME/.local/share/applications/mimeapps.list" "/usr/local/share/applications/mimeapps.list" "/usr/share/applications/mimeapps.list")
+    for f in ${THEFILES[@]}; do
+        if [[ -e "$f" ]]; then
+            h3 "$f"
+            cat "$f"
+        else
+            warn "$f not exist!"
+        fi
+    done
+
+}
+
+function ls-mime-files2 () {
+    # see https://unix.stackexchange.com/questions/36380/how-to-properly-and-easy-configure-xdg-open-without-any-enviroment
+    # XXXX: changed variable from dd, bad name for bash variable
+    for thedir in /usr/share/applications ~/.local/share/applications; do
+        h2 "$thedir"
+        for thefile in $(ls $thedir 2>/dev/null | grep "\\.desktop$"); do
+            h3 "$thefile"
+            for m in $(grep MimeType $thedir/$thefile | cut -d= -f2 | tr ";" " "); do
+                echo xdg-mime default $thefile $m;
+            done;
+        done;
+    done
+}
+
 ################################################################################
 ## set interesting things for bashrc, should these be here or a seperate file?
 # XXXX: is it likely this may clobber other things in the namespace?
