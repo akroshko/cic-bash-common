@@ -1455,7 +1455,7 @@ wget-download-canmatrix2 () {
 wget-current-canmatrix () {
     # expect to take about 16*((16 * 12) + 60) per large grid = 4032min per large numbered grid
     # generally run this on my server to an external hard drive at ~/mnt
-    local URLS=("ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/a" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/b" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/c" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/d" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/e" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/f" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/g" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/h" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/i" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/j" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/k" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/l" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/m" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/n" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/o" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/093/p")
+    local URLS=("ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/102/i" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/102/o" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/102/p" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/114/i" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/114/o" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/114/p" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/103/a" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/103/b" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/103/c" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/103/f" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/103/g" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/103/h" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/103/i" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/103/j" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/103/k" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/103/o" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/103/p" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/a" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/b" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/c" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/f" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/g" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/h" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/i" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/j" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/k" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/l" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/m" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/n" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/o" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/p")
     if ! type send-returncode-mail >> /dev/null; then
         warn "No text message progress reports, send-returncode-mail function not configured."
         alias send-returncode-mail="false"
@@ -1564,11 +1564,132 @@ function ls-mime-files2 () {
     done
 }
 
+fetch-compile-sage-nice () {
+    /usr/bin/nice -n 19 /usr/bin/ionice -c3 fetch-compile-sage
+}
+
+fetch-compile-sage () {
+    # fetch and compile current version of sage
+    # usage: use --finalize to finalize the setup
+    # XXXX: need to set sage variables elsewhere
+    # TODO: check for valid installation
+    if [[ -z "$SAGEVERSION" || -z "$SAGEVERSIONMD5" ]]; then
+        msg "Using default sage versions."
+        # update for every new sage
+        local SAGEVERSION="7.2"
+        local SAGEVERSIONMD5="d0c5e81683dc79a7654206e57e6e727a"
+        local SAGEMIRROR="http://www.cecm.sfu.ca/sage/src/"
+    fi
+    if [[ -d /opt/sage-"$SAGEVERSION" && "$1" != "--finalize" ]]; then
+        if /opt/sage-"$SAGEVERSION"/sage --version; then
+            warn "/opt/sage-$SAGEVERSION already present and appears functional."
+        else
+            yell "/opt/sage-$SAGEVERSION present but appears non-functional."
+        fi
+        return 1
+    fi
+    sudo true
+    if [[ "$1" != "--finalize" ]]; then
+        sudo apt-get update
+        sudo apt-get install gnutls-bin gnutls-doc libssl1.0.0 libssl-dev libssl-doc
+        sudo apt-get install texlive dvipng ImageMagick
+        if [[ -e "${GPDIST}"/sage-"$SAGEVERSION".tar.gz ]]; then
+            pushd . >> /dev/null
+            cd "${GPDIST}"
+            msg "Already found in distfiles-current!"
+        else
+            # TODO: put into ~/tmp for more universal use
+            # TODO: proper error message if md5sum is not good
+            if [[ ! -e ~/tmp/sage-download/sage-"${SAGEVERSION}".tar.gz || ! $(md5sum ~/tmp/sage-download/sage-"${SAGEVERSION}".tar.gz | cut -d' ' -f1) == "${SAGEVERSIONMD5}" ]]; then
+                msg "Downloading sagemath!"
+                if [[ -e ~/tmp/sage-download ]]
+                then
+                    rm -rf ~/tmp/sage-download
+                fi
+                mkdir -p ~/tmp/sage-download
+                pushd . >> /dev/null
+                cd ~/tmp/sage-download
+                # should I delete this?
+                # TODO: does the tarball already exist?
+                #       do not delete directory in this case
+                wget "$SAGEMIRROR"/sage-"${SAGEVERSION}".tar.gz .
+                msg "Finished downloading!"
+            else
+                msg "Sagemath already downloaded!"
+                pushd . >> /dev/null
+                cd ~/tmp/sage-download
+            fi
+        fi
+        MD5SUMCURRENT=$(md5sum sage-"$SAGEVERSION".tar.gz | cut -d' ' -f1)
+        echo "\"$MD5SUMCURRENT\" should be \"$SAGEVERSIONMD5\""
+        if [[ "$MD5SUMCURRENT" != "$SAGEVERSIONMD5" ]]; then
+            yell "md5 sum incorrect!"
+            return 1
+        fi
+        msg "md5 sum correct!"
+        msg "Unpacking!"
+        if [[ -d sage-"${SAGEVERSION}" ]]; then
+            rm -rf sage-"${SAGEVERSION}"
+        fi
+        tar xvzf sage-"${SAGEVERSION}".tar.gz
+        # check installation
+        msg "Must now move installation directory to /opt"
+        while read -r -t 0;do read -r; done;
+        read -n 1 -p "Continue with build (y/n)? " yn
+        echo ""
+        if [[ "$yn" == "y" ]]; then
+            sudo mv ./sage-"${SAGEVERSION}" /opt
+            cd /opt/sage-"${SAGEVERSION}"
+        else
+            return 1
+        fi
+        # make sure I don't overload my crappy vunerable portable computers
+        if [[ "$HOSTNAME" =~ laptop || "$HOSTNAME" =~ netbook ]]; then
+            MAKE='make -j1' time make
+        else
+            MAKE='make -j8' time make
+        fi
+        # TODO: option to just finalize
+        while read -r -t 0;do read -r; done;
+        read -n 1 -p "Build OK and finalize setup? (y/n)? " yn2
+        echo ""
+    else
+        local yn2="y"
+        pushd . >> /dev/null
+        cd /opt/sage-"${SAGEVERSION}"
+    fi
+    # TODO: make sure I can rerun this if necesssary
+    # TODO: make an upgrade
+    if [[ "$yn2" == "y" ]]; then
+        msg "Exit sage when done!"
+        ./sage
+        ./sage -i openssl
+        ./sage -pip install --upgrade pip
+        ./sage -pip install pyopenssl
+        ./sage -pip install psycopg2
+        ./sage -pip install dill
+        ./sage -pip install multiprocess
+        # install sage mode
+        ./sage -f sage_mode
+        # make docs
+        make doc
+        # TODO: overwrite binary, but ask first
+        if [[ -e /usr/local/bin/sage ]]; then
+            sudo rm /usr/local/bin/sage
+        fi
+        sudo ln -s /opt/sage-"${SAGEVERSION}"/sage /usr/local/bin
+    else
+        echo "Not finalizing!  Can be done later with --finalize"
+    fi
+    msg "Installation done!"
+    popd >> /dev/null
+}
+
 ################################################################################
 ## set interesting things for bashrc, should these be here or a seperate file?
 # XXXX: is it likely this may clobber other things in the namespace?
 # Reset
-Color_Off='\e[0m'       # Text Reset
+Color_Off='\033[0m'       # Text Reset
 # Regular Colors
 Black='\e[0;30m'        # Black
 Red='\e[0;31m'          # Red
