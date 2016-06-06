@@ -1455,7 +1455,7 @@ wget-download-canmatrix2 () {
 wget-current-canmatrix () {
     # expect to take about 16*((16 * 12) + 60) per large grid = 4032min per large numbered grid
     # generally run this on my server to an external hard drive at ~/mnt
-    local URLS=("ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/102/i" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/102/o" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/102/p" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/114/i" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/114/o" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/114/p" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/103/a" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/103/b" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/103/c" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/103/f" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/103/g" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/103/h" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/103/i" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/103/j" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/103/k" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/103/o" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/103/p" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/a" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/b" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/c" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/f" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/g" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/h" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/i" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/j" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/k" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/l" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/m" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/n" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/o" "ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/p")
+    local URLS=("ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/p")
     if ! type send-returncode-mail >> /dev/null; then
         warn "No text message progress reports, send-returncode-mail function not configured."
         alias send-returncode-mail="false"
@@ -1681,8 +1681,36 @@ fetch-compile-sage () {
     else
         echo "Not finalizing!  Can be done later with --finalize"
     fi
+    # try running sage
+    msg "Exit sage when done!"
+    ./sage
     msg "Installation done!"
     popd >> /dev/null
+}
+
+caps-toggle () {
+    # toggle caps just in case
+    xdotool key Caps_Lock
+}
+
+view-mail () {
+    tail -n 200 /var/spool/mail/${USERNAME}
+}
+
+srvg () {
+    if [[ -z "$1" ]]; then
+        service --status-all
+    else
+        service --status-all | grep "$1"
+    fi
+}
+
+srvr () {
+    sudo service "$1" restart
+}
+
+srvs () {
+    sudo service "$1" status
 }
 
 ################################################################################
