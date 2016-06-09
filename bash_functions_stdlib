@@ -7,7 +7,7 @@
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Fri Mar 27, 2015
-# Version: 20160526
+# Version: 20160609
 # URL: https://github.com/akroshko/bash-stdlib
 #
 # This program is free software: you can redistribute it and/or modify
@@ -629,7 +629,7 @@ vcs-diff-public () {
 vcs-push-github () {
     # merge public branch and commit to github
     # XXXX: repository must be setup properly
-
+    # TODO: update verions and commit
     if ! ssh-batch -T git@github.com 2>&1 | grep --color=never "success"; then
         yell "Error connecting to github! Aborting!"
         return 1
@@ -675,23 +675,6 @@ pip-upgrade () {
 git-serve () {
     # a convienient command to browse code for now
     git instaweb
-}
-
-envaddpath() {
-    # based on answer from https://superuser.com/questions/39751/add-directory-to-path-if-its-not-already-there
-    # having environment variable to modify comming first makes my scripts clear
-    ENVVARIABLE="$1"
-    shift
-    local NEWVARIABLE="${!ENVVARIABLE}"
-    for VALUE in $@; do
-        if [[ -d "$VALUE" ]] && [[ ":${NEWVARIABLE}:" != *":$VALUE:"* ]]; then
-            NEWVARIABLE="${NEWVARIABLE}:$VALUE"
-            # strip leading and trailing :
-            NEWVARIABLE=${NEWVARIABLE#:}
-            NEWVARIABLE=${NEWVARIABLE%:}
-        fi
-    done
-    export $(echo $ENVVARIABLE)="${NEWVARIABLE}"
 }
 
 harm-id3-audiobook-all () {
@@ -902,6 +885,16 @@ vcs-init-full () {
 
 check-emacs-daemon () {
     ps -ef | grep "emacs --daemon" | grep -v grep > /dev/null
+    return $?
+}
+
+check-chromium () {
+    ps -ef | grep "/usr/lib/chromium/chromium" | grep -v grep > /dev/null
+    return $?
+}
+
+check-iceweasel () {
+    ps -ef | grep "iceweasel" | grep -v grep > /dev/null
     return $?
 }
 
@@ -1711,6 +1704,30 @@ srvr () {
 
 srvs () {
     sudo service "$1" status
+}
+
+flatten-current-directory () {
+    if [[ "$1" != "--for-real" ]]; then
+        find . -mindepth 2 -type f -exec mv {} .
+    else
+        yell "Dangerous function!!! Use --for-real!!!"
+    fi
+}
+
+phoronix-simple-install () {
+    phoronix-test-suite install pts/build-apache pts/compress-gzip pts/dolfyn pts/gnupg pts/perl-benchmark pts/pybench pts/rbenchmark pts/scimark2
+}
+
+phoronix-simple-benchmark () {
+    phoronix-test-suite batch-benchmark pts/build-apache pts/compress-gzip pts/dolfyn pts/gnupg pts/perl-benchmark pts/pybench pts/rbenchmark pts/scimark2
+}
+
+phoronix-long-install () {
+    phoronix-test-suite install pts/fftw pts/numpy pts/pgbench
+}
+
+phoronix-long-benchmark () {
+    phoronix-test-suite batch-benchmark pts/fftw pts/numpy pts/pgbench
 }
 
 ################################################################################
