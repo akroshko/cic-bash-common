@@ -1730,6 +1730,11 @@ phoronix-long-benchmark () {
     phoronix-test-suite batch-benchmark pts/fftw pts/numpy pts/pgbench
 }
 
+dunst-notifications () {
+    printf "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
+    grep "summary: \|body: " ~/tmp/dunst-current.log | grep -v \'\' | sed -e 's/^[ \t]*//' | sed -e 's/body: /    /' | sed -e 's/summary: //'
+}
+
 ################################################################################
 ## set interesting things for bashrc, should these be here or a seperate file?
 # XXXX: is it likely this may clobber other things in the namespace?
