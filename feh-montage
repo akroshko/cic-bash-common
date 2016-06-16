@@ -1,0 +1,49 @@
+#!/bin/bash
+# TODO: epub and thumbnail/montage for many files at once
+main () {
+    if [[ ! -f "$2" ]]; then
+	    echo "No argument or argument is not a file!"
+	    return 1
+    fi
+    # TODO: check this directory to see if montage already created
+    mkdir -p ~/tmp/document-montages
+    # make sure file exists
+    time {
+        TMPDIR=$(mktemp -d)
+        echo "$TMPDIR"
+        cp "$2" "$TMPDIR"
+        pushd . >> /dev/null
+        cd "$TMPDIR"
+        FNAME=$(basename "$2")
+        echo $(pdfinfo "$2" | grep "Pages: ")
+        pdftk "$TMPDIR"/"$FNAME" burst
+        # XXXX: tends to be done interactively so making things nice is good
+        # find way to record progress
+        /usr/bin/nice -n 19 find "$TMPDIR" -iname "pg*.pdf" -print0 | sort -z | parallel -r0 --progress -I FILE -n 1 -j$(nproc) /usr/bin/pdftoppm -r 150 -singlefile FILE FILE
+        feh-display-montage "$1" "$2"
+        popd >> /dev/null
+    }
+}
+
+feh-display-montage () {
+    local MAXWIDTH=$(feh -l *.ppm | awk '{ print $3 }' | tail -n +2 | sort --numeric | tail -n 1)
+    local MAXHEIGHT=$(feh -l *.ppm | awk '{ print $4 }' | tail -n +2 | sort --numeric | tail -n 1)
+    local WIDTHRATIO=$(echo "$MAXHEIGHT/$MAXWIDTH" | bc -l)
+    local THUMBHEIGHT=$(printf %.0f $(echo "$WIDTHRATIO*1024" | bc -l))
+    echo "Maximum height: $MAXHEIGHT"
+    echo "Maximum width: $MAXWIDTH"
+    echo "Width ratio: $WIDTHRATIO"
+    echo "Thumbnail height: $THUMBHEIGHT"
+    echo "Thumbnail wdith: 1024"
+    # XXXX: these nohup detach the final product from any calling process
+    if [[ ${HOSTNAME} == "akroshko-main" ]]; then
+        nohup feh --geometry=1920x1080+1280+0 --zoom fill $1 --thumb-height "$THUMBHEIGHT" --thumb-width 1024 --limit-width 10240 *.ppm  --output ~/tmp/document-montages/$(md5sum "$2" | awk '{print $1}').jpg &
+    else
+        if [[ $1 == "--thumbnail" ]];then
+            nohup feh --fullscreen --geometry=1280x800+0+0 --zoom fill $1 --thumb-height "$THUMBHEIGHT" --thumb-width 1024 --limit-width 10240 *.ppm &
+        else
+            nohup feh --fullscreen --zoom fill $1 --thumb-height "$THUMBHEIGHT" --thumb-width 1024 --limit-width 10240 *.ppm --output ~/tmp/document-montages/$(md5sum "$2" | awk '{print $1}').jpg &
+        fi
+    fi
+}
+main "$@"

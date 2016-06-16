@@ -7,7 +7,7 @@
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Fri Mar 27, 2015
-# Version: 20160609
+# Version: 20160616
 # URL: https://github.com/akroshko/bash-stdlib
 #
 # This program is free software: you can redistribute it and/or modify
@@ -893,8 +893,8 @@ check-chromium () {
     return $?
 }
 
-check-iceweasel () {
-    ps -ef | grep "iceweasel" | grep -v grep > /dev/null
+check-firefox () {
+    ps -ef | grep "firefox\|iceweasel" | grep -v grep > /dev/null
     return $?
 }
 
@@ -1148,9 +1148,9 @@ master-boss-key () {
     xdotool search --onlyvisible --name firefox | while IFS= read -r line; do
         xdotool windowminimize "${line}"
     done
-    xdotool search --onlyvisible --name iceweasel | while IFS= read -r line; do
-        xdotool windowminimize "${line}"
-    done
+    # xdotool search --onlyvisible --name iceweasel | while IFS= read -r line; do
+    #     xdotool windowminimize "${line}"
+    # done
     # turn off youtube
     # TODO: limit to conkeror
     xdotool search --name youtube | while IFS= read -r line; do
@@ -1733,6 +1733,73 @@ phoronix-long-benchmark () {
 dunst-notifications () {
     printf "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
     grep "summary: \|body: " ~/tmp/dunst-current.log | grep -v \'\' | sed -e 's/^[ \t]*//' | sed -e 's/body: /    /' | sed -e 's/summary: //'
+}
+
+vcs-incoming () {
+    git log ..origin/master
+}
+
+build-install-software () {
+    # assumes I'm in directory with appropriate subdirectories
+    # TODO: compile against downloaded poppler
+    h2 "xpdf"
+    pushd . >> /dev/null
+    cd xpdf-3.04
+    # these work on debian 8.x
+    make clean
+    ./configure --with-freetype2-library=/usr/lib/x86_64-linux-gnu \
+                --with-freetype2-includes=/usr/include/freetype2 \
+                --with-Xm-library=/usr/lib \
+                --with-Xm-includes=/usr/include/Xm
+    make
+    sudo make install
+    popd >> /dev/null
+    h2 "feh"
+    pushd . >> /dev/null
+    cd feh
+    make clean
+    make exif=1 help=1 xinerama=0
+    sudo make install
+    popd >> /dev/null
+    h2 "mupdf"
+    pushd . >> /dev/null
+    cd mupdf
+    make clean
+    git submodule update --init
+    make
+    sudo make install
+    popd >> /dev/null
+    h2 "girara"
+    pushd . >> /dev/null
+    cd girara
+    make clean
+    make
+    sudo make install
+    popd >> /dev/null
+    h2 "zathura"
+    pushd . >> /dev/null
+    cd zathura
+    make clean
+    make
+    sudo make install
+    popd >> /dev/null
+}
+
+ag-list-explicitly-installed () {
+    aptitude search '~i !~M'
+}
+
+amixer-volumes () {
+    echo $(amixer get Master | grep Front.*Playback | tr "\\n" " " | sed -e 's/Front//g' -e 's/Playback//g' -e 's/\s[0-9]\+//g' -e 's/  */ /g')
+}
+
+notify-amixer-volumes () {
+    notify-send "$(amixer-volumes)" -t 200
+}
+
+show-all-x-displays () {
+    # https://unix.stackexchange.com/questions/17255/is-there-a-command-to-list-all-open-displays-on-a-machine
+    cd /tmp/.X11-unix && for x in X*; do echo ":${x#X}"; done
 }
 
 ################################################################################

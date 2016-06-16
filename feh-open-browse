@@ -1,0 +1,25 @@
+#!/bin/bash
+# https://wiki.archlinux.org/index.php/feh#File_Browser_Image_Launcher
+shopt -s nullglob
+
+if [[ -z "$1" ]]; then
+	FULLPATH="$(pwd)"
+else
+    FULLPATH=$(readlink -f "$1")
+    DNAME=$(dirname "$FULLPATH")
+fi
+
+#
+if [[ ${HOSTNAME} == 'akroshko-main' ]]; then
+    if [[ -d "$FULLPATH" ]];then
+        feh --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" --action6 ";nohup gimp \"%f\" &" --geometry=1920x1080+1280+0 "$FULLPATH"
+    else
+        feh --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" --action6 ";nohup gimp \";%f\" &" --geometry=1920x1080+1280+0 "$DNAME" --start-at "$FULLPATH"
+    fi
+else
+    if [[ -d "FULLPATH" ]]; then
+        feh --sort filename --fullscreen --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" "$FULLPATH" --action6 ";nohup gimp \"%f\" &"
+    else
+        feh --sort filename --fullscreen --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" "$DNAME" --action6 ";nohup gimp \"%f\" &" --start-at "$FULLPATH"
+    fi
+fi
