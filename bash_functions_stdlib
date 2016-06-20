@@ -368,6 +368,11 @@ cpu-throttle-up () {
     sudo cpufreq-set -c 3 -g performance
 }
 
+cpu-throttle-up-laptop () {
+    sudo cpufreq-set -c 0 -g performance
+    sudo cpufreq-set -c 1 -g performance
+}
+
 cpu-throttle-down () {
     sudo cpufreq-set -c 0 -g powersave
     sudo cpufreq-set -c 1 -g powersave
@@ -1801,6 +1806,33 @@ show-all-x-displays () {
     # https://unix.stackexchange.com/questions/17255/is-there-a-command-to-list-all-open-displays-on-a-machine
     cd /tmp/.X11-unix && for x in X*; do echo ":${x#X}"; done
 }
+
+phoronix-describe-all-tests () {
+    (IFS=$'\n'
+     for testline in $(\phoronix-test-suite list-available-tests | tail -n +5 | head -n -2); do
+         h2 $(echo "$testline" | awk '{ print $1 }')
+         \phoronix-test-suite info $(echo "$testline" | awk '{ print $1 }')
+     done)
+}
+
+inhibit-powersave () {
+    # make sure screensaver does not restart
+    # TODO: inhibit power management too
+    while true; do
+        echo "Trying..."
+        xscreensaver-command -exit
+        # https://bbs.archlinux.org/viewtopic.php?id=134289
+        xset -dpms
+        xset dpms 0 0 0
+        if [[ ${HOSTNAME} == "akroshko-laptop" ]]; then
+            cpu-throttle-up-laptop
+        else
+            cpu-throttle-up
+        fi
+        sleep 60
+    done
+}
+
 
 ################################################################################
 ## set interesting things for bashrc, should these be here or a seperate file?
