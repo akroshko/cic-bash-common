@@ -362,22 +362,15 @@ psg () {
 }
 
 cpu-throttle-up () {
-    sudo cpufreq-set -c 0 -g performance
-    sudo cpufreq-set -c 1 -g performance
-    sudo cpufreq-set -c 2 -g performance
-    sudo cpufreq-set -c 3 -g performance
-}
-
-cpu-throttle-up-laptop () {
-    sudo cpufreq-set -c 0 -g performance
-    sudo cpufreq-set -c 1 -g performance
+    for (( i = 0; i < $(nproc); i++ )); do
+        sudo cpufreq-set -c "${i}" -g performance
+    done
 }
 
 cpu-throttle-down () {
-    sudo cpufreq-set -c 0 -g powersave
-    sudo cpufreq-set -c 1 -g powersave
-    sudo cpufreq-set -c 2 -g powersave
-    sudo cpufreq-set -c 3 -g powersave
+    for (( i = 0; i < $(nproc); i++ )); do
+        sudo cpufreq-set -c "${i}" -g powersave
+    done
 }
 
 find-broken-symlinks () {
@@ -1824,15 +1817,14 @@ inhibit-powersave () {
         # https://bbs.archlinux.org/viewtopic.php?id=134289
         xset -dpms
         xset dpms 0 0 0
-        if [[ ${HOSTNAME} == "akroshko-laptop" ]]; then
-            cpu-throttle-up-laptop
-        else
-            cpu-throttle-up
-        fi
+        cpu-throttle-up
         sleep 60
     done
 }
 
+grep-functions () {
+    declare -F | grep "$1"
+}
 
 ################################################################################
 ## set interesting things for bashrc, should these be here or a seperate file?
