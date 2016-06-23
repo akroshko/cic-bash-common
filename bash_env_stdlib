@@ -25,7 +25,7 @@
 
 # set up sage if it is installed locally: http://www.sagemath.org/
 SAGEINSTALLATION=
-for f in ~/sage-*; do
+for f in "${HOME}"/sage-*; do
     [[ -d "$f" ]] || continue
     SAGEINSTALLATION="$f"
 done

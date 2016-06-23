@@ -119,6 +119,6 @@ alias scr='screen -dr'
 alias scs='screen-select'
 alias scw='screen -wipe'
 # fallback ssh
-alias ssh-fallback='ssh -o BatchMode "no" -o ChallengeResponseAuthentication "yes" -o PasswordAuthentication "yes"'
+alias ssh-fallback='ssh -o "BatchMode no" -o "ChallengeResponseAuthentication yes" -o "PasswordAuthentication yes"'
 alias spy='sage -python'
 # TODO: change this later?

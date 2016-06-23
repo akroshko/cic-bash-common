@@ -392,13 +392,15 @@ xclip-show-all () {
 
 du-sort () {
     # sort by size after using du
-    du --summarize --human-readable * | sort --human-numeric-sort
+    du --summarize --human-readable * 2>/dev/null | sort --human-numeric-sort
 }
 
 dd-progress () {
     # TODO: spaces after | ???
     #       try on next big dd
-    ps auxww | grep " dd " |grep -v grep |awk '{print $2}' |while read pid; do kill -USR1 $pid; done
+    # ps auxww | grep " dd " |grep -v grep |awk '{print $2}' |while read pid; do kill -USR1 $pid; done
+    # http://askubuntu.com/questions/215505/how-do-you-monitor-the-progress-of-dd
+    sudo kill -USR1 $(pgrep ^dd)
 }
 
 youtube-mp3 () {
@@ -1360,7 +1362,7 @@ vcs-attr () {
 ## good scripts for slurping data from other ftp websites
 
 wget-download-canmatrix2-doc () {
-    NEWDIR="${HOME}/mnt/"
+    NEWDIR="${HOME}/mnt-secondary/"
     mkdir -p "$NEWDIR"
     pushd . >> /dev/null
     cd "$NEWDIR"
@@ -1381,7 +1383,7 @@ wget-download-canmatrix2-doc () {
 }
 
 wget-download-canmatrix2-50k-preview () {
-    NEWDIR="${HOME}/mnt/"
+    NEWDIR="${HOME}/mnt-secondary"
     mkdir -p "$NEWDIR"
     pushd . >> /dev/null
     cd "$NEWDIR"
@@ -1402,7 +1404,7 @@ wget-download-canmatrix2-50k-preview () {
 }
 
 wget-download-canmatrix2-250k-preview () {
-    NEWDIR="${HOME}/mnt/"
+    NEWDIR="${HOME}/mnt-secondary"
     mkdir -p "$NEWDIR"
     pushd . >> /dev/null
     cd "$NEWDIR"
@@ -1423,7 +1425,7 @@ wget-download-canmatrix2-250k-preview () {
 }
 
 wget-download-canmatrix2 () {
-    NEWDIR="${HOME}/mnt/"
+    NEWDIR="${HOME}/mnt-secondary"
     mkdir -p "$NEWDIR"
     pushd . >> /dev/null
     cd "$NEWDIR"
@@ -1454,12 +1456,12 @@ wget-current-canmatrix () {
         true
         send-returncode-mail "Canmatrix- starting!"
     fi
-    if grep -qs ${HOME}/mnt /proc/self/mounts >> /dev/null; then
+    if grep -qs ${HOME}/mnt-secondary /proc/self/mounts >> /dev/null; then
         {
             time {
-                mkdir -p ~/mnt
+                mkdir -p "${HOME}"/mnt-secondary
                 pushd . >> /dev/null
-                cd ~/mnt
+                cd "${HOME}"/mnt-secondary
                 # 83 urls, area around edmonton
                 h1 "Starting!!!"
                 for URL in "${URLS[@]}"; do
@@ -1475,7 +1477,7 @@ wget-current-canmatrix () {
                 done
                 popd >> /dev/null
             }
-        } 2>&1 | tee -a ~/mnt/canmatrix2-$(date-time-stamp).log
+        } 2>&1 | tee -a "${HOME}"/mnt-secondary/canmatrix2-$(date-time-stamp).log
         send-returncode-mail "Canmatrix- done grid script!"
     else
         yell "Nothing mounted to collect data!!!"
@@ -1544,7 +1546,7 @@ function ls-mime-files () {
 function ls-mime-files2 () {
     # see https://unix.stackexchange.com/questions/36380/how-to-properly-and-easy-configure-xdg-open-without-any-enviroment
     # XXXX: changed variable from dd, bad name for bash variable
-    for thedir in /usr/share/applications ~/.local/share/applications; do
+    for thedir in /usr/share/applications "${HOME}"/.local/share/applications; do
         h2 "$thedir"
         for thefile in $(ls $thedir 2>/dev/null | grep "\\.desktop$"); do
             h3 "$thefile"
@@ -1591,15 +1593,15 @@ fetch-compile-sage () {
         else
             # TODO: put into ~/tmp for more universal use
             # TODO: proper error message if md5sum is not good
-            if [[ ! -e ~/tmp/sage-download/sage-"${SAGEVERSION}".tar.gz || ! $(md5sum ~/tmp/sage-download/sage-"${SAGEVERSION}".tar.gz | cut -d' ' -f1) == "${SAGEVERSIONMD5}" ]]; then
+            if [[ ! -e "${HOME}"/tmp/sage-download/sage-"${SAGEVERSION}".tar.gz || ! $(md5sum "${HOME}"/tmp/sage-download/sage-"${SAGEVERSION}".tar.gz | cut -d' ' -f1) == "${SAGEVERSIONMD5}" ]]; then
                 msg "Downloading sagemath!"
-                if [[ -e ~/tmp/sage-download ]]
+                if [[ -e "${HOME}"/tmp/sage-download ]]
                 then
-                    rm -rf ~/tmp/sage-download
+                    rm -rf "${HOME}"/tmp/sage-download
                 fi
-                mkdir -p ~/tmp/sage-download
+                mkdir -p "${HOME}"/tmp/sage-download
                 pushd . >> /dev/null
-                cd ~/tmp/sage-download
+                cd "${HOME}"/tmp/sage-download
                 # should I delete this?
                 # TODO: does the tarball already exist?
                 #       do not delete directory in this case
@@ -1608,7 +1610,7 @@ fetch-compile-sage () {
             else
                 msg "Sagemath already downloaded!"
                 pushd . >> /dev/null
-                cd ~/tmp/sage-download
+                cd "${HOME}"/tmp/sage-download
             fi
         fi
         MD5SUMCURRENT=$(md5sum sage-"$SAGEVERSION".tar.gz | cut -d' ' -f1)
@@ -1730,7 +1732,7 @@ phoronix-long-benchmark () {
 
 dunst-notifications () {
     printf "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
-    grep "summary: \|body: " ~/tmp/dunst-current.log | grep -v \'\' | sed -e 's/^[ \t]*//' | sed -e 's/body: /    /' | sed -e 's/summary: //'
+    grep "summary: \|body: " "${HOME}"/tmp/dunst-current.log | grep -v \'\' | sed -e 's/^[ \t]*//' | sed -e 's/body: /    /' | sed -e 's/summary: //'
 }
 
 vcs-incoming () {
@@ -1824,6 +1826,30 @@ inhibit-powersave () {
 
 grep-functions () {
     declare -F | grep "$1"
+}
+
+rsync-remove-source () {
+    # TODO: better interace
+    # TODO: still put right picket fence
+    # if [[ ! -d "$1" ]]; then
+    #     yell "Empty arguments!"
+    #     return 1
+    # fi
+    if ssh "${1}" true; then
+        msg "Incoming from ${1}"
+        BACKUPDIR="rsync-backups-${1}-$(date-time-stamp)"
+        rsync --progress --archive --checksum --backup --backup-dir="$BACKUPDIR" --rsh='ssh' --remove-source-files ${1}:"$2"/ .
+        # will cause error if there are backups
+        rmdir --ignore-fail-on-non-empty "$BACKUPDIR"
+    else
+        warn "Hostname $1 not found!"
+    fi
+}
+
+vcs-incoming () {
+    # https://stackoverflow.com/questions/1331385/how-can-i-see-incoming-commits-in-git
+    git diff --stat master origin/master
+    git diff master origin/master
 }
 
 ################################################################################
