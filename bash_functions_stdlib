@@ -1846,10 +1846,24 @@ rsync-remove-source () {
     fi
 }
 
+rsync-check-source () {
+    # do this before running above with same arguments
+    if ssh "${1}" true; then
+        # TODO: make explicitly that contents of that directory come into current directory
+        rsync --verbose --checksum --progress --archive  --rsh='ssh' ${1}:"$2"/ .
+    else
+        warn "Hostname $1 not found!"
+    fi
+}
+
 vcs-incoming () {
     # https://stackoverflow.com/questions/1331385/how-can-i-see-incoming-commits-in-git
     git diff --stat master origin/master
     git diff master origin/master
+}
+
+trim-mp3-to-30min () {
+    ffmpeg -i "$1" -codec copy -ss 00:00:30 -t 00:30:00 "$2"
 }
 
 ################################################################################
