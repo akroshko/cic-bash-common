@@ -851,33 +851,6 @@ aloopback-low () {
     arecord -vv | sox -t wav - -t wav - lowpass 300 | aplay
 }
 
-vcs-clone-to-bare () {
-    # https://stackoverflow.com/questions/4142936/git-clone-from-local-to-remote
-    # TODO: need to add a file before I can do anything
-    # TODO: this is my own check for my own system, need to generalize
-    if check-host-main && [[ -d ${PWD}/"$1" ]]; then
-        local REALPATH="$(realpath $1)"
-        REALPATH=${REALPATH%/}
-        if [[ -e "$REALPATH".git ]]
-        then
-            msg "$1.git already exists!"
-            return 1
-        fi
-        pushd . >> /dev/null
-        mkdir -p "$REALPATH".git
-        cd "$REALPATH".git
-        git init --bare
-        popd >> /dev/null
-        pushd . >> /dev/null
-        cd "$REALPATH"
-        # on desired branch
-        git remote add origin "$REALPATH".git/
-        git push --all origin
-        git branch --set-upstream-to=origin/master master
-        popd >> /dev/null
-    fi
-}
-
 vcs-init-full () {
     # TODO: check for files existing
     git init && git add * && git commit -a -m 'initial commit'
