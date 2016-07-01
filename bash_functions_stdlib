@@ -1839,6 +1839,34 @@ trim-mp3-to-30min () {
     ffmpeg -i "$1" -codec copy -ss 00:00:30 -t 00:30:00 "$2"
 }
 
+normalize-volume () {
+    # set system volume to nice levels on one run
+    amixer set Master 50%
+    amixer set Master unmute
+    # youtube volume sometimes stupid, normalize it too
+    youtube-normalize-volume
+    local DATESTAMP=$(date-time-stamp)
+    notify-send "Normalizing volume" "$DATESTAMP" -t 5000
+}
+
+youtube-normalize-volume () {
+    # global function to normalize volume in youtube windows
+    # TODO: if no window here
+    local CURRENTWINDOW=$(xdotool getwindowfocus)
+    xdotool search --name youtube | while IFS= read -r line; do
+        if xdotool search --class conkeror | grep "${line}" >> /dev/null; then
+            xdotool windowfocus --sync "${line}";
+            xdotool windowactivate --sync "${line}"
+            # TODO: very arbitrary delay, perhaps wait for something to return
+            sleep 0.05
+            conkeror -f youtube-normalize-volume
+        fi
+    done
+    # TODO: very arbitrary, perhaps wait for something to return
+    sleep 0.05
+    xdotool windowactivate --sync ${CURRENTWINDOW}
+}
+
 ################################################################################
 ## set interesting things for bashrc, should these be here or a seperate file?
 # XXXX: is it likely this may clobber other things in the namespace?
