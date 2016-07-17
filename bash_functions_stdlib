@@ -7,7 +7,7 @@
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Fri Mar 27, 2015
-# Version: 20160616
+# Version: 20160716
 # URL: https://github.com/akroshko/bash-stdlib
 #
 # This program is free software: you can redistribute it and/or modify
@@ -432,7 +432,7 @@ fgi () {
 }
 
 harm-bash () {
-    if ps -ef | grep "xbindkeys" | grep -v grep >> /dev/null; then
+    if ps -ef | grep "xbindkeys" | grep -v grep >/dev/null; then
         if [[ -t 0 && -n "$DISPLAY" ]]; then
             killall xbindkeys
         else
@@ -495,7 +495,7 @@ vcs-check-root () {
         if [[ -d "$dirname/.git" ]]; then
             # TODO: exclude lines saying [up to date] and just give a summary of branches
             h1 "Checking $dirname/.git"
-            pushd . >> /dev/null
+            pushd . >/dev/null
             cd "$dirname"
             git fetch
             git fetch --verbose
@@ -504,26 +504,26 @@ vcs-check-root () {
             h2 "pull needed?"
             # TODO: indicate no pull needed
             local STATUS=$(git status -uno)
-            if echo "$STATUS" | grep "up-to-date" >> /dev/null; then
+            if echo "$STATUS" | grep "up-to-date" >/dev/null; then
                 msg "Seems up to date!"
             else
                 yell "Not up to date!"
             fi
             echo "$STATUS"
-            popd >> /dev/null
+            popd >/dev/null
         elif [[ -d "$dirname/.hg" ]]; then
             h1 "Checking $dirname/.hg"
             # TODO: non-functional? I have no remaining hg repos
-            # pushd . >> /dev/null
+            # pushd . >/dev/null
             # cd "$dirname"
             # hg fetch --dry-run --verbose
-            # popd >> /dev/null
+            # popd >/dev/null
         elif [[ -d "$dirname/.svn" ]]; then
             h1 "Checking $dirname/.svn"
-            pushd . >> /dev/null
+            pushd . >/dev/null
             cd "$dirname"
             svn status --show-updates
-            popd >> /dev/null
+            popd >/dev/null
         else
             h1 "Not checking $dirname"
         fi
@@ -542,21 +542,21 @@ vcs-update-versions () {
             # hash comment
             sed -i -e "s/^# Version:.*$/# Version: $(date-stamp)/g" "$f"
             # if not copyright matches this year
-            if grep "^# Copyright" $f >> /dev/null && ! grep "^# Copyright.*2016" $f >> /dev/null; then
+            if grep "^# Copyright" $f >/dev/null && ! grep "^# Copyright.*2016" $f >> /dev/null; then
                 warn "Need to update year in $f"
             fi
         elif [[ "$FILETYPE" =~ "Lisp/Scheme program" ]] || [[ "$VERSIONFILE" =~ \.el$ ]]; then
             # lisp
             sed -i -e "s/^;; Version:.*$/;; Version: $(date-stamp)/g" "$f"
             # if not copyright matches this year
-            if grep "^;; Copyright" $f >> /dev/null && ! grep "Copyright.*2016" $f >> /dev/null; then
+            if grep "^;; Copyright" $f >/dev/null && ! grep "Copyright.*2016" $f >> /dev/null; then
                 warn "Need to update year in $f"
             fi
         elif [[ "$FILETYPE" =~ "LaTeX document" ]]; then
             # latex
             sed -i -e "s/^% Version:.*$/% Version: $(date-stamp)/g" "$f"
             # if not copyright matches this year
-            if ! grep "Copyright.*2016" $f >> /dev/null; then
+            if ! grep "Copyright.*2016" $f >/dev/null; then
                 warn "Need to update year in $f"
             fi
         fi
@@ -614,13 +614,13 @@ vcs-diff-public () {
     else
         for dirname in ${PWD}/*; do
             if [[ -d "$dirname/.git" ]]; then
-                pushd . >> /dev/null
+                pushd . >/dev/null
                 cd "$dirname"
-                if git rev-parse --verify public >> /dev/null 2>&1; then
+                if git rev-parse --verify public >/dev/null 2>&1; then
                     h1 "Checking $dirname"
                     git diff master..public --stat
                 fi
-                popd >> /dev/null
+                popd >/dev/null
             fi
         done
     fi
@@ -683,14 +683,14 @@ harm-id3-audiobook-all () {
     if dangerous-function-ask; then
         for d in ${PWD}/*; do
             [[ -d "$d" ]] || continue
-            pushd . >> /dev/null
+            pushd . >/dev/null
             cd "${d}"
             yes | harm-id3-genre-as-audiobook
             yes | harm-id3-album-as-directory
             yes | harm-id3-name-as-filename
             yes | harm-id3-alphabetical-track
             yes | harm-id3-remove-v1
-            popd >> /dev/null
+            popd >/dev/null
         done
     fi
 }
@@ -857,17 +857,17 @@ vcs-init-full () {
 }
 
 check-emacs-daemon () {
-    ps -ef | grep "emacs --daemon" | grep -v grep > /dev/null
+    ps -ef | grep "emacs --daemon" | grep -v grep >/dev/null
     return $?
 }
 
 check-chromium () {
-    ps -ef | grep "/usr/lib/chromium/chromium" | grep -v grep > /dev/null
+    ps -ef | grep "/usr/lib/chromium/chromium" | grep -v grep >/dev/null
     return $?
 }
 
 check-firefox () {
-    ps -ef | grep "firefox\|iceweasel" | grep -v grep > /dev/null
+    ps -ef | grep "firefox\|iceweasel" | grep -v grep >/dev/null
     return $?
 }
 
@@ -964,7 +964,7 @@ sage-notebook () {
        local NBPATH="${PYTHON_NOTEBOOK_ROOT}/sage-notebooks-${HOSTNAME}.sagenb"
        mkdir -p "${NBPATH}"
        # XXXX: grep to avoid just sage-notebook from scripts that might run this
-       if ps -ef | grep "src/bin/sage-notebook" | grep -v grep > /dev/null; then
+       if ps -ef | grep "src/bin/sage-notebook" | grep -v grep >/dev/null; then
            sage-notebook-browser
        else
            SAGE_BROWSER="nohup chromium" sage --notebook=sagenb secure=True port=18080 automatic_login=True interface='' directory="${NBPATH}"
@@ -990,7 +990,7 @@ sage-ipython-notebook () {
         local NBPATH="${PYTHON_NOTEBOOK_ROOT}/sage-ipython-notebooks-${HOSTNAME}"
         mkdir -p "${NBPATH}"
         # TODO: subsitute for --deep-reload --automagic --secure --pprint depricated options
-        if ps -ef | grep "ipython notebook" | grep -v grep > /dev/null; then
+        if ps -ef | grep "ipython notebook" | grep -v grep >/dev/null; then
             sage-ipython-notebook-browser
         else
             sage -ipython notebook --notebook-dir="${NBPATH}" --browser="chromium" --port=18888
@@ -1025,14 +1025,14 @@ youtube-pause () {
     local CURRENTWINDOW=$(xdotool getwindowfocus)
     local CURRENTYOUTUBE=
     xdotool search --onlyvisible --name youtube | while IFS= read -r line; do
-        if xdotool search --class conkeror | grep "${line}" >> /dev/null; then
+        if xdotool search --class conkeror | grep "${line}" >/dev/null; then
             xdotool windowminimize "${line}"
         fi
     done
     # turn off youtube
     # TODO: limit to conkeror
     xdotool search --name youtube | while IFS= read -r line; do
-        if xdotool search --class conkeror | grep "${line}" >> /dev/null; then
+        if xdotool search --class conkeror | grep "${line}" >/dev/null; then
             xdotool windowfocus --sync "${line}";
             # TODO: very arbitrary delay, perhaps wait for something to return
             sleep 0.05
@@ -1052,13 +1052,13 @@ youtube-restore () {
     # global function to restore a running Youtube in Conkeror
     local CURRENTWINDOW=$(xdotool getwindowfocus)
     xdotool search --onlyvisible --name youtube | while IFS= read -r line; do
-        if xdotool search --class conkeror | grep "${line}" >> /dev/null; then
+        if xdotool search --class conkeror | grep "${line}" >/dev/null; then
             xdotool windowfocus --sync "${line}"
             xdotool windowactivate --sync "${line}"
         fi
     done
     xdotool search --name youtube | while IFS= read -r line; do
-       if xdotool search --class conkeror | grep "${line}" >> /dev/null; then
+       if xdotool search --class conkeror | grep "${line}" >/dev/null; then
            xdotool windowfocus --sync "${line}";
            xdotool windowactivate --sync "${line}"
            # TODO: very arbitrary delay, perhaps wait for something to return
@@ -1075,7 +1075,7 @@ youtube-previous () {
     # TODO: if no window here
     local CURRENTWINDOW=$(xdotool getwindowfocus)
     xdotool search --name youtube | while IFS= read -r line; do
-        if xdotool search --class conkeror | grep "${line}" >> /dev/null; then
+        if xdotool search --class conkeror | grep "${line}" >/dev/null; then
             xdotool windowfocus --sync "${line}";
             xdotool windowactivate --sync "${line}"
             # TODO: very arbitrary delay, perhaps wait for something to return
@@ -1093,7 +1093,7 @@ youtube-next () {
     # TODO: if no window here
     local CURRENTWINDOW=$(xdotool getwindowfocus)
     xdotool search --name youtube | while IFS= read -r line; do
-        if xdotool search --class conkeror | grep "${line}" >> /dev/null; then
+        if xdotool search --class conkeror | grep "${line}" >/dev/null; then
             xdotool windowfocus --sync "${line}"
             # TODO: very arbitrary delay, perhaps wait for something to return
             sleep 0.1
@@ -1127,7 +1127,7 @@ master-boss-key () {
     # turn off youtube
     # TODO: limit to conkeror
     xdotool search --name youtube | while IFS= read -r line; do
-        if xdotool search --class conkeror | grep "${line}" >> /dev/null; then
+        if xdotool search --class conkeror | grep "${line}" >/dev/null; then
             xdotool windowfocus --sync "${line}";
             sleep 0.05
             conkeror -f youtube-pause
@@ -1211,7 +1211,7 @@ select-disk-uuid-usb () {
     local count=1
     for d in /dev/disk/by-uuid/*; do
         [[ "$d" == "/dev/disk/by-uuid/$1" ]] && continue
-        if /sbin/udevadm info --query=all --name=$(readlink -f $d) | grep ID_BUS >> /dev/null; then
+        if /sbin/udevadm info --query=all --name=$(readlink -f $d) | grep ID_BUS >/dev/null; then
             printf "$count) %-55s  %s\n" "$d" "$(df -H $d | grep -v ^Filesystem)"
             count=$(( $count + 1 ))
             USBARRAY+=("$d")
@@ -1337,7 +1337,7 @@ vcs-attr () {
 wget-download-canmatrix2-doc () {
     NEWDIR="${HOME}/mnt-secondary/"
     mkdir -p "$NEWDIR"
-    pushd . >> /dev/null
+    pushd . >/dev/null
     cd "$NEWDIR"
     wget \
       --execute robots=off \
@@ -1352,15 +1352,15 @@ wget-download-canmatrix2-doc () {
       --wait=300 \
       --waitretry=60 \
       ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/doc/
-    popd >> /dev/null
+    popd >/dev/null
 }
 
 wget-download-canmatrix2-50k-preview () {
     NEWDIR="${HOME}/mnt-secondary"
     mkdir -p "$NEWDIR"
-    pushd . >> /dev/null
+    pushd . >/dev/null
     cd "$NEWDIR"
-    popd >> /dev/null
+    popd >/dev/null
     wget \
       --execute robots=off \
       --user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.73 Safari/537.36" \
@@ -1379,9 +1379,9 @@ wget-download-canmatrix2-50k-preview () {
 wget-download-canmatrix2-250k-preview () {
     NEWDIR="${HOME}/mnt-secondary"
     mkdir -p "$NEWDIR"
-    pushd . >> /dev/null
+    pushd . >/dev/null
     cd "$NEWDIR"
-    popd >> /dev/null
+    popd >/dev/null
     wget \
       --execute robots=off \
       --user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.73 Safari/537.36" \
@@ -1400,7 +1400,7 @@ wget-download-canmatrix2-250k-preview () {
 wget-download-canmatrix2 () {
     NEWDIR="${HOME}/mnt-secondary"
     mkdir -p "$NEWDIR"
-    pushd . >> /dev/null
+    pushd . >/dev/null
     cd "$NEWDIR"
     # TODO: need an alias for this type of download
     wget \
@@ -1415,25 +1415,25 @@ wget-download-canmatrix2 () {
       --wait=600 \
       --waitretry=60 \
       "$1"
-    popd >> /dev/null
+    popd >/dev/null
 }
 
 wget-current-canmatrix () {
     # expect to take about 16*((16 * 12) + 60) per large grid = 4032min per large numbered grid
     # generally run this on my server to an external hard drive at ~/mnt
     local URLS=("ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/p")
-    if ! type send-returncode-mail >> /dev/null; then
+    if ! type send-returncode-mail >/dev/null; then
         warn "No text message progress reports, send-returncode-mail function not configured."
         alias send-returncode-mail="false"
     else
         true
         send-returncode-mail "Canmatrix- starting!"
     fi
-    if grep -qs ${HOME}/mnt-secondary /proc/self/mounts >> /dev/null; then
+    if grep -qs ${HOME}/mnt-secondary /proc/self/mounts >/dev/null; then
         {
             time {
                 mkdir -p "${HOME}"/mnt-secondary
-                pushd . >> /dev/null
+                pushd . >/dev/null
                 cd "${HOME}"/mnt-secondary
                 # 83 urls, area around edmonton
                 h1 "Starting!!!"
@@ -1448,7 +1448,7 @@ wget-current-canmatrix () {
                     # echo "$URL"
                     # sleep $(( $RANDOM % 60 + 30 ))s
                 done
-                popd >> /dev/null
+                popd >/dev/null
             }
         } 2>&1 | tee -a "${HOME}"/mnt-secondary/canmatrix2-$(date-time-stamp).log
         send-returncode-mail "Canmatrix- done grid script!"
@@ -1560,7 +1560,7 @@ fetch-compile-sage () {
         sudo apt-get install gnutls-bin gnutls-doc libssl1.0.0 libssl-dev libssl-doc
         sudo apt-get install texlive dvipng ImageMagick
         if [[ -e "${GPDIST}"/sage-"$SAGEVERSION".tar.gz ]]; then
-            pushd . >> /dev/null
+            pushd . >/dev/null
             cd "${GPDIST}"
             msg "Already found in distfiles-current!"
         else
@@ -1573,7 +1573,7 @@ fetch-compile-sage () {
                     rm -rf "${HOME}"/tmp/sage-download
                 fi
                 mkdir -p "${HOME}"/tmp/sage-download
-                pushd . >> /dev/null
+                pushd . >/dev/null
                 cd "${HOME}"/tmp/sage-download
                 # should I delete this?
                 # TODO: does the tarball already exist?
@@ -1582,7 +1582,7 @@ fetch-compile-sage () {
                 msg "Finished downloading!"
             else
                 msg "Sagemath already downloaded!"
-                pushd . >> /dev/null
+                pushd . >/dev/null
                 cd "${HOME}"/tmp/sage-download
             fi
         fi
@@ -1621,7 +1621,7 @@ fetch-compile-sage () {
         echo ""
     else
         local yn2="y"
-        pushd . >> /dev/null
+        pushd . >/dev/null
         cd /opt/sage-"${SAGEVERSION}"
     fi
     # TODO: make sure I can rerun this if necesssary
@@ -1651,7 +1651,7 @@ fetch-compile-sage () {
     msg "Exit sage when done!"
     ./sage
     msg "Installation done!"
-    popd >> /dev/null
+    popd >/dev/null
 }
 
 caps-toggle () {
@@ -1716,7 +1716,7 @@ build-install-software () {
     # assumes I'm in directory with appropriate subdirectories
     # TODO: compile against downloaded poppler
     h2 "xpdf"
-    pushd . >> /dev/null
+    pushd . >/dev/null
     cd xpdf-3.04
     # these work on debian 8.x
     make clean
@@ -1726,36 +1726,36 @@ build-install-software () {
                 --with-Xm-includes=/usr/include/Xm
     make
     sudo make install
-    popd >> /dev/null
+    popd >/dev/null
     h2 "feh"
-    pushd . >> /dev/null
+    pushd . >/dev/null
     cd feh
     make clean
     make exif=1 help=1 xinerama=0
     sudo make install
-    popd >> /dev/null
+    popd >/dev/null
     h2 "mupdf"
-    pushd . >> /dev/null
+    pushd . >/dev/null
     cd mupdf
     make clean
     git submodule update --init
     make
     sudo make install
-    popd >> /dev/null
+    popd >/dev/null
     h2 "girara"
-    pushd . >> /dev/null
+    pushd . >/dev/null
     cd girara
     make clean
     make
     sudo make install
-    popd >> /dev/null
+    popd >/dev/null
     h2 "zathura"
-    pushd . >> /dev/null
+    pushd . >/dev/null
     cd zathura
     make clean
     make
     sudo make install
-    popd >> /dev/null
+    popd >/dev/null
 }
 
 ag-list-explicitly-installed () {
@@ -1854,7 +1854,7 @@ youtube-normalize-volume () {
     # TODO: if no window here
     local CURRENTWINDOW=$(xdotool getwindowfocus)
     xdotool search --name youtube | while IFS= read -r line; do
-        if xdotool search --class conkeror | grep "${line}" >> /dev/null; then
+        if xdotool search --class conkeror | grep "${line}" >/dev/null; then
             xdotool windowfocus --sync "${line}";
             xdotool windowactivate --sync "${line}"
             # TODO: very arbitrary delay, perhaps wait for something to return
@@ -1866,72 +1866,3 @@ youtube-normalize-volume () {
     sleep 0.05
     xdotool windowactivate --sync ${CURRENTWINDOW}
 }
-
-################################################################################
-## set interesting things for bashrc, should these be here or a seperate file?
-# XXXX: is it likely this may clobber other things in the namespace?
-# Reset
-Color_Off='\033[0m'       # Text Reset
-# Regular Colors
-Black='\e[0;30m'        # Black
-Red='\e[0;31m'          # Red
-Green='\e[0;32m'        # Green
-Yellow='\e[0;33m'       # Yellow
-Blue='\e[0;34m'         # Blue
-Purple='\e[0;35m'       # Purple
-Cyan='\e[0;36m'         # Cyan
-White='\e[0;37m'        # White
-# Bold
-BBlack='\e[1;30m'       # Black
-BRed='\e[1;31m'         # Red
-BGreen='\e[1;32m'       # Green
-BYellow='\e[1;33m'      # Yellow
-BBlue='\e[1;34m'        # Blue
-BPurple='\e[1;35m'      # Purple
-BCyan='\e[1;36m'        # Cyan
-BWhite='\e[1;37m'       # White
-# Underline
-UBlack='\e[4;30m'       # Black
-URed='\e[4;31m'         # Red
-UGreen='\e[4;32m'       # Green
-UYellow='\e[4;33m'      # Yellow
-UBlue='\e[4;34m'        # Blue
-UPurple='\e[4;35m'      # Purple
-UCyan='\e[4;36m'        # Cyan
-UWhite='\e[4;37m'       # White
-# Background
-On_Black='\e[40m'       # Black
-On_Red='\e[41m'         # Red
-On_Green='\e[42m'       # Green
-On_Yellow='\e[43m'      # Yellow
-On_Blue='\e[44m'        # Blue
-On_Purple='\e[45m'      # Purple
-On_Cyan='\e[46m'        # Cyan
-On_White='\e[47m'       # White
-# High Intensity
-IBlack='\e[0;90m'       # Black
-IRed='\e[0;91m'         # Red
-IGreen='\e[0;92m'       # Green
-IYellow='\e[0;93m'      # Yellow
-IBlue='\e[0;94m'        # Blue
-IPurple='\e[0;95m'      # Purple
-ICyan='\e[0;96m'        # Cyan
-IWhite='\e[0;97m'       # White
-# Bold High Intensity
-BIBlack='\e[1;90m'      # Black
-BIRed='\e[1;91m'        # Red
-BIGreen='\e[1;92m'      # Green
-BIYellow='\e[1;93m'     # Yellow
-BIBlue='\e[1;94m'       # Blue
-BIPurple='\e[1;95m'     # Purple
-BICyan='\e[1;96m'       # Cyan
-BIWhite='\e[1;97m'      # White
-# High Intensity backgrounds
-On_IBlack='\e[0;100m'   # Black
-On_IRed='\e[0;101m'     # Red
-On_IGreen='\e[0;102m'   # Green
-On_IYellow='\e[0;103m'  # Yellow
-On_IBlue='\e[0;104m'    # Blue
-On_IPurple='\e[10;95m'  # Purple
-On_ICyan='\e[0;106m'    # Cyan
-On_IWhite='\e[0;107m'   # White

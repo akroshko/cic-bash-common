@@ -12,7 +12,7 @@ main () {
         TMPDIR=$(mktemp -d)
         echo "$TMPDIR"
         cp "$2" "$TMPDIR"
-        pushd . >> /dev/null
+        pushd . >/dev/null
         cd "$TMPDIR"
         FNAME=$(basename "$2")
         echo $(pdfinfo "$2" | grep "Pages: ")
@@ -21,7 +21,7 @@ main () {
         # find way to record progress
         /usr/bin/nice -n 19 find "$TMPDIR" -iname "pg*.pdf" -print0 | sort -z | parallel -r0 --progress -I FILE -n 1 -j$(nproc) /usr/bin/pdftoppm -r 150 -singlefile FILE FILE
         feh-display-montage "$1" "$2"
-        popd >> /dev/null
+        popd >/dev/null
     }
 }
 

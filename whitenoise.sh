@@ -7,7 +7,7 @@
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Sun Sep 20, 2015
-# Version: 20160616
+# Version: 20160716
 # URL: https://github.com/akroshko/bash-stdlib
 #
 # This program is free software: you can redistribute it and/or modify
@@ -30,7 +30,7 @@
 # $BACKGROUNDNOISESUBSTRING to define a unique substring for nice
 # interaction with xbindkeys or other shortcut managers.
 
-if ps -ef | grep "${BACKGROUNDNOISESUBSTRING}" | grep -v grep > /dev/null
+if ps -ef | grep "${BACKGROUNDNOISESUBSTRING}" | grep -v grep >/dev/null
 then
     echo "pause" | nc -q 2 localhost 19000
 else
