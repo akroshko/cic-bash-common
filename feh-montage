@@ -9,12 +9,12 @@ main () {
     mkdir -p ~/tmp/document-montages
     # make sure file exists
     time {
-        TMPDIR=$(mktemp -d)
+        local TMPDIR=$(mktemp -d)
         echo "$TMPDIR"
         cp "$2" "$TMPDIR"
         pushd . >/dev/null
         cd "$TMPDIR"
-        FNAME=$(basename "$2")
+        local FNAME=$(basename "$2")
         echo $(pdfinfo "$2" | grep "Pages: ")
         pdftk "$TMPDIR"/"$FNAME" burst
         # XXXX: tends to be done interactively so making things nice is good

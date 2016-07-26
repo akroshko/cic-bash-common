@@ -35,7 +35,7 @@ next-pdf-same-directory () {
                          break;
                      fi
                      if [[ "$f" == "$current_fname" ]]; then
-                         found=0
+                         local found=0
                      fi
                  done)
     echo "$next"

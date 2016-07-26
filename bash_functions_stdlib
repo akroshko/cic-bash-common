@@ -708,7 +708,7 @@ harm-id3-name-as-filename () {
         for F in ${PWD}/*.mp3; do
             local BNAME="${f%%.mp3}"
             # XXXX: basename doesn't work with comma in filename
-            BNAME="${bname##*/}"
+            local BNAME="${bname##*/}"
             eyeD3 --to-v2.4 --title="$BNAME" "$F"
         done
     fi
@@ -783,38 +783,38 @@ msg () {
 
 h1 () {
     if [[ -z "$*" ]]; then
-        OUTSTR=$(echo "================================================================================" | cut -c 1-80)
+        local OUTSTR=$(echo "================================================================================" | cut -c 1-80)
     else
-        OUTSTR=$(echo "==== $* ================================================================================" | cut -c 1-80)
+        local OUTSTR=$(echo "==== $* ================================================================================" | cut -c 1-80)
     fi
     echo -e "${BWhite}${On_Blue}$OUTSTR${Color_Off}" >&2
 }
 
 h1-end () {
     if [[ -z "$*" ]]; then
-        OUTSTR=$(echo "" | cut -c 1-80)
+        local OUTSTR=$(echo "" | cut -c 1-80)
     else
-        OUTSTR=$(echo "$*" | cut -c 1-80)
+        local OUTSTR=$(echo "$*" | cut -c 1-80)
     fi
     echo -e "${BWhite}${On_Blue}<<<<${Color_Off} ${BWhite}$OUTSTR${Color_Off}" >&2
 }
 
 h1-script () {
-    OUTSTR=$(echo "==== Running $(basename $0) ================================================================================" | cut -c 1-80)
+    local OUTSTR=$(echo "==== Running $(basename $0) ================================================================================" | cut -c 1-80)
     echo -e "${BWhite}${On_Blue}$OUTSTR${Color_Off}" >&2
 }
 
 h1-script-end () {
-    OUTSTR=$(echo "Finishing $(basename $0)" | cut -c 1-80)
+    local OUTSTR=$(echo "Finishing $(basename $0)" | cut -c 1-80)
     echo -e "${BWhite}${On_Blue}<<<<${Color_Off} ${BWhite}$OUTSTR${Color_Off}" >&2
 }
 
 h2 () {
    if [[ -z "$*" ]]
     then
-        OUTSTR=$(echo "----------------------------------------" | cut -c 1-60)
+        local OUTSTR=$(echo "----------------------------------------" | cut -c 1-60)
     else
-        OUTSTR=$(echo "---- $* ----------------------------------------" | cut -c 1-60)
+        local OUTSTR=$(echo "---- $* ----------------------------------------" | cut -c 1-60)
    fi
    # TODO: probably want different color than cyan
    echo -e "${BWhite}${On_Cyan}$OUTSTR${Color_Off}" >&2
@@ -823,9 +823,9 @@ h2 () {
 h3 () {
    if [[ -z "$*" ]]
     then
-        OUTSTR=$(echo "----")
+        local OUTSTR=$(echo "----")
     else
-        OUTSTR=$(echo "---- $*")
+        local OUTSTR=$(echo "---- $*")
     fi
     echo -e "${White}${On_Purple}$OUTSTR${Color_Off}" >&2
 }
@@ -926,8 +926,8 @@ fix-permissive-permissions-recursive () {
 }
 
 add-line-if-not-exist () {
-    THEFILE="$1"
-    NEWLINE="$2"
+    local THEFILE="$1"
+    local NEWLINE="$2"
     grep -q -F "$NEWLINE" "$THEFILE" || echo "$NEWLINE" >> "$THEFILE"
 }
 
@@ -945,7 +945,7 @@ screen-select () {
         local count=1
         for item in $SCREENSESSIONS; do
             echo "$count) $item"
-            count=$(( $count + 1 ))
+            local count=$(( $count + 1 ))
         done
         while read -r -t 0;do read -r; done;
         read -n 1 -p "Enter the screen session: " SCREENSELECT
@@ -1038,7 +1038,7 @@ youtube-pause () {
             sleep 0.05
             conkeror -f youtube-pause
             if [[ "${line}" == "${CURRENTWINDOW}" ]]; then
-                CURRENTYOUTUBE=1
+                local CURRENTYOUTUBE=1
             fi
         fi
     done
@@ -1107,7 +1107,7 @@ youtube-next () {
 
 master-boss-key () {
     # get current window
-    CURRENTWINDOW=$(xdotool getwindowfocus)
+    local CURRENTWINDOW=$(xdotool getwindowfocus)
     # kill volume
     amixer set Master mute
     # https://askubuntu.com/questions/26068/how-do-you-mute-from-the-command-line
@@ -1182,7 +1182,7 @@ df-crypt-disks () {
 smartctl-disks () {
     # check overall health of all disks
     for d in $(enumerate-physical-disks); do
-        SMARTOUTPUT=$(sudo smartctl -H "$d")
+        local SMARTOUTPUT=$(sudo smartctl -H "$d")
         if [[ $(($? & 1)) ]]; then
             echo -n "$d: "
             # XXXX: to use this in scripts I have to add smartctl to no password sudo files
@@ -1213,7 +1213,7 @@ select-disk-uuid-usb () {
         [[ "$d" == "/dev/disk/by-uuid/$1" ]] && continue
         if /sbin/udevadm info --query=all --name=$(readlink -f $d) | grep ID_BUS >/dev/null; then
             printf "$count) %-55s  %s\n" "$d" "$(df -H $d | grep -v ^Filesystem)"
-            count=$(( $count + 1 ))
+            local count=$(( $count + 1 ))
             USBARRAY+=("$d")
         fi
     done
@@ -1240,7 +1240,7 @@ select-disk-uuid-usb () {
         for a in $(df | grep -v "udev\|tmpfs\|^Filesystem"); do
             echo "$count) $a" >&2
             ALTERNATEARRAY+=("$a")
-            count=$(( $count + 1 ))
+            local count=$(( $count + 1 ))
         done
         while read -r -t 0;do read -r; done;
         read -n 1 -p "Enter an alternate drive: " ALTERNATESELECT >&2
@@ -1248,7 +1248,7 @@ select-disk-uuid-usb () {
         if [[ $ALTERNATESELECT == "0" ]] || ! [[ $ALTERNATESELECT =~ ^[0-9]+$ ]] || (( $ALTERNATESELECT >= $count )); then
             return 1
         fi
-        ALTERNATESELECT=$(( $ALTERNATESELECT - 1 ))
+        local ALTERNATESELECT=$(( $ALTERNATESELECT - 1 ))
         # XXXX: get first column because we use df for this
         echo ${ALTERNATEARRAY[$ALTERNATESELECT]} | cut -d' ' -f1
         return 0
@@ -1256,7 +1256,7 @@ select-disk-uuid-usb () {
     if ! [[ $USBSELECT =~ ^[0-9]$ ]] || (( $USBSELECT >= $count )); then
         return 1
     fi
-    USBSELECT=$(( $USBSELECT - 1 ))
+    local USBSELECT=$(( $USBSELECT - 1 ))
     # TODO: keep ensuring only proper thing is every returned
     echo ${USBARRAY[$USBSELECT]}
     return 0
@@ -1303,7 +1303,7 @@ mdstat-status () {
         if [[ "$i" =~ ^m.* ]]; then
             printf "$i"
         else
-            SELECTED=$(echo "$i" | grep --color=never -Eo "\[[A-Za-z]*\]$")
+            local SELECTED=$(echo "$i" | grep --color=never -Eo "\[[A-Za-z]*\]$")
             if [[ -n "$SELECTED" ]]; then
                 echo " $SELECTED"
             fi
@@ -1335,7 +1335,7 @@ vcs-attr () {
 ## good scripts for slurping data from other ftp websites
 
 wget-download-canmatrix2-doc () {
-    NEWDIR="${HOME}/mnt-secondary/"
+    local NEWDIR="${HOME}/mnt-secondary/"
     mkdir -p "$NEWDIR"
     pushd . >/dev/null
     cd "$NEWDIR"
@@ -1356,7 +1356,7 @@ wget-download-canmatrix2-doc () {
 }
 
 wget-download-canmatrix2-50k-preview () {
-    NEWDIR="${HOME}/mnt-secondary"
+    local NEWDIR="${HOME}/mnt-secondary"
     mkdir -p "$NEWDIR"
     pushd . >/dev/null
     cd "$NEWDIR"
@@ -1377,7 +1377,7 @@ wget-download-canmatrix2-50k-preview () {
 }
 
 wget-download-canmatrix2-250k-preview () {
-    NEWDIR="${HOME}/mnt-secondary"
+    local NEWDIR="${HOME}/mnt-secondary"
     mkdir -p "$NEWDIR"
     pushd . >/dev/null
     cd "$NEWDIR"
@@ -1398,7 +1398,7 @@ wget-download-canmatrix2-250k-preview () {
 }
 
 wget-download-canmatrix2 () {
-    NEWDIR="${HOME}/mnt-secondary"
+    local NEWDIR="${HOME}/mnt-secondary"
     mkdir -p "$NEWDIR"
     pushd . >/dev/null
     cd "$NEWDIR"
@@ -1484,7 +1484,7 @@ svg2png-hq () {
         yell "No input!"
         return 1
     fi
-    OUTPUT="${1%%.svg}.png"
+    local OUTPUT="${1%%.svg}.png"
     if [[ -f "$OUTPUT" ]]; then
         yell "Output $OUTPUT already exists!!!"
         return 1
@@ -1504,7 +1504,7 @@ function ag-rdep () {
 function ls-mime-files () {
     # list mime settings
     # https://wiki.archlinux.org/index.php/default_applications
-    THEFILES=("$HOME/.config/$desktop-mimeapps.list" "$HOME/.config/mimeapps.list" "/etc/xdg/mimeapps.list" "$HOME/.local/share/applications/mimeapps.list" "/usr/local/share/applications/mimeapps.list" "/usr/share/applications/mimeapps.list")
+    local THEFILES=("$HOME/.config/$desktop-mimeapps.list" "$HOME/.config/mimeapps.list" "/etc/xdg/mimeapps.list" "$HOME/.local/share/applications/mimeapps.list" "/usr/local/share/applications/mimeapps.list" "/usr/share/applications/mimeapps.list")
     for f in ${THEFILES[@]}; do
         if [[ -e "$f" ]]; then
             h3 "$f"
@@ -1715,6 +1715,9 @@ vcs-incoming () {
 build-install-software () {
     # assumes I'm in directory with appropriate subdirectories
     # TODO: compile against downloaded poppler
+    sudo true
+    h2 "pip"
+    curl https://bootstrap.pypa.io/get-pip.py | sudo python
     h2 "xpdf"
     pushd . >/dev/null
     cd xpdf-3.04
@@ -1738,7 +1741,11 @@ build-install-software () {
     pushd . >/dev/null
     cd mupdf
     make clean
-    git submodule update --init
+    # draconian
+    git fetch --all
+    git reset --hard origin/master
+    git pull
+    git submodule update --init --force
     make
     sudo make install
     popd >/dev/null
@@ -1810,7 +1817,7 @@ rsync-remove-source () {
     # fi
     if ssh "${1}" true; then
         msg "Incoming from ${1}"
-        BACKUPDIR="rsync-backups-${1}-$(date-time-stamp)"
+        local BACKUPDIR="rsync-backups-${1}-$(date-time-stamp)"
         rsync --progress --archive --checksum --backup --backup-dir="$BACKUPDIR" --rsh='ssh' --remove-source-files ${1}:"$2"/ .
         # will cause error if there are backups
         rmdir --ignore-fail-on-non-empty "$BACKUPDIR"

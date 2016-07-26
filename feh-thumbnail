@@ -1,12 +1,12 @@
 #!/bin/bash
 main () {
     if [[ ! -e "$1" ]]; then
-        THEDIR="${PWD}"
+        local THEDIR="${PWD}"
     else
         if [[ -d "$1" ]];then
-            THEDIR="$1"
+            local THEDIR="$1"
         else
-            THEDIR="$(dirname $1)"
+            local THEDIR="$(dirname $1)"
         fi
     fi
     if [[ ${HOSTNAME} == "akroshko-main" ]]; then
