@@ -117,7 +117,7 @@ if [[ "$TERM" =~ xterm*|rxvt* ]]
 then
     # export PROMPT_COMMAND='history -a; history -n;echo -ne "\033]0;${USER}@${HOSTNAME}:${PWD}\007"'
     # XXXX: username is unnecessary for my purposes
-    local SHORTPWD=$(echo "$PWD" | sed -r 's|'"${HOME}"'|~|g')
+    SHORTPWD=$(echo "$PWD" | sed -r 's|'"${HOME}"'|~|g')
     export PROMPT_COMMAND='history -a; history -n;echo -ne "\033]0;${HOSTNAME}:${SHORTPWD}\007"'
     # see http://askubuntu.com/questions/126737/make-gnome-terminal-show-the-command-running-as-title
     show_command_in_title_bar()
@@ -149,9 +149,11 @@ export HISTSIZE=4096
 export HISTFILESIZE=65536
 shopt -s autocd extglob histappend
 # stop too convenient exiting
-export IGNOREEOF=1
+# TODO: make higher or lower?
+export IGNOREEOF=3
 shopt -s expand_aliases
 force_color_prompt=yes
+# type control-d 99 times to leave shell
 # aliases, generally spice up some already existing commands
 alias bash-debug='set -xv'
 alias bash-nodebug='set +xv'
@@ -196,5 +198,6 @@ alias scw='screen -wipe'
 # fallback ssh
 alias scp-fallback='scp -o "BatchMode no" -o "ChallengeResponseAuthentication yes" -o "PasswordAuthentication yes"'
 alias ssh-fallback='ssh -o "BatchMode no" -o "ChallengeResponseAuthentication yes" -o "PasswordAuthentication yes"'
+alias sftp-fallback='sftp -o "BatchMode no" -o "ChallengeResponseAuthentication yes" -o "PasswordAuthentication yes"'
 alias spy='sage -python'
 # TODO: change this later?

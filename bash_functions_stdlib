@@ -1687,22 +1687,6 @@ flatten-current-directory () {
     fi
 }
 
-phoronix-simple-install () {
-    phoronix-test-suite install pts/build-apache pts/compress-gzip pts/dolfyn pts/gnupg pts/perl-benchmark pts/pybench pts/rbenchmark pts/scimark2
-}
-
-phoronix-simple-benchmark () {
-    phoronix-test-suite batch-benchmark pts/build-apache pts/compress-gzip pts/dolfyn pts/gnupg pts/perl-benchmark pts/pybench pts/rbenchmark pts/scimark2
-}
-
-phoronix-long-install () {
-    phoronix-test-suite install pts/fftw pts/numpy pts/pgbench
-}
-
-phoronix-long-benchmark () {
-    phoronix-test-suite batch-benchmark pts/fftw pts/numpy pts/pgbench
-}
-
 dunst-notifications () {
     printf "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
     grep "summary: \|body: " "${HOME}"/tmp/dunst-current.log | grep -v \'\' | sed -e 's/^[ \t]*//' | sed -e 's/body: /    /' | sed -e 's/summary: //'
