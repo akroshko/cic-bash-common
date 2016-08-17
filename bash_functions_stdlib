@@ -660,16 +660,12 @@ vcs-push-github () {
     git checkout master
 }
 
-dpkg-purge-all () {
+alias dkpg-purge-all='master-dpkg-purge-all'
+master-dpkg-purge-all () {
     # purge all files related to uninstalled packages
     if dangerous-function-ask; then
         dpkg -l | grep ^rc | cut -d' ' -f3|xargs sudo dpkg -P
     fi
-}
-
-pip-upgrade () {
-    # upgrade all pip packages
-    sudo pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo pip install -U
 }
 
 git-serve () {
