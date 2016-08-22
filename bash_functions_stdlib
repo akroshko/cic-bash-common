@@ -230,36 +230,43 @@ serve-here () {
     python -m SimpleHTTPServer 8080
 }
 
-discover-network () {
+find-network () {
     # use nmap to show network interfaces
     nmap --iflist
 }
 
-discover-lan () {
+find-nmap-lan () {
     # scan current network, based on common home router addresses,
     # quickly using nmap
     # XXXX: generally takes less than a minute
     time nmap -sP 192.168.0-1.0-255
 }
 
-discover-lan-super () {
+find-nmap-lan-os () {
+    # scan current network, based on common home router addresses,
+    # quickly using nmap
+    # XXXX: generally takes less than a minute
+    time sudo nmap -sS -O 192.168.0-1.0-255
+}
+
+find-nmap-lan-super () {
     # scan current network, based on common home router addresses,
     # slowly using nmap
-    # XXXX: generally takes less than a 10 minutes
+    # XXXX: generally takes less than a 10 minutes, or lesss than 10 seconds
     time sudo nmap -sS 192.168.0-1.0-255
 }
 
-discover-lan-complete () {
+find-nmap-lan-complete () {
     # scan current network completely using nmap
     time sudo nmap -sP 192.168.0.0/16
 }
 
-discover-lan-complete-super () {
+find-nmap-lan-complete-super () {
     # scan current network completely and slowly using nmap
     time sudo nmap -sS 192.168.0.0/16
 }
 
-discover-connections () {
+find-netstat-connections () {
     # check current networking connections
     netstat -untap
 }
