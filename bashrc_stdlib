@@ -201,5 +201,7 @@ alias scw='screen -wipe'
 alias scp-fallback='scp -o "BatchMode no" -o "ChallengeResponseAuthentication yes" -o "PasswordAuthentication yes"'
 alias ssh-fallback='ssh -o "BatchMode no" -o "ChallengeResponseAuthentication yes" -o "PasswordAuthentication yes"'
 alias sftp-fallback='sftp -o "BatchMode no" -o "ChallengeResponseAuthentication yes" -o "PasswordAuthentication yes"'
-alias spy='sage -python'
+# for testing my raspberry pi
+alias ssh-pi='ssh pi@raspberrypi.local'
+alias sage-python='sage -python'
 # TODO: change this later?

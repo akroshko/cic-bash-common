@@ -230,45 +230,66 @@ serve-here () {
     python -m SimpleHTTPServer 8080
 }
 
-find-network () {
+nmap-network () {
     # use nmap to show network interfaces
     nmap --iflist
 }
 
-find-nmap-lan () {
+nmap-host-ports () {
+    if [[ -z "$1" ]]; then
+        yell "Requires argument!"
+        return 1
+    fi
+    time nmap -v -sT -p 1-65535 "$1"
+}
+
+nmap-host-ports-super () {
+    if [[ -z "$1" ]]; then
+        yell "Requires argument!"
+        return 1
+    fi
+    time nmap -v -sS -p 1-65535 "$1"
+}
+
+nmap-lan () {
     # scan current network, based on common home router addresses,
     # quickly using nmap
     # XXXX: generally takes less than a minute
     time nmap -sP 192.168.0-1.0-255
 }
 
-find-nmap-lan-os () {
+nmap-lan-os () {
     # scan current network, based on common home router addresses,
     # quickly using nmap
     # XXXX: generally takes less than a minute
     time sudo nmap -sS -O 192.168.0-1.0-255
 }
 
-find-nmap-lan-super () {
+nmap-lan-super () {
     # scan current network, based on common home router addresses,
     # slowly using nmap
     # XXXX: generally takes less than a 10 minutes, or lesss than 10 seconds
     time sudo nmap -sS 192.168.0-1.0-255
 }
 
-find-nmap-lan-complete () {
+nmap-lan-complete () {
     # scan current network completely using nmap
     time sudo nmap -sP 192.168.0.0/16
 }
 
-find-nmap-lan-complete-super () {
+nmap-lan-complete-super () {
     # scan current network completely and slowly using nmap
     time sudo nmap -sS 192.168.0.0/16
 }
 
-find-netstat-connections () {
+netstat-connections () {
     # check current networking connections
     netstat -untap
+}
+
+netstat-connections-super () {
+    # check current networking connections
+    sudo netstat -untap
 }
 
 lpr-double-sided-portrait () {
@@ -371,6 +392,12 @@ psg () {
 cpu-throttle-up () {
     for (( i = 0; i < $(nproc); i++ )); do
         sudo cpufreq-set -c "${i}" -g performance
+    done
+}
+
+cpu-throttle-ondemand () {
+    for (( i = 0; i < $(nproc); i++ )); do
+        sudo cpufreq-set -c "${i}" -g ondemand
     done
 }
 
@@ -1545,9 +1572,11 @@ fetch-compile-sage () {
     if [[ -z "$SAGEVERSION" || -z "$SAGEVERSIONMD5" ]]; then
         msg "Using default sage versions."
         # update for every new sage
-        local SAGEVERSION="7.2"
-        local SAGEVERSIONMD5="d0c5e81683dc79a7654206e57e6e727a"
+        local SAGEVERSION="7.3"
+        local SAGEVERSIONMD5="a289e955f9c94be3e4420ee86d8302a7"
         local SAGEMIRROR="http://www.cecm.sfu.ca/sage/src/"
+        # TODO: put this somewhere else
+        local SAGELOCATION=/home/akroshko/cic-small/distfiles-current
     fi
     if [[ -d /opt/sage-"$SAGEVERSION" && "$1" != "--finalize" ]]; then
         if /opt/sage-"$SAGEVERSION"/sage --version; then
@@ -1562,10 +1591,10 @@ fetch-compile-sage () {
         sudo apt-get update
         sudo apt-get install gnutls-bin gnutls-doc libssl1.0.0 libssl-dev libssl-doc
         sudo apt-get install texlive dvipng ImageMagick
-        if [[ -e "${GPDIST}"/sage-"$SAGEVERSION".tar.gz ]]; then
+        if [[ -e "${SAGELOCATION}"/sage-"$SAGEVERSION".tar.gz ]]; then
             pushd . >/dev/null
-            cd "${GPDIST}"
-            msg "Already found in distfiles-current!"
+            cd "${SAGELOCATION}"
+            msg "Already found in distfiles location!"
         else
             # TODO: put into ~/tmp for more universal use
             # TODO: proper error message if md5sum is not good
@@ -1859,4 +1888,13 @@ youtube-normalize-volume () {
     # TODO: very arbitrary, perhaps wait for something to return
     sleep 0.05
     xdotool windowactivate --sync ${CURRENTWINDOW}
+}
+
+find-iname () {
+    #
+    find . -iname '*'"$1"'*'
+}
+
+xset-query () {
+    xset q
 }
