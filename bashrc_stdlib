@@ -160,6 +160,9 @@ alias bash-nodebug='set +xv'
 alias agu='sudo apt-get update && sudo apt-get upgrade'
 alias ag-autoremove='sudo apt-get autoremove'
 alias al='alias'
+# improve this
+alias ssh-controlmaster-list='ps -elf | grep controlmaster'
+alias ssh-controlmaster-kill='ssh -O exit'
 alias dc='aafire -driver curses -extended'
 alias df='df -h'
 alias df-all='df -aTh'
@@ -168,6 +171,7 @@ alias f90=gfortran
 alias gccr='gcc-compile-run'
 alias gi='grep --color -i'
 alias gpg='gpg2'
+alias gpg2-batch='gpg2 --no-verbose --quiet --batch --yes'
 alias grep='grep --color'
 alias g-functions="grep-functions"
 alias gf="grep-functions"
@@ -176,6 +180,7 @@ alias f='feh-open-browse'
 alias fm='feh-montage --montage'
 alias fp='feh-montage --montage'
 alias ft='feh-thumbnail'
+alias ifconfig='/sbin/ifconfig'
 # TODO: this could cause issues
 alias less='less -R'
 alias ls='ls -hF --color'

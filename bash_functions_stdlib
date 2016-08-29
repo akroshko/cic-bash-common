@@ -1506,7 +1506,7 @@ read-mail () {
 }
 
 gpg-decrypt () {
-    gpg --batch --no-verbose --quiet --decrypt "$1" 2>/dev/null
+    gpg2-batch --decrypt "$1" 2>/dev/null
 }
 
 svg2png-hq () {
