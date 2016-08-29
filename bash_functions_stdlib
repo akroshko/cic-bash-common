@@ -664,6 +664,9 @@ vcs-push-github () {
     # merge public branch and commit to github
     # XXXX: repository must be setup properly
     # TODO: update verions and commit
+    # TODO: this probably only works because I use controlmaster
+    #       second ssh to git@github.com does not work alone, the pipe makes it freeze
+    ssh-batch -T git@github.com >/dev/null 2>&1
     if ! ssh-batch -T git@github.com 2>&1 | grep --color=never "success"; then
         yell "Error connecting to github! Aborting!"
         return 1
