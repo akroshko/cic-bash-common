@@ -188,6 +188,7 @@ alias lsa='ls -la'
 # TODO: using for soemthing else for now
 # alias lsl='ls -l'
 alias lst='ls -ltr'
+alias mupdf='mupdf-gl'
 alias mv='mv --no-clobber'
 alias na='nautilus .'
 alias netstat-pid='sudo netstat -nlpt'

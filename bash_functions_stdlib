@@ -1901,3 +1901,8 @@ find-iname () {
 xset-query () {
     xset q
 }
+
+grep-gz-files () {
+    # only elisp for now
+    find -name "*.el.gz" -print0 | xargs -0 zgrep "$1"
+}
