@@ -1906,3 +1906,9 @@ grep-gz-files () {
     # only elisp for now
     find -name "*.el.gz" -print0 | xargs -0 zgrep "$1"
 }
+
+strip-leading-trailing-chars () {
+    # strip leading and trail characters I do not want for many applications
+    # TODO: keep adding more as I need them
+    echo "$1" | sed 's/^[-]*//' | sed 's/[-]*$//'
+}
