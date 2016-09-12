@@ -1910,5 +1910,7 @@ grep-gz-files () {
 strip-leading-trailing-chars () {
     # strip leading and trail characters I do not want for many applications
     # TODO: keep adding more as I need them
-    echo "$1" | sed 's/^[-]*//' | sed 's/[-]*$//'
+    # TODO: make work with more things
+    read string
+    echo "$string" | sed 's/^[-]*//' | sed 's/[-]*$//'
 }
