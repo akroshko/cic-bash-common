@@ -1,20 +1,24 @@
 #!/bin/bash
 if [[ -n "$1" ]]; then
-    ALREADYFIXED=
-    if ps -elf | grep "xpdf.*$2" | grep -v grep | grep -v "xpdf-local.sh" >/dev/null; then
+    if ps -elf | grep "xpdf.*$2" | grep -v "xpdf-local.sh" | grep -v grep >/dev/null; then
         ALREADYFIXED=1
-        xpdf -remote "$2" -exec closeOutline
-        xpdf -remote "$2" -exec singlePageMode
-        xpdf -remote "$2" -exec zoomFitPage
-    fi
-    xpdf "$@" &
-    # TODO: wait better
-    sleep 3.0
-    # # fix after if first time
-    if [[ -z $ALREADYFIXED ]]; then
-        xpdf -remote "$2" -exec closeOutline
-        xpdf -remote "$2" -exec singlePageMode
-        xpdf -remote "$2" -exec zoomFitPage
+        # put in background to make sure these finish
+        xpdf -remote "$2" -exec closeOutline &
+        sleep 0.1
+        xpdf -remote "$2" -exec singlePageMode &
+        sleep 0.1
+        xpdf -remote "$2" -exec zoomFitPage &
+        sleep 0.1
+        xpdf "$@" -raise &
+    else
+        xpdf "$@" &
+        sleep 3.0
+        xpdf -remote "$2" -exec closeOutline &
+        sleep 0.1
+        xpdf -remote "$2" -exec singlePageMode &
+        sleep 0.1
+        xpdf -remote "$2" -exec zoomFitPage &
+        sleep 0.1
     fi
 else
     echo "No input!!!"
