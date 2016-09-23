@@ -1000,7 +1000,7 @@ sage-notebook () {
        if ps -ef | grep "src/bin/sage-notebook" | grep -v grep >/dev/null; then
            sage-notebook-browser
        else
-           SAGE_BROWSER="nohup chromium" sage --notebook=sagenb secure=True port=18080 automatic_login=True interface='' directory="${NBPATH}"
+           SAGE_BROWSER="nohup firefox" sage --notebook=sagenb secure=True port=18080 automatic_login=True interface='' directory="${NBPATH}"
        fi
     else
         yell '${PYTHON_NOTEBOOK_ROOT} not defined!!!'
@@ -1010,8 +1010,13 @@ sage-notebook () {
 # TODO: support multiple browsers?
 sage-notebook-browser () {
     # open just the browser for a running Sage notebook
-    bleachbit --overwrite --clean epiphany.* google_chrome.*
-    chromium https://localhost:18080/
+    if false; then
+        bleachbit --overwrite --clean google_chrome.*
+        chromium https://localhost:18080/
+    else
+        # TODO: shred firefox if not running
+        firefox https://localhost:18080/
+    fi
 }
 
 sage-ipython-notebook () {
