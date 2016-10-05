@@ -1000,6 +1000,7 @@ sage-notebook () {
        if ps -ef | grep "src/bin/sage-notebook" | grep -v grep >/dev/null; then
            sage-notebook-browser
        else
+           # TODO: select firefox and chromium?
            SAGE_BROWSER="nohup firefox" sage --notebook=sagenb secure=True port=18080 automatic_login=True interface='' directory="${NBPATH}"
        fi
     else
