@@ -1032,7 +1032,7 @@ sage-ipython-notebook () {
         if ps -ef | grep "ipython notebook" | grep -v grep >/dev/null; then
             sage-ipython-notebook-browser
         else
-            sage -ipython notebook --notebook-dir="${NBPATH}" --browser="chromium" --port=18888
+            sage -ipython notebook --notebook-dir="${NBPATH}" --browser="firefox" --port=18888
         fi
     else
         yell '${PYTHON_NOTEBOOK_ROOT} not defined!!!'
@@ -1043,7 +1043,7 @@ sage-ipython-notebook () {
 sage-ipython-notebook-browser () {
     # open just the browser for a running iPython notebook
     bleachbit --overwrite --clean epiphany.* google_chrome.*
-    chromium http://localhost:18888/
+    firefox http://localhost:18888/
 }
 
 file-mimetype () {
