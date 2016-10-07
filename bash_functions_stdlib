@@ -1020,7 +1020,7 @@ sage-notebook-browser () {
     fi
 }
 
-sage-ipython-notebook () {
+sage-jupyter-notebook () {
     # open an iPython notebook and browser using the Sage platorm on port 18888
     # XXXX: requires defining of ${PYTHON_NOTEBOOK_ROOT} before calling
     if [[ -n "${PYTHON_NOTEBOOK_ROOT}" ]]; then
@@ -1030,9 +1030,9 @@ sage-ipython-notebook () {
         mkdir -p "${NBPATH}"
         # TODO: subsitute for --deep-reload --automagic --secure --pprint depricated options
         if ps -ef | grep "ipython notebook" | grep -v grep >/dev/null; then
-            sage-ipython-notebook-browser
+            sage-jupyter-notebook-browser
         else
-            sage -ipython notebook --notebook-dir="${NBPATH}" --browser="firefox" --port=18888
+            sage --notebook=jupyter --notebook-dir="${NBPATH}" --browser="firefox" --port=18888
         fi
     else
         yell '${PYTHON_NOTEBOOK_ROOT} not defined!!!'
@@ -1040,7 +1040,7 @@ sage-ipython-notebook () {
 }
 
 # TODO: support multiple browsers?
-sage-ipython-notebook-browser () {
+sage-jupyter-notebook-browser () {
     # open just the browser for a running iPython notebook
     bleachbit --overwrite --clean epiphany.* google_chrome.*
     firefox http://localhost:18888/
