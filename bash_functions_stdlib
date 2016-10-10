@@ -1022,14 +1022,15 @@ sage-notebook-browser () {
 
 sage-jupyter-notebook () {
     # open an iPython notebook and browser using the Sage platorm on port 18888
+    # TODO: need to control where goes
     # XXXX: requires defining of ${PYTHON_NOTEBOOK_ROOT} before calling
-    if [[ -n "${PYTHON_NOTEBOOK_ROOT}" ]]; then
+    if [[ -n "${JUPYTER_NOTEBOOK_ROOT}" ]]; then
         bleachbit --overwrite --clean epiphany.* google_chrome.*
         # set a good directory for these
-        local NBPATH="${PYTHON_NOTEBOOK_ROOT}/sage-ipython-notebooks-${HOSTNAME}"
+        local NBPATH="${JUPYTER_NOTEBOOK_ROOT}/sage-jupyter-projects"
         mkdir -p "${NBPATH}"
         # TODO: subsitute for --deep-reload --automagic --secure --pprint depricated options
-        if ps -ef | grep "ipython notebook" | grep -v grep >/dev/null; then
+        if ps -ef | grep -- "--notebook=jupyter" | grep -v grep >/dev/null; then
             sage-jupyter-notebook-browser
         else
             sage --notebook=jupyter --notebook-dir="${NBPATH}" --browser="firefox" --port=18888
