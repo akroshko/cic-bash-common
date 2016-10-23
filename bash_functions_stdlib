@@ -429,6 +429,11 @@ du-sort () {
     du --summarize --human-readable * 2>/dev/null | sort --human-numeric-sort
 }
 
+du-total-symlink () {
+    # sort by size after using du
+    du --summarize --total --dereference --human-readable * 2>/dev/null
+}
+
 dd-progress () {
     # TODO: spaces after | ???
     #       try on next big dd
@@ -1734,11 +1739,14 @@ dunst-notifications () {
     grep "summary: \|body: " "${HOME}"/tmp/dunst-current.log | grep -v \'\' | sed -e 's/^[ \t]*//' | sed -e 's/body: /    /' | sed -e 's/summary: //'
 }
 
-vcs-incoming () {
-    git log ..origin/master
-}
+# TODO: think it's not needed anymore
+# vcs-incoming () {
+#     git log ..origin/master
+# }
 
 build-install-software () {
+    pushd . >/dev/null
+    cd "${HOME}"/cic-external-vcs
     # assumes I'm in directory with appropriate subdirectories
     # TODO: compile against downloaded poppler
     sudo true
@@ -1788,6 +1796,29 @@ build-install-software () {
     make clean
     make
     sudo make install
+    popd >/dev/null
+    h2 "zathura-poppler"
+    pushd . >/dev/null
+    cd zathura-pdf-poppler
+    make clean
+    make
+    sudo make install
+    popd >/dev/null
+    # TODO: not updated to work with 1.9
+    # h2 "zathura-mupdf"
+    # pushd . >/dev/null
+    # cd zathura-pdf-mupdf
+    # make clean
+    # make
+    # sudo make install
+    # popd >/dev/null
+    h2 "zathura-djvu"
+    pushd . >/dev/null
+    cd zathura-djvu
+    make clean
+    make
+    sudo make install
+    popd >/dev/null
     popd >/dev/null
 }
 
@@ -1866,6 +1897,14 @@ vcs-incoming () {
     # https://stackoverflow.com/questions/1331385/how-can-i-see-incoming-commits-in-git
     git diff --stat master origin/master
     git diff master origin/master
+}
+
+vcs-reset () {
+    # dangerous command, check first
+    # TODO: often used to reset and pull
+    if dangerous-function-ask; then
+        git reset --hard HEAD
+    fi
 }
 
 trim-mp3-to-30min () {
