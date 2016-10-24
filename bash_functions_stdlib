@@ -997,9 +997,9 @@ screen-select () {
 sage-notebook () {
     # open a Sage notebook and browser securely on port 18080
     # XXXX: requires defining of ${PYTHON_NOTEBOOK_ROOT} before calling
-    if [[ -n "${PYTHON_NOTEBOOK_ROOT}" ]]; then
+    if [[ -n "${JUPYTER_NOTEBOOK_ROOT}" ]]; then
        bleachbit --overwrite --clean epiphany.* google_chrome.*
-       local NBPATH="${PYTHON_NOTEBOOK_ROOT}/sage-notebooks-${HOSTNAME}.sagenb"
+       local NBPATH="${JUPYTER_NOTEBOOK_ROOT}/sage-notebooks-${HOSTNAME}.sagenb"
        mkdir -p "${NBPATH}"
        # XXXX: grep to avoid just sage-notebook from scripts that might run this
        if ps -ef | grep "src/bin/sage-notebook" | grep -v grep >/dev/null; then
@@ -1009,7 +1009,7 @@ sage-notebook () {
            SAGE_BROWSER="nohup firefox" sage --notebook=sagenb secure=True port=18080 automatic_login=True interface='' directory="${NBPATH}"
        fi
     else
-        yell '${PYTHON_NOTEBOOK_ROOT} not defined!!!'
+        yell 'JUPYTER_NOTEBOOK_ROOT not defined!!!'
     fi
 }
 
