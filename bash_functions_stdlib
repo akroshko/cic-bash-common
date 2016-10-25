@@ -1521,7 +1521,7 @@ read-mail () {
 }
 
 gpg-decrypt () {
-    gpg2-batch --decrypt "$1" 2>/dev/null
+    gpg-batch --decrypt "$1" 2>/dev/null
 }
 
 svg2png-hq () {
@@ -1959,4 +1959,8 @@ strip-leading-trailing-chars () {
     # TODO: make work with more things
     read string
     echo "$string" | sed 's/^[-]*//' | sed 's/[-]*$//'
+}
+
+gpg-batch () {
+    gpg2 --no-verbose --quiet --batch --yes "$@"
 }

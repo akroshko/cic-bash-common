@@ -171,7 +171,6 @@ alias f90=gfortran
 alias gccr='gcc-compile-run'
 alias gi='grep --color -i'
 alias gpg='gpg2'
-alias gpg2-batch='gpg2 --no-verbose --quiet --batch --yes'
 alias grep='grep --color'
 alias g-functions="grep-functions"
 alias gf="grep-functions"
