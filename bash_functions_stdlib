@@ -1786,6 +1786,7 @@ build-install-software () {
     h2 "girara"
     pushd . >/dev/null
     cd girara
+    git checkout --track -b develop origin/develop
     make clean
     make
     sudo make install
@@ -1793,6 +1794,7 @@ build-install-software () {
     h2 "zathura"
     pushd . >/dev/null
     cd zathura
+    git checkout --track -b develop origin/develop
     make clean
     make
     sudo make install
@@ -1800,6 +1802,7 @@ build-install-software () {
     h2 "zathura-poppler"
     pushd . >/dev/null
     cd zathura-pdf-poppler
+    git checkout --track -b develop origin/develop
     make clean
     make
     sudo make install
@@ -1815,6 +1818,7 @@ build-install-software () {
     h2 "zathura-djvu"
     pushd . >/dev/null
     cd zathura-djvu
+    git checkout --track -b develop origin/develop
     make clean
     make
     sudo make install
