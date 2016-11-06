@@ -1970,3 +1970,25 @@ strip-leading-trailing-chars () {
 gpg-batch () {
     gpg2 --no-verbose --quiet --batch --yes "$@"
 }
+
+
+android-screenshot-all () {
+    pushd . >/dev/null
+    cd "${HOME}"
+    local FNAME=android-screen-$(date-time-stamp).png
+    adb shell screencap -p /sdcard/"$FNAME"
+    adb pull /sdcard/"$FNAME"
+    adb shell rm /sdcard/"$FNAME"
+    popd >/dev/null
+}
+
+android-record-all () {
+    # TODO: specify time limit better
+    pushd . >/dev/null
+    cd "${HOME}"
+    local FNAME=android-screenrecord-$(date-time-stamp).mp4
+    adb shell screenrecord --verbose --time-limit 180 /sdcard/"$FNAME"
+    adb pull /sdcard/"$FNAME"
+    adb shell rm /sdcard/"$FNAME"
+    popd >/dev/null
+}
