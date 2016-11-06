@@ -1899,8 +1899,10 @@ rsync-check-source () {
 
 vcs-incoming () {
     # https://stackoverflow.com/questions/1331385/how-can-i-see-incoming-commits-in-git
-    git diff --stat master origin/master
-    git diff master origin/master
+    # do not do above anymore
+    # https://stackoverflow.com/questions/1800783/compare-local-git-branch-with-remote-branch
+    git diff --stat @{upstream}
+    git diff @{upstream}
 }
 
 vcs-reset () {

@@ -157,7 +157,7 @@ force_color_prompt=yes
 # aliases, generally spice up some already existing commands
 alias bash-debug='set -xv'
 alias bash-nodebug='set +xv'
-alias agu='sudo apt-get update && sudo apt-get upgrade'
+alias agu='sudo apt-get update && sudo apt-get dist-upgrade'
 alias ag-autoremove='sudo apt-get autoremove'
 alias al='alias'
 # improve this
