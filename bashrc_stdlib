@@ -207,6 +207,6 @@ alias scp-fallback='scp -o "BatchMode no" -o "ChallengeResponseAuthentication ye
 alias ssh-fallback='ssh -o "BatchMode no" -o "ChallengeResponseAuthentication yes" -o "PasswordAuthentication yes"'
 alias sftp-fallback='sftp -o "BatchMode no" -o "ChallengeResponseAuthentication yes" -o "PasswordAuthentication yes"'
 # for testing my raspberry pi
-alias ssh-pi='ssh pi@raspberrypi.local'
+alias ssh-pi='ssh pi@raspberrypi-3.local'
 alias sage-python='sage -python'
 # TODO: change this later?
