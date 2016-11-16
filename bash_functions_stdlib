@@ -1992,3 +1992,9 @@ android-record-all () {
     adb shell rm /sdcard/"$FNAME"
     popd >/dev/null
 }
+
+harm-fonts () {
+    sudo dpkg-reconfigure fontconfig
+    # TODO: sudo? not yet, make sure this is necessary?
+    # fc-cache -f -v
+}
