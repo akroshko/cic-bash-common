@@ -1750,79 +1750,90 @@ build-install-software () {
     # assumes I'm in directory with appropriate subdirectories
     # TODO: compile against downloaded poppler
     sudo true
-    h2 "pip"
-    curl https://bootstrap.pypa.io/get-pip.py | sudo python
-    h2 "xpdf"
-    pushd . >/dev/null
-    cd xpdf-3.04
-    # these work on debian 8.x
-    make clean
-    ./configure --with-freetype2-library=/usr/lib/x86_64-linux-gnu \
-                --with-freetype2-includes=/usr/include/freetype2 \
-                --with-Xm-library=/usr/lib \
-                --with-Xm-includes=/usr/include/Xm
-    make
-    sudo make install
-    popd >/dev/null
+    # at least for now, download and build a few select pieces of software
+    # TODO: evantually make this the only one
+    [[ ! -d "${HOME}"/cic-external-vcs ]] && mkdir -p "${HOME}"/cic-external-vcs
+    cd "${HOME}"/cic-external-vcs
+    [[ ! -d "${HOME}"/cic-external-vcs/conkeror ]]            && git clone git://repo.or.cz/conkeror.git
+    [[ ! -d "${HOME}"/cic-external-vcs/urxvt-perls ]]         && git clone https://github.com/akroshko/urxvt-perls.git
+    [[ ! -d "${HOME}"/cic-external-vcs/feh ]]                 && git clone https://git.finalrewind.org/feh
+    [[ ! -d "${HOME}"/cic-external-vcs/girara ]]              && git clone https://git.pwmt.org/pwmt/girara.git
+    [[ ! -d "${HOME}"/cic-external-vcs/zathura ]]             && git clone https://git.pwmt.org/pwmt/zathura.git
+    [[ ! -d "${HOME}"/cic-external-vcs/zathura-cb ]]          && git clone https://git.pwmt.org/pwmt/zathura-cb.git
+    [[ ! -d "${HOME}"/cic-external-vcs/zathura-djvu ]]        && git clone https://git.pwmt.org/pwmt/zathura-djvu.git
+    [[ ! -d "${HOME}"/cic-external-vcs/zathura-pdf-poppler ]] && git clone https://git.pwmt.org/pwmt/zathura-pdf-poppler.git
+    # now build, copied from build-install-software, and should be synced up
+    h2 "pip";
+    curl https://bootstrap.pypa.io/get-pip.py | sudo python;
     h2 "feh"
     pushd . >/dev/null
     cd feh
+    git pull
     make clean
     make exif=1 help=1 xinerama=0
     sudo make install
     popd >/dev/null
-    h2 "mupdf"
-    pushd . >/dev/null
-    cd mupdf
-    make clean
-    # draconian
-    git fetch --all
-    git reset --hard origin/master
+    h2 "girara";
+    pushd . > /dev/null;
+    cd girara;
     git pull
-    git submodule update --init --force
-    make
-    sudo make install
-    popd >/dev/null
-    h2 "girara"
-    pushd . >/dev/null
-    cd girara
+    # TODO: this needs to be checked
     git checkout --track -b develop origin/develop
-    make clean
-    make
-    sudo make install
-    popd >/dev/null
-    h2 "zathura"
-    pushd . >/dev/null
-    cd zathura
+    make clean;
+    make;
+    sudo make install;
+    popd > /dev/null;
+    h2 "zathura";
+    pushd . > /dev/null;
+    cd zathura;
+    git pull
     git checkout --track -b develop origin/develop
-    make clean
-    make
-    sudo make install
-    popd >/dev/null
-    h2 "zathura-poppler"
-    pushd . >/dev/null
-    cd zathura-pdf-poppler
+    make clean;
+    make;
+    sudo make install;
+    popd > /dev/null;
+    h2 "zathura-poppler";
+    pushd . > /dev/null;
+    cd zathura-pdf-poppler;
+    git pull
     git checkout --track -b develop origin/develop
-    make clean
-    make
-    sudo make install
-    popd >/dev/null
-    # TODO: not updated to work with 1.9
-    # h2 "zathura-mupdf"
-    # pushd . >/dev/null
-    # cd zathura-pdf-mupdf
-    # make clean
-    # make
-    # sudo make install
-    # popd >/dev/null
-    h2 "zathura-djvu"
-    pushd . >/dev/null
-    cd zathura-djvu
+    make clean;
+    make;
+    sudo make install;
+    popd > /dev/null;
+    h2 "zathura-djvu";
+    pushd . > /dev/null;
+    cd zathura-djvu;
+    git pull
     git checkout --track -b develop origin/develop
-    make clean
-    make
-    sudo make install
+    make clean;
+    make;
+    sudo make install;
+    popd > /dev/null;
+    h2 "zathura-cb";
+    pushd . > /dev/null;
+    cd zathura-cb;
+    git pull
+    git checkout --track -b develop origin/develop
+    make clean;
+    make;
+    sudo make install;
     popd >/dev/null
+    # do xpdf, but not on all machines
+    if [[ "${HOSTNAME}" =~ main || "${HOSTNAME}" =~ laptop ]];then
+        h2 "xpdf"
+        pushd . >/dev/null
+        cd xpdf-3.04
+        # these work on debian 8.x
+        make clean
+        ./configure --with-freetype2-library=/usr/lib/x86_64-linux-gnu \
+                    --with-freetype2-includes=/usr/include/freetype2 \
+                    --with-Xm-library=/usr/lib \
+                    --with-Xm-includes=/usr/include/Xm
+        make
+        sudo make install
+        popd >/dev/null
+    fi
     popd >/dev/null
 }
 
