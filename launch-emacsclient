@@ -69,6 +69,7 @@ case $firstarg in
         fi
         ;;
     protocol )
+        shift
         if ! ps -ef | grep "emacs --daemon" | grep -v grep >/dev/null; then
             emacs --daemon
             exec emacsclient --create-frame --no-wait --alternate-editor="" -c "$@"
