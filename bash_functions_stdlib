@@ -473,6 +473,7 @@ fgi () {
 harm-bash () {
     if ps -ef | grep "xbindkeys" | grep -v grep >/dev/null; then
         if [[ -t 0 && -n "$DISPLAY" ]]; then
+            warn "Killing xbindkeys!!!"
             killall xbindkeys
         else
             warn "Shell not interactive or no display! Not killing xbindkeys!"
@@ -1793,6 +1794,8 @@ build-install-software () {
     sudo make install;
     popd > /dev/null;
     h2 "zathura-poppler";
+    # XXXX: a nasty hack
+    sudo cp /usr/lib/pkgconfig/girara-gtk3.pc /usr/lib/pkgconfig/girara-gtk.pc
     pushd . > /dev/null;
     cd zathura-pdf-poppler;
     git pull
