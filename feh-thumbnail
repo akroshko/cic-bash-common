@@ -10,9 +10,9 @@ main () {
         fi
     fi
     if [[ ${HOSTNAME} == "akroshko-main" ]]; then
-        nohup feh --geometry=1920x1080+1280+0 --zoom fill --thumbnail --thumb-height 1024 --thumb-width 1024 --limit-width 10240 --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" "$THEDIR"/*.gif "$THEDIR"/*.jpg "$THEDIR"/*.jpeg "$THEDIR"/*.png "$THEDIR"/*.tif "$THEDIR"/*.tiff >/dev/null 2>&1 &
+        nohup feh --geometry=1920x1080+1280+0 --zoom fill --thumbnail --thumb-height 1024 --thumb-width 1024 --limit-width 10240 --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" "$THEDIR"/*.gif "$THEDIR"/*.jpg "$THEDIR"/*.jpeg "$THEDIR"/*.png "$THEDIR"/*.tif "$THEDIR"/*.tiff # >/dev/null 2>&1 &
     else
-        nohup feh --fullscreen --zoom fill --thumbnail --thumb-height 1024 --thumb-width 1024 --limit-width 10240 --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" "$THEDIR"/*.gif "$THEDIR"/*.jpg "$THEDIR"/*.jpeg "$THEDIR"/*.png "$THEDIR"/*.tif "$THEDIR"/*.tiff >/dev/null 2>&1 &
+        nohup feh --fullscreen --zoom fill --thumbnail --thumb-height 1024 --thumb-width 1024 --limit-width 10240 --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" "$THEDIR"/*.gif "$THEDIR"/*.jpg "$THEDIR"/*.jpeg "$THEDIR"/*.png "$THEDIR"/*.tif "$THEDIR"/*.tiff # >/dev/null 2>&1 &
     fi
 }
 main "$@"

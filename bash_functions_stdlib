@@ -2012,3 +2012,175 @@ harm-fonts () {
     # TODO: sudo? not yet, make sure this is necessary?
     # fc-cache -f -v
 }
+
+benchmark-compression-gzip () {
+    # benchmark gzip compression
+    du -sh "$1"
+    time {
+        tar --create --file - "$1" | gzip -9 > test.tgz
+    }
+    echo ""
+    du -sh "test.tgz"
+    time {
+        # XXXX: hope this is not optimized!
+        gzip -d test.tgz >/dev/null
+    }
+    sleep 10
+    rm test.tar
+}
+
+benchmark-compression-bzip2 () {
+    # benchmark bzip2 compression
+    du -sh "$1"
+    time {
+        tar --create --file - "$1" | bzip2 -9 > test.tar.bz2
+    }
+    echo ""
+    du -sh "test.tar.bz2"
+    time {
+        # XXXX: hope this is not optimized!
+        bzip2 -d test.tar.bz2 >/dev/null
+    }
+    sleep 10
+    rm test.tar
+}
+
+benchmark-compression-lz4 () {
+    # benchmark lz4 compression
+    du -sh "$1"
+    time {
+        tar --create --file - "$1" | lz4 -9 > test.tar.lz4
+    }
+    echo ""
+    du -sh test.tar.lz4
+    time {
+        # XXXX: hope this is not optimized!
+        lz4 -d test.tar.lz4 test.tar >/dev/null 2>&1
+    }
+    sleep 10
+    rm test.tar
+    rm test.tar.lz4
+}
+
+benchmark-compression-lzop () {
+    # benchmark lzop compression
+    du -sh "$1"
+    time {
+        tar --create --file - "$1" | lzop -9 > test.tar.lzop
+    }
+    echo ""
+    du -sh test.tar.lzop
+    time {
+        # XXXX: hope this is not optimized!
+        lzop -d test.tar.lzop >/dev/null
+    }
+    sleep 10
+    rm test.tar.lzop
+    rm test.tar
+}
+
+benchmark-compression-rzip () {
+    # benchmark rzip compression
+    du -sh "$1"
+    time {
+        tar --create --file - "$1" > test.tar;rzip -9 test.tar -o test.tar.rz
+    }
+    echo ""
+    du -sh test.tar.rz
+    time {
+        rzip -d test.tar.rz
+    }
+    sleep 10
+    rm test.tar
+}
+
+benchmark-compression-lzip () {
+    # benchmark lzip compression
+    du -sh "$1"
+    time {
+        tar --create --file - "$1" | lzip -9 > test.tar.lzip
+    }
+    echo ""
+    du -sh test.tar.lzip
+    time {
+        # XXXX: hope this is not optimized!
+        lzip -d -c test.tar.lzip > test.tar
+    }
+    sleep 10
+    rm test.tar.lzip
+    rm test.tar
+}
+
+benchmark-compression-xz () {
+    # benchmark lz compression
+    du -sh "$1"
+    time {
+        tar --create --file - "$1" | xz -9 > test.tar.xz
+    }
+    echo ""
+    du -sh test.tar.xz
+    time {
+        # XXXX: hope this is not optimized!
+        xz -d test.tar.xz >/dev/null
+    }
+    sleep 10
+    rm test.tar
+}
+
+benchmark-compression-all () {
+    # benchmark all supported compression methods
+    h2 "gzip"
+    benchmark-compression-gzip "$1"
+    h2 "bzip2"
+    benchmark-compression-bzip2 "$1"
+    h2 "lz4"
+    benchmark-compression-lz4 "$1"
+    h2 "lzop"
+    benchmark-compression-lzop "$1"
+    h2 "rzip"
+    benchmark-compression-rzip "$1"
+    h2 "lzip"
+    benchmark-compression-lzip "$1"
+    h2 "xz"
+    benchmark-compression-xz "$1"
+}
+
+pdftk-cat () {
+    # create pdf from alphabetically-order pdfs in current directory, using pdftk
+    pdftk *.pdf cat output "$1".pdf
+}
+
+alias cdf="cd-first"
+cd-first () {
+    # go to the first matching pattern
+    local FIRST=$(ls --color=never -dtr1 "$1"* | head -1)
+    cd "$FIRST"
+}
+alias lsf="ls-first"
+ls-first () {
+    # go to the first matching pattern
+    local FIRST=$(ls --color=never -dtr1 "$1"* | head -1)
+    ls "$FIRST"
+}
+
+alias cdl="cd-latest"
+cd-latest () {
+    # go to the lastest matching pattern
+    local LATEST=$(ls --color=never -dtr1 "$1"* | tail -1)
+    cd "$LATEST"
+}
+alias lsl="ls-latest"
+ls-latest () {
+    # go to the lastest matching pattern
+    local LATEST=$(ls --color=never -dtr1 "$1"* | tail -1)
+    ls "$LATEST"
+}
+
+list-x11-displays () {
+    pushd . >/dev/null
+    cd /tmp/.X11-unix
+    for x in X*; do
+        echo ":${x#X}";
+    done
+    popd >/dev/null
+}
