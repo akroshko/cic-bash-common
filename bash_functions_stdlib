@@ -2185,3 +2185,20 @@ list-x11-displays () {
     done
     popd >/dev/null
 }
+
+list-all-screen-session-commands () {
+    # based on
+    SCREEN_SESSIONS=( $(screen -ls | grep pts | cut -f1 -d"." | sed -e 's/^[[:space:]]*//g') )
+    for SCREEN_SESSION_PID in "${SCREEN_SESSIONS[@]}";do
+        h2 "Screen session pid: $SCREEN_SESSION_PID"
+        screen -ls "$SCREEN_SESSION_PID"
+        # TODO: will all screens have bash base
+        SCREEN_CHILD=$(ps -el | grep $(ps -el | grep "$SCREEN_SESSION_PID" | grep bash | awk '{print $4}') | grep -v bash | awk '{print $4}')
+        if [[ -n "$SCREEN_CHILD" ]]; then
+            echo $(ps u -p "$SCREEN_CHILD") | fold -w 160
+        else
+            warn "No non-bash child process!"
+        fi
+    done
+}
+alias scl-commands="list-all-screen-session-commands"
