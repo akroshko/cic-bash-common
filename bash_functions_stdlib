@@ -585,7 +585,7 @@ vcs-update-versions () {
             if grep "^# Copyright" $f >/dev/null && ! grep "^# Copyright.*2016" $f >> /dev/null; then
                 warn "Need to update year in $f"
             fi
-        elif [[ "$FILETYPE" =~ "Lisp/Scheme program" ]] || [[ "$VERSIONFILE" =~ \.el$ ]]; then
+        elif [[ "$FILETYPE" =~ "Lisp/Scheme program" || "$VERSIONFILE" =~ \.el$ ]]; then
             # lisp
             sed -i -e "s/^;; Version:.*$/;; Version: $(date-stamp)/g" "$f"
             # if not copyright matches this year
@@ -1186,6 +1186,7 @@ master-boss-key () {
 master-unboss-key () {
     # kill volume
     amixer set Master unmute
+    # TODO: restore youtube
     # unminimize all windows
     # TODO: use xdotool to restore instead?
     # TODO: at least add back to taskbar
@@ -1291,7 +1292,7 @@ select-disk-uuid-usb () {
         while read -r -t 0;do read -r; done;
         read -n 1 -p "Enter an alternate drive: " ALTERNATESELECT >&2
         echo "" >&2
-        if [[ $ALTERNATESELECT == "0" ]] || ! [[ $ALTERNATESELECT =~ ^[0-9]+$ ]] || (( $ALTERNATESELECT >= $count )); then
+        if [[ $ALTERNATESELECT == "0" || ! $ALTERNATESELECT =~ ^[0-9]+$ ]] || (( $ALTERNATESELECT >= $count )); then
             return 1
         fi
         local ALTERNATESELECT=$(( $ALTERNATESELECT - 1 ))
