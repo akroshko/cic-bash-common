@@ -2203,3 +2203,8 @@ list-all-screen-session-commands () {
 }
 # TODO: do I want scl to always do this?
 alias scl-commands="list-all-screen-session-commands"
+
+ag-sizes () {
+    # get sorted sizes of packages installed
+    dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort --numeric -
+}
