@@ -1,5 +1,6 @@
 #!/bin/bash
 # https://wiki.archlinux.org/index.php/feh#File_Browser_Image_Launcher
+# TODO: think --keep-zoom-vp is what I want
 shopt -s nullglob
 
 if [[ -z "$1" ]]; then
@@ -9,21 +10,20 @@ else
     DNAME=$(dirname "$FULLPATH")
 fi
 
-#
-# TODO: remove debug
+# TODO: want --keep-zoom-vp, but does not work that well
 if [[ ${HOSTNAME} == 'akroshko-main' ]]; then
     # TODO: try and "maximize"
     if [[ -d "$FULLPATH" ]];then
-        feh --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" --action6 ";nohup gimp \"%f\" &" --geometry=1920x1080+1280+0 "$FULLPATH"
+        feh --scale-down --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" --action6 ";nohup gimp \"%f\" &" --geometry=1920x1080+1280+0 "$FULLPATH"
     else
-        feh --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" --action6 ";nohup gimp \";%f\" &" --geometry=1920x1080+1280+0 "$DNAME" --start-at "$FULLPATH"
+        feh --scale-down --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" --action6 ";nohup gimp \";%f\" &" --geometry=1920x1080+1280+0 "$DNAME" --start-at "$FULLPATH"
     fi
 else
     # XXXX: fullscreen causes issues on viewing laptop from pcmanfm, specicific to laptop for now
     # TODO: try and "maximize"
     if [[ -d "FULLPATH" ]]; then
-        feh --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" --action6 ";nohup gimp \"%f\" &" --geometry=1280x800+0+0 "$FULLPATH"
+        feh --keep-zoom-vp --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" --action6 ";nohup gimp \"%f\" &" --geometry=1280x800+0+0 "$FULLPATH"
     else
-        feh --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" --action6 ";nohup gimp \"%f\" &" --geometry=1280x800+0+0 "$DNAME" --start-at "$FULLPATH"
+        feh --keep-zoom-vp --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" --action6 ";nohup gimp \"%f\" &" --geometry=1280x800+0+0 "$DNAME" --start-at "$FULLPATH"
     fi
 fi

@@ -1768,13 +1768,7 @@ build-install-software () {
     h2 "pip";
     curl https://bootstrap.pypa.io/get-pip.py | sudo python;
     h2 "feh"
-    pushd . >/dev/null
-    cd feh
-    git pull
-    make clean
-    make exif=1 help=1 xinerama=0
-    sudo make install
-    popd >/dev/null
+    build-install-software-feh
     h2 "girara";
     pushd . > /dev/null;
     cd girara;
@@ -1838,6 +1832,18 @@ build-install-software () {
         sudo make install
         popd >/dev/null
     fi
+    popd >/dev/null
+}
+
+# TODO: will do with more, but for now I build feh on its own a lot
+build-install-software-feh () {
+    # must be in proper directory
+    pushd . >/dev/null
+    cd feh
+    git pull
+    make clean
+    make exif=1 help=1 xinerama=0
+    sudo make install
     popd >/dev/null
 }
 

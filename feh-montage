@@ -1,48 +1,89 @@
 #!/bin/bash
 # TODO: epub and thumbnail/montage for many files at once
 main () {
-    if [[ ! -f "$2" ]]; then
-	    echo "No argument or argument is not a file!"
-	    return 1
-    fi
-    # TODO: check this directory to see if montage already created
-    mkdir -p ~/tmp/document-montages
-    # make sure file exists
     time {
-        local TMPDIR=$(mktemp -d)
-        echo "$TMPDIR"
-        cp "$2" "$TMPDIR"
-        pushd . >/dev/null
-        cd "$TMPDIR"
-        local FNAME=$(basename "$2")
-        echo $(pdfinfo "$2" | grep "Pages: ")
-        pdftk "$TMPDIR"/"$FNAME" burst
-        # XXXX: tends to be done interactively so making things nice is good
-        # find way to record progress
-        /usr/bin/nice -n 19 find "$TMPDIR" -iname "pg*.pdf" -print0 | sort -z | parallel -r0 --progress -I FILE -n 1 -j$(nproc) /usr/bin/pdftoppm -r 150 -singlefile FILE FILE
-        feh-display-montage "$1" "$2"
+        if [[ ! -f "$1" || -z "$2" ]]; then
+	    echo "No command or argument is not a file!"
+            echo  "Usage: feh-montage <<filename>> <<\"\"|--slideshow|--montage|--thumbnails>>"
+	    return 1
+        fi
+        # TODO: check this directory to see if montage already created
+        mkdir -p ~/tmp/document-montages
+        # make sure file exists
+        time {
+            local TMPDIR=$(mktemp -d)
+            echo "$TMPDIR"
+            cp "$1" "$TMPDIR"
+            pushd . >/dev/null
+            cd "$TMPDIR"
+            local FNAME=$(basename "$1")
+            echo $(pdfinfo "$1" | grep "Pages: ")
+            pdftk "$TMPDIR"/"$FNAME" burst
+            # XXXX: tends to be done interactively so making things nice is good
+            # find way to record progress
+            # XXXX: png seems slower but does not take up 2.5GB for a 443 page book, more like 178mb, deleting pdfs would get that down to 108M
+            # TODO: resolution down to 75 on slow computers? seems to be about 4 times as fast and quite adequate
+            # TODO: can I calculate best size for device?
+            /usr/bin/nice -n 19 find "$TMPDIR" -iname "pg*.pdf" -print0 | sort -z | parallel -r0 --progress -I FILE -n 1 -j$(nproc) /usr/bin/pdftoppm -png -r 150 -singlefile FILE FILE
+            # this is a hack
+            rename "s/.pdf.png/.png/" "${TMPDIR}"/*.pdf.png
+            # XXXX: this fence may not always work, but ensures pdfs in current dir are not accidently deleted
+            THEMD5SUM=$(md5sum "$1" | awk '{print $1}')
+            echo "Using hash for filename root: $THEMD5SUM"
+            # TODO: save space on space-constrained devices
+            if [[ "$PWD" =~ ^/tmp/ ]];  then
+               rm "$PWD"/*.pdf
+            fi
+        }
+        feh-display-montage "$2" "$THEMD5SUM"
         popd >/dev/null
     }
 }
 
+# TODO: want to delete directory on exit
+# TODO: can I show double pages, pairs?
+# TODO: pop open terminal for this until debugged
 feh-display-montage () {
-    local MAXWIDTH=$(feh -l *.ppm | awk '{ print $3 }' | tail -n +2 | sort --numeric | tail -n 1)
-    local MAXHEIGHT=$(feh -l *.ppm | awk '{ print $4 }' | tail -n +2 | sort --numeric | tail -n 1)
+    # TODO: not sure if I want --auto-zoom
+    # see http://www.commandlinefu.com/commands/view/13568/open-an-image-in-feh-automatically-scaling-it-to-its-windows-size
+    local THUMBWIDTH="512"
+    local MAXWIDTH="5120"
+    local MAXWIDTH=$(feh -l *.png | awk '{ print $3 }' | tail -n +2 | sort --numeric | tail -n 1)
+    local MAXHEIGHT=$(feh -l *.png | awk '{ print $4 }' | tail -n +2 | sort --numeric | tail -n 1)
     local WIDTHRATIO=$(echo "$MAXHEIGHT/$MAXWIDTH" | bc -l)
-    local THUMBHEIGHT=$(printf %.0f $(echo "$WIDTHRATIO*1024" | bc -l))
+    local THUMBHEIGHT=$(printf %.0f $(echo "$WIDTHRATIO*$THUMBWIDTH" | bc -l))
+    local NIMAGES=$(ls -1 *.png | wc -l)
     echo "Maximum height: $MAXHEIGHT"
     echo "Maximum width: $MAXWIDTH"
     echo "Width ratio: $WIDTHRATIO"
     echo "Thumbnail height: $THUMBHEIGHT"
-    echo "Thumbnail wdith: 1024"
-    # XXXX: these nohup detach the final product from any calling process
-    if [[ ${HOSTNAME} == "akroshko-main" ]]; then
-        nohup feh --geometry=1920x1080+1280+0 --zoom fill $1 --thumb-height "$THUMBHEIGHT" --thumb-width 1024 --limit-width 10240 *.ppm  --output ~/tmp/document-montages/$(md5sum "$2" | awk '{print $1}').jpg &
-    else
-        if [[ $1 == "--thumbnail" ]];then
-            nohup feh --fullscreen --geometry=1280x800+0+0 --zoom fill $1 --thumb-height "$THUMBHEIGHT" --thumb-width 1024 --limit-width 10240 *.ppm &
+    echo "Thumbnail width: $THUMBWIDTH"
+    if [[ "$1" == "--slideshow" ]]; then
+        if [[ "${NIMAGES}" == "1" ]]; then
+            # no --keep-zoom-vp if only one image
+            feh --scale-down --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" *.png
         else
-            nohup feh --fullscreen --zoom fill $1 --thumb-height "$THUMBHEIGHT" --thumb-width 1024 --limit-width 10240 *.ppm --output ~/tmp/document-montages/$(md5sum "$2" | awk '{print $1}').jpg &
+            # TODO: want --keep-zoom-vp by defult, but does not work that well
+            feh --scale-down --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" *.png
+        fi
+    else
+        # TODO: add nohup & detach the final product from any calling process
+        # TODO: feh often segfaults on big files
+        # TODO: what do I want for zoom?
+        # TODO: calculate sizes this sometime, decide on defaults based on 4GB memory and number of pages
+        if [[ ${HOSTNAME} == "akroshko-main" ]]; then
+            if [[ $1 == "--thumbnails" ]];then
+                # TODO: not default output for thumbs, segfaults on many documents
+                feh --geometry=1920x1080+1280+0 --thumbnails --thumb-height "$THUMBHEIGHT" --thumb-width "$THUMBWIDTH" --limit-width "$MAXWIDTH" *.png
+            else
+                feh --geometry=1920x1080+1280+0 --montage --thumb-height "$THUMBHEIGHT" --thumb-width "$THUMBWIDTH" --limit-width "$MAXWIDTH" *.png  --output ~/tmp/document-montages/"$2".jpg
+            fi
+        else
+            if [[ $1 == "--thumbnails" ]];then
+                feh --fullscreen --geometry=1280x800+0+0 --thumbnails --thumb-height "$THUMBHEIGHT" --thumb-width "$THUMBWIDTH" --limit-width "$MAXWIDTH" *.png
+            else
+                feh --fullscreen --montage --thumb-height "$THUMBHEIGHT" --thumb-width "$THUMBWIDTH" --limit-width "$MAXWIDTH" *.png --output ~/tmp/document-montages/"$2".jpg
+            fi
         fi
     fi
 }

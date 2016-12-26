@@ -176,6 +176,7 @@ alias g-functions="grep-functions"
 alias gf="grep-functions"
 alias hrc='harm-bashrc'
 alias f='feh-open-browse'
+# TODO: change these, no longer relevant
 alias fm='feh-montage --montage'
 alias fp='feh-montage --montage'
 alias ft='feh-thumbnail'
