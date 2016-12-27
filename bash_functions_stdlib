@@ -1767,6 +1767,8 @@ build-install-software () {
     # now build, copied from build-install-software, and should be synced up
     h2 "pip";
     curl https://bootstrap.pypa.io/get-pip.py | sudo python;
+    h2 "wayback downloader"
+    sudo gem install wayback_machine_downloader
     h2 "feh"
     build-install-software-feh
     h2 "girara";

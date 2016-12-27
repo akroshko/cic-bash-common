@@ -46,6 +46,7 @@ main () {
 feh-display-montage () {
     # TODO: not sure if I want --auto-zoom
     # see http://www.commandlinefu.com/commands/view/13568/open-an-image-in-feh-automatically-scaling-it-to-its-windows-size
+    # TODO: are these taking too long on big documents
     local THUMBWIDTH="512"
     local MAXWIDTH="5120"
     local MAXWIDTH=$(feh -l *.png | awk '{ print $3 }' | tail -n +2 | sort --numeric | tail -n 1)
