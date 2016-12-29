@@ -2216,3 +2216,14 @@ ag-sizes () {
     # get sorted sizes of packages installed
     dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort --numeric -
 }
+
+screen-name () {
+    if [[ -z "$1" ]]; then
+        yell "Must specify screen session name!!!"
+        return 1
+    fi
+    local SCREEN_SESSION="$1"
+    shift
+    screen -S "$SCREEN_SESSION" "$@"
+}
+alias sc='screen-name'

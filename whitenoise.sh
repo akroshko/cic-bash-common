@@ -30,8 +30,10 @@
 # $BACKGROUNDNOISESUBSTRING to define a unique substring for nice
 # interaction with xbindkeys or other shortcut managers.
 
-if ps -ef | grep "${BACKGROUNDNOISESUBSTRING}" | grep -v grep >/dev/null
-then
+# TODO: define exactly why it is useful for this to be a seperate script?
+#       could be a good f12 thing
+
+if ps -ef | grep "${BACKGROUNDNOISESUBSTRING}" | grep -v grep >/dev/null; then
     echo "pause" | nc -q 2 localhost 19000
 else
     rxvt-unicode -title "White noise" -e cvlc --rc-host localhost:19000 --extraintf oldrc --intf dummy "$BACKGROUNDNOISE"
