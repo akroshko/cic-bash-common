@@ -43,7 +43,7 @@ _screen_sockets () {
     # or tr -d "[:space:]"
     IFS=$(echo -en "\n\b")
     # TODO: only want for first argument, not others after
-    COMPREPLY=( $(screen -ls | grep pts | cut -f1 -d"." | sed -e 's/^[[:space:]]*//g' | grep "${COMP_WORDS[COMP_CWORD]}") )
+    COMPREPLY=( $(screen -ls | grep "^[[:space:]]\+[0-9]\+" | cut -f1 -d"." | sed -e 's/^[[:space:]]*//g' | grep "${COMP_WORDS[COMP_CWORD]}") )
 }
 
 complete -F _bash_functions view-def

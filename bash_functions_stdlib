@@ -2194,7 +2194,7 @@ list-x11-displays () {
     popd >/dev/null
 }
 
-list-all-screen-session-commands () {
+screen-list-all-session-commands () {
     # based on
     SCREEN_SESSIONS=( $(screen -ls | grep pts | cut -f1 -d"." | sed -e 's/^[[:space:]]*//g') )
     for SCREEN_SESSION_PID in "${SCREEN_SESSIONS[@]}";do
@@ -2210,12 +2210,22 @@ list-all-screen-session-commands () {
     done
 }
 # TODO: do I want scl to always do this?
-alias scl-commands="list-all-screen-session-commands"
+alias scl-commands="screen-list-all-session-commands"
 
 ag-sizes () {
     # get sorted sizes of packages installed
     dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort --numeric -
 }
+
+# TODO: this is temporary, means I am forced to use sc, eventually want screen to just do this
+screen-default () {
+    if [[ -z "$1" || ! "$1" =~ ^- ]]; then
+        yell "Default screen must have options associated with it! Use sc command to start screen instead!"
+        return 1
+    fi
+    \screen "$@"
+}
+alias screen='screen-default'
 
 screen-name () {
     if [[ -z "$1" ]]; then
