@@ -309,11 +309,6 @@ ls-sort-date () {
 
 need_new_symlink () {
     # create new symlink deleting old symlinks but not old files
-    # TODO: overwrite and backup files while killing symlinks
-    # TODO: do I want to remove and replace symlink even if it is valid?
-    # if [[ ! -e "$1" ]]; then
-    #     yell "Source $1 does not exist!"
-    # fi
     if [[ -e "$2" && ! -h "$2" ]]; then
         # symlink is a file or something
         yell "$2: exists but is not a symlink!!!"
@@ -324,6 +319,9 @@ need_new_symlink () {
         # symlink exists but is invalid
         rm -f "$2"
         ln -s "$1" "$2"
+    elif [[ -h "$2" && $(readlink -f "$2") != $(readlink -f "$1") ]]; then
+        # symlink exists but points to different location than we are going to
+        yell "Symlink $2 exists but points to $(readlink -f "$2") instead of $1!"
     fi
 }
 
