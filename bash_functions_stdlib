@@ -1511,11 +1511,6 @@ add-timestamp-head-of-all-files () {
     done
 }
 
-wget-check-log () {
-    # do a quick check of a log file to make sure everything is saved properly
-    cat "$1" | grep saved | grep -v listing
-}
-
 read-mail () {
     less /var/spool/mail/${USERNAME}
 }
