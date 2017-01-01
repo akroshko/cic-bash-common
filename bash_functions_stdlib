@@ -92,6 +92,11 @@ date-time-stamp () {
     echo $(date +%Y%m%d%H%M%S)
 }
 
+date-time-stamp-t () {
+    # return a time-stamp with date in standard format
+    echo $(date +%Y%m%dT%H%M%S)
+}
+
 date-stamp () {
     echo $(date +%Y%m%d)
 }
