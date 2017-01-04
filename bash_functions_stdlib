@@ -532,6 +532,12 @@ backlight-percentage () {
 vcs-check-root () {
     # check if a pull is needed for for child directories if they correspond to common version control systems
     # from https://stackoverflow.com/questions/3258243/git-check-if-pull-needed
+    # stop it from running home because that's dumb
+    # TODO: other directories
+    if [[ ${PWD} == ${HOME} ]]; then
+        yell "Cannot run in home directory!!!"
+        return 1
+    fi
     for dirname in ${PWD}/*; do
         [[ -d "$dirname" ]] || continue
         # check for various things
@@ -1739,11 +1745,6 @@ dunst-notifications () {
     grep "summary: \|body: " "${HOME}"/tmp/dunst-current.log | grep -v \'\' | sed -e 's/^[ \t]*//' | sed -e 's/body: /    /' | sed -e 's/summary: //'
 }
 
-# TODO: think it's not needed anymore
-# vcs-incoming () {
-#     git log ..origin/master
-# }
-
 build-install-software () {
     pushd . >/dev/null
     cd "${HOME}"/cic-external-vcs
@@ -1922,6 +1923,10 @@ vcs-incoming () {
     # https://stackoverflow.com/questions/1331385/how-can-i-see-incoming-commits-in-git
     # do not do above anymore
     # https://stackoverflow.com/questions/1800783/compare-local-git-branch-with-remote-branch
+    h2 "The log: "
+    # TODO: configure a little better, want to see on screen and not wierd pager stuff
+    git log ..origin/master
+    h2 "The diffs: "
     git diff --stat @{upstream}
     git diff @{upstream}
 }
