@@ -1,4 +1,4 @@
-#!/bin/bash -i
+#!/bin/bash
 # whitenoise.sh is a script that runs/pauses/unpauses a playing a
 # particular sound file
 #
@@ -29,12 +29,44 @@
 # file defined by $BACKGROUNDNOISE in my .bashrc currently.  Use
 # $BACKGROUNDNOISESUBSTRING to define a unique substring for nice
 # interaction with xbindkeys or other shortcut managers.
-
+source ~/.bash_libenv
 # TODO: define exactly why it is useful for this to be a seperate script?
-#       could be a good f12 thing
-
-if ps -ef | grep "${BACKGROUNDNOISESUBSTRING}" | grep -v grep >/dev/null; then
+# check if whitenoise already running
+ALREADYRUNNING=0
+# INDEX=0
+# INDEXTORUN=0
+# TODO: make more universal, check if playing
+for SS in "${BACKGROUNDNOISESUBSTRINGS[@]}";do
+    if ps -ef | grep "${SS}" | grep -v grep >/dev/null; then
+        ALREADYRUNNING=1
+    fi
+done
+if [[ -z "$1" && "$ALREADYRUNNING" == 1 ]]; then
     echo "pause" | nc -q 2 localhost 19000
+    sleep 1
+elif [[ -n "$1" && "$ALREADYRUNNING" == 1 ]]; then
+    # make sure to reuse existing
+    # rxvt-unicode -title "White noise" -e cvlc --rc-host localhost:19000 --extraintf oldrc --intf dummy "${BACKGROUNDNOISE[$INDEXTORUN]}"
+    echo "next" | nc -q 2 localhost 19000
+    sleep 1
 else
-    rxvt-unicode -title "White noise" -e cvlc --rc-host localhost:19000 --extraintf oldrc --intf dummy "$BACKGROUNDNOISE"
+    # play the first one
+    if [[ -z "$1" ]] ;then
+        nohup rxvt-unicode -title "White noise" -e cvlc --rc-host localhost:19000 --extraintf oldrc --intf dummy "${BACKGROUNDNOISE[0]}" & >/dev/null
+    else
+        nohup rxvt-unicode -title "White noise" -e cvlc --rc-host localhost:19000 --extraintf oldrc --intf dummy "${BACKGROUNDNOISE[1]}" & >/dev/null
+    fi
+    sleep 2
+    FIRSTITEM=1
+    for WN in "${BACKGROUNDNOISE[@]}";do
+        if [[ "$FIRSTITEM" == 1 ]]; then
+            FIRSTITEM=0
+            continue
+        fi
+        echo "enqueue ${WN}" | nc -q 2 localhost 19000
+        sleep 1
+    done
+    # let the playlist loop
+    echo "loop" | nc -q 2 localhost 19000
+    sleep 1
 fi
