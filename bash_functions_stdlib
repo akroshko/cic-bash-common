@@ -1163,6 +1163,7 @@ youtube-next () {
 master-boss-key () {
     # get current window
     local CURRENTWINDOW=$(xdotool getwindowfocus)
+    local CURRENTWINDOWNAME=$(xdotool getwindowname ${CURRENTWINDOW})
     # kill volume
     amixer set Master mute
     # https://askubuntu.com/questions/26068/how-do-you-mute-from-the-command-line
@@ -1176,11 +1177,7 @@ master-boss-key () {
     xdotool search --onlyvisible --name firefox | while IFS= read -r line; do
         xdotool windowminimize "${line}"
     done
-    # xdotool search --onlyvisible --name iceweasel | while IFS= read -r line; do
-    #     xdotool windowminimize "${line}"
-    # done
     # turn off youtube
-    # TODO: limit to conkeror
     xdotool search --name youtube | while IFS= read -r line; do
         if xdotool search --class conkeror | grep "${line}" >/dev/null; then
             xdotool windowfocus --sync "${line}";
@@ -1188,8 +1185,10 @@ master-boss-key () {
             conkeror -f youtube-pause
         fi
     done
-    # restore focus
-    xdotool windowactivate --sync ${CURRENTWINDOW}
+    # restore focus, but make sure its not browser window
+    if [[ ! "${CURRENTWINDOWNAME,,}" =~ conkeror && ! "${CURRENTWINDOWNAME,,}" =~ firefox ]]; then
+        xdotool windowactivate --sync ${CURRENTWINDOW}
+    fi
 }
 
 master-unboss-key () {
