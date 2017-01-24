@@ -12,4 +12,4 @@ This package has mostly been tested with the current Emacs package on
 individual functions, they are given by a convienient install command
 are:
 
-    sudo apt-get install autossh conkeror emacs24 eyed3 git fail2ban ffmpeg imagemagick nmap rxvt-unicode vlc xbindkeys xclip
+    sudo apt-get install autossh conkeror emacs24 eyed3 git fail2ban ffmpeg imagemagick nmap rxvt-unicode vlc xclip

@@ -28,7 +28,7 @@
 # This script is often used to quickly play/unplay background noise in
 # file defined by $BACKGROUNDNOISE in my .bashrc currently.  Use
 # $BACKGROUNDNOISESUBSTRING to define a unique substring for nice
-# interaction with xbindkeys or other shortcut managers.
+# interaction with shortcuts in window managers.
 source ~/.bash_libenv
 # TODO: define exactly why it is useful for this to be a seperate script?
 # check if whitenoise already running

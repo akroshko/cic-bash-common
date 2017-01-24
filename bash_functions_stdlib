@@ -474,14 +474,6 @@ fgi () {
 }
 
 harm-bash () {
-    if ps -ef | grep "xbindkeys" | grep -v grep >/dev/null; then
-        if [[ -t 0 && -n "$DISPLAY" ]]; then
-            warn "Killing xbindkeys!!!"
-            killall xbindkeys
-        else
-            warn "Shell not interactive or no display! Not killing xbindkeys!"
-        fi
-    fi
     fix-gpg-ssh-permissions
     source ${HOME}/.bash_profile
 }
