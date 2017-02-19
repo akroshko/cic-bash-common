@@ -1584,8 +1584,8 @@ fetch-compile-sage () {
     if [[ -z "$SAGEVERSION" || -z "$SAGEVERSIONMD5" ]]; then
         msg "Using default sage versions."
         # update for every new sage
-        local SAGEVERSION="7.3"
-        local SAGEVERSIONMD5="a289e955f9c94be3e4420ee86d8302a7"
+        local SAGEVERSION="7.5.1"
+        local SAGEVERSIONMD5="7d26a9f7cb354de22dd9f968d7181b14"
         local SAGEMIRROR="http://www.cecm.sfu.ca/sage/src/"
         # TODO: put this somewhere else
         local SAGELOCATION=/home/akroshko/cic-small/distfiles-current
@@ -1669,13 +1669,14 @@ fetch-compile-sage () {
         cd /opt/sage-"${SAGEVERSION}"
     fi
     # TODO: make sure I can rerun this if necesssary
-    # TODO: make an upgrade
+    # TODO: make an upgrade, find out if this does not work, make sure it does
     if [[ "$yn2" == "y" ]]; then
         msg "Exit sage when done!"
         ./sage
         ./sage -i openssl
         ./sage -pip install --upgrade pip
         ./sage -pip install pyopenssl
+        ./sage -pip install service_identity
         ./sage -pip install psycopg2
         ./sage -pip install dill
         ./sage -pip install multiprocess
@@ -1690,6 +1691,7 @@ fetch-compile-sage () {
         sudo ln -s /opt/sage-"${SAGEVERSION}"/sage /usr/local/bin
     else
         echo "Not finalizing!  Can be done later with --finalize"
+        return 1
     fi
     # try running sage
     msg "Exit sage when done!"
@@ -1963,8 +1965,9 @@ youtube-normalize-volume () {
     xdotool windowactivate --sync ${CURRENTWINDOW}
 }
 
+alias ffn='find-iname'
 find-iname () {
-    #
+    # TODO: need alias for this
     find . -iname '*'"$1"'*'
 }
 
