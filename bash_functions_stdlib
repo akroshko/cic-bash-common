@@ -1241,7 +1241,8 @@ smartctl-disks () {
 select-disk-uuid-usb () {
     # select a usb disk by UUID or alternately any other mounted drive
     # XXXX: doesn't work with more than 9 drives, but could be fixed
-    # TODO: are usb always UUID
+    # TODO: are usb always in UUID?
+    #       "$1" gives default
     # create array
     local USBARRAY=()
     if [[ -n "$1" ]]; then
@@ -1304,9 +1305,26 @@ select-disk-uuid-usb () {
         return 1
     fi
     local USBSELECT=$(( $USBSELECT - 1 ))
-    # TODO: keep ensuring only proper thing is every returned
+    # TODO: keep ensuring only proper thing is every returned, avoid use of tail
     echo ${USBARRAY[$USBSELECT]}
     return 0
+}
+
+# TODO: helper function to query physical disk info.... but only works for unencrypted
+# TODO: query only USB
+# TODO: keep finding parent disk
+# TODO: lsblk may be best, but this shows what is needed for select-disk-uuid-??? functions
+select-disk-uuid-info () {
+    # TODO: need columns
+    echo "ID: "
+    for d in /dev/disk/by-id/*; do
+        echo "$d: $(readlink -f $d) $(/sbin/udevadm info --query=all --name=$(readlink -f $d) | grep ID_BUS)"
+    done
+    echo ""
+    echo "UUID: "
+    for d in /dev/disk/by-uuid/*; do
+        echo "$d: $(readlink -f $d) $(/sbin/udevadm info --query=all --name=$(readlink -f $d) | grep ID_BUS)"
+    done
 }
 
 dangerous-function-ask () {
