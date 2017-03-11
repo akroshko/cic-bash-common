@@ -1887,6 +1887,7 @@ phoronix-describe-all-tests () {
 inhibit-powersave () {
     # make sure screensaver does not restart
     # TODO: inhibit power management too
+    # TODO: if I can blow out of loop and reenable screensaver?
     while true; do
         echo "Trying..."
         xscreensaver-command -exit
@@ -1894,7 +1895,7 @@ inhibit-powersave () {
         xset -dpms
         xset dpms 0 0 0
         cpu-throttle-up
-        sleep 60
+        sleep 15
     done
 }
 
