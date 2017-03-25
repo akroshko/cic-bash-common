@@ -1829,6 +1829,15 @@ build-install-software () {
     make;
     sudo make install;
     popd >/dev/null
+    h2 "zathura-ps";
+    pushd . > /dev/null;
+    cd zathura-ps;
+    git pull
+    git checkout --track -b develop origin/develop
+    make clean;
+    make;
+    sudo make install;
+    popd >/dev/null
     # do xpdf, but not on all machines
     if [[ "${HOSTNAME}" =~ main || "${HOSTNAME}" =~ laptop ]];then
         h2 "xpdf"
@@ -1888,6 +1897,7 @@ inhibit-powersave () {
     # make sure screensaver does not restart
     # TODO: inhibit power management too
     # TODO: if I can blow out of loop and reenable screensaver?
+    # TODO: power up all...
     while true; do
         echo "Trying..."
         xscreensaver-command -exit
