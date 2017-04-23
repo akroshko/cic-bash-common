@@ -25,6 +25,7 @@
 # check if the Emacs server is running, if not start the server
 # see http://www.emacswiki.org/emacs/EmacsClient
 
+# TODO: can remove some redundancy
 firstarg=$1
 case $firstarg in
     batch )
@@ -80,6 +81,15 @@ case $firstarg in
             else
                 emacsclient --no-wait --alternate-editor="" "$@"
             fi
+        fi
+        ;;
+    nohup )
+        shift
+        if ! ps -ef | grep "emacs --daemon" | grep -v grep >/dev/null; then
+            emacs --daemon
+            nohup emacsclient --alternate-editor="" --create-frame "$@" 2>&1 >/dev/null &
+        else
+            nohup emacsclient --alternate-editor="" --create-frame "$@" 2>&1 >/dev/null &
         fi
         ;;
     * )

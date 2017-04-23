@@ -23,4 +23,4 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see http://www.gnu.org/licenses/.
 
-echo `xclip -o selection c` | base64
+xclip -o -selection clipboard | base64
