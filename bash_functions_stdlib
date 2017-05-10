@@ -1602,8 +1602,8 @@ fetch-compile-sage () {
     if [[ -z "$SAGEVERSION" || -z "$SAGEVERSIONMD5" ]]; then
         msg "Using default sage versions."
         # update for every new sage
-        local SAGEVERSION="7.5.1"
-        local SAGEVERSIONMD5="7d26a9f7cb354de22dd9f968d7181b14"
+        local SAGEVERSION="7.6"
+        local SAGEVERSIONMD5="193447af75cc83fc3f68b326f9d30f67"
         local SAGEMIRROR="http://www.cecm.sfu.ca/sage/src/"
         # TODO: put this somewhere else
         local SAGELOCATION=/home/akroshko/cic-small/distfiles-current
