@@ -2273,3 +2273,55 @@ find-newest-modified () {
 tar-to-here () {
     tar cvzf ./"$2".tgz "$1"
 }
+
+# https://stackoverflow.com/questions/26621647/convert-human-readable-to-bytes-in-bash
+dehumanise() {
+  for v in "$@"; do
+    echo $v | awk \
+      'BEGIN{IGNORECASE = 1}
+       function printpower(n,b,p) {printf "%u\n", n*b^p; next}
+       /[0-9]$/{print $1;next};
+       /K(iB)?$/{printpower($1,  2, 10)};
+       /M(iB)?$/{printpower($1,  2, 20)};
+       /G(iB)?$/{printpower($1,  2, 30)};
+       /T(iB)?$/{printpower($1,  2, 40)};
+       /KB$/{    printpower($1, 10,  3)};
+       /MB$/{    printpower($1, 10,  6)};
+       /GB$/{    printpower($1, 10,  9)};
+       /TB$/{    printpower($1, 10, 12)}'
+  done
+}
+
+vcs-change-remote () {
+    # no arguments just gives remotes
+    if [[ -z "$1" ]];then
+        git remote -v
+    else
+        git remote set-url "$1" "$2"
+    fi
+}
+
+WGETOKCODES="200 OK\|302 Found"
+WGETERRORCODES="301 Moved Permanently\|404 Not Found\|406 Not Acceptable\|503 Service Unavailable\|504 Gateway Time-out\|Read error\|416 Requested Range Not Satisfiable\|300 Multiple Choices\|500 Internal Server Error"
+
+wget-check-log-unknown-codes () {
+    # TODO: find things that are not these, so I can start catologuing good errors
+     grep -Hn "awaiting response" "$1" | grep -v "$WGETOKCODES"  | grep -v "$WGETERRORCODES"
+}
+
+wget-check-log () {
+    # TODO: find things that are not these, so I can start catologuing good errors
+    h1 "Error codes"
+    grep --color=always -Hn -B 2 -A 4 "$WGETERRORCODES" "$1"
+    h1 "Unknown codes"
+    wget-check-log-unknown-codes "$1"
+}
+
+WGETFTPERRORPATTERNS="^Error\|^Retrying\|^Giving"
+wget-check-ftp-log () {
+    # TODO: find things that are not these, so I can start catologuing good errors
+    h1 "Error patterns for ftp"
+    grep --color=always -Hn -B 2 -A 4 "$WGETFTPERRORPATTERNS" "$1"
+    # h1 "Unknown codes"
+    # wget-check-log-unknown-codes "$1"
+}
