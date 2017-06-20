@@ -23,4 +23,5 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see http://www.gnu.org/licenses/.
 
-xclip -o -selection clipboard | base64
+# TODO: -l 1 hopefully gets rid of freezing, experiment
+xclip -l 1 -o -selection clipboard | base64
