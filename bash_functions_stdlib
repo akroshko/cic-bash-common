@@ -427,6 +427,22 @@ xclip-show-all () {
     xclip -o -selection c
 }
 
+watch-xclip () {
+    while true; do
+        # calling xclip-show-all does not do as expected
+        h1
+        msg "Primary"
+        xclip -o -selection p
+        h1
+        msg "Secondary"
+        xclip -o -selection s
+        h1
+        msg "Clipboard"
+        xclip -o -selection c
+        sleep 1
+    done
+}
+
 du-sort () {
     # sort by size after using du
     du --summarize --human-readable * 2>/dev/null | sort --human-numeric-sort
