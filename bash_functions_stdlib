@@ -1635,7 +1635,7 @@ fetch-compile-sage () {
     sudo true
     if [[ "$1" != "--finalize" ]]; then
         sudo apt-get update
-        sudo apt-get install gnutls-bin gnutls-doc libssl1.0.0 libssl-dev libssl-doc
+        sudo apt-get install gnutls-bin gnutls-doc libssl1.0.0 libssl-dev libssl-doc libcurl4-gnutls-dev libgnutls28-dev
         sudo apt-get install texlive dvipng ImageMagick
         if [[ -e "${SAGELOCATION}"/sage-"$SAGEVERSION".tar.gz ]]; then
             pushd . >/dev/null
@@ -1712,6 +1712,7 @@ fetch-compile-sage () {
         ./sage -pip install pyopenssl
         ./sage -pip install service_identity
         ./sage -pip install psycopg2
+        ./sage -pip install pycurl
         ./sage -pip install dill
         ./sage -pip install multiprocess
         # install sage mode
