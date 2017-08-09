@@ -2342,3 +2342,11 @@ wget-check-ftp-log () {
     # h1 "Unknown codes"
     # wget-check-log-unknown-codes "$1"
 }
+
+tar-ls () {
+    if [[ "$1" == *.tar.gz || "$1" == *.tgz ]]; then
+        tar -ztf "$1"
+    else
+        tar -tf "$1"
+    fi
+}
