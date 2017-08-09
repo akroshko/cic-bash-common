@@ -2343,6 +2343,19 @@ wget-check-ftp-log () {
     # wget-check-log-unknown-codes "$1"
 }
 
+als () {
+    # archive ls
+    # TODO: add help for command to use
+    if [[ "$1" == *.tar* || "$1" == *.tgz ]]; then
+        tar-ls "$1"
+    elif [[ "$1" == *.zip ]]; then
+        unzip -l "$1"
+    elif [[ "$1" == *.rar ]]; then
+        unrar l "$1"
+    fi
+}
+
+# TODO: combine with above?
 tar-ls () {
     if [[ "$1" == *.tar.gz || "$1" == *.tgz ]]; then
         tar -ztf "$1"
