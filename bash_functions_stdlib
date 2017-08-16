@@ -1606,11 +1606,11 @@ function ls-mime-files2 () {
     done
 }
 
-fetch-compile-sage-nice () {
-    /usr/bin/nice -n 19 /usr/bin/ionice -c3 fetch-compile-sage
+fetch-build-sage-nice () {
+    /usr/bin/nice -n 19 /usr/bin/ionice -c3 fetch-build-sage
 }
 
-fetch-compile-sage () {
+fetch-build-sage () {
     # fetch and compile current version of sage
     # usage: use --finalize to finalize the setup
     # XXXX: need to set sage variables elsewhere
@@ -1618,8 +1618,8 @@ fetch-compile-sage () {
     if [[ -z "$SAGEVERSION" || -z "$SAGEVERSIONMD5" ]]; then
         msg "Using default sage versions."
         # update for every new sage
-        local SAGEVERSION="7.6"
-        local SAGEVERSIONMD5="193447af75cc83fc3f68b326f9d30f67"
+        local SAGEVERSION="8.0"
+        local SAGEVERSIONMD5="93bdd128991e9144c4b137d3d6655065"
         local SAGEMIRROR="http://www.cecm.sfu.ca/sage/src/"
         # TODO: put this somewhere else
         local SAGELOCATION=/home/akroshko/cic-small/distfiles-current
@@ -1704,17 +1704,21 @@ fetch-compile-sage () {
     fi
     # TODO: make sure I can rerun this if necesssary
     # TODO: make an upgrade, find out if this does not work, make sure it does
+    # TODO: possibly upgrade twisted
     if [[ "$yn2" == "y" ]]; then
         msg "Exit sage when done!"
         ./sage
         ./sage -i openssl
         ./sage -pip install --upgrade pip
-        ./sage -pip install pyopenssl
         ./sage -pip install service_identity
-        ./sage -pip install psycopg2
-        ./sage -pip install pycurl
         ./sage -pip install dill
         ./sage -pip install multiprocess
+        ./sage -pip install psycopg2
+        ./sage -pip install pycurl
+        ./sage -pip install pyopenssl
+        ./sage -pip install rlipython
+        # TODO: may not be necessary
+        ./sage -pip install readline
         # install sage mode
         ./sage -f sage_mode
         # make docs
@@ -1724,6 +1728,8 @@ fetch-compile-sage () {
             sudo rm /usr/local/bin/sage
         fi
         sudo ln -s /opt/sage-"${SAGEVERSION}"/sage /usr/local/bin
+        echo "Setting up rlipython!"
+        sage -ipython -c "import rlipython;rlipython.install()"
     else
         echo "Not finalizing!  Can be done later with --finalize"
         return 1
