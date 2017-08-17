@@ -448,6 +448,10 @@ du-sort () {
     du --summarize --human-readable * 2>/dev/null | sort --human-numeric-sort
 }
 
+du-sort-dotfiles () {
+    du --summarize --human-readable .[^.]* 2>/dev/null | sort --human-numeric-sort
+}
+
 du-total-symlink () {
     # sort by size after using du
     du --summarize --total --dereference --human-readable * 2>/dev/null
