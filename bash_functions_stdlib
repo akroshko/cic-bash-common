@@ -1581,6 +1581,10 @@ function ag-rdep () {
     apt-cache rdepends "$1"
 }
 
+function ag-rdep-installed () {
+    apt-cache rdepends "$1" --installed
+}
+
 function ls-mime-files () {
     # list mime settings
     # https://wiki.archlinux.org/index.php/default_applications
@@ -2209,8 +2213,22 @@ benchmark-compression-all () {
 }
 
 pdftk-cat () {
-    # create pdf from alphabetically-order pdfs in current directory, using pdftk
-    pdftk *.pdf cat output "$1".pdf
+    if [[ -z "$1" ]]; then
+        echo "pdftk-split <<pdf basename to create>>"
+    else
+        # create pdf from alphabetically-order pdfs in current directory, using pdftk
+        pdftk *.pdf cat output "$1".pdf
+    fi
+}
+
+pdftk-split () {
+    if [[ -z "$1" ]]; then
+        echo "pdftk-split <<pdf filename in>> <<start page>> <<end page>>" "<<pdf filename out>>"
+        echo "Use page numbering and not page naming."
+    else
+        # create pdf from alphabetically-order pdfs in current directory, using pdftk
+        pdftk "$1" cat "$2"-"$3" output "$4"
+    fi
 }
 
 alias cdf="cd-first"
