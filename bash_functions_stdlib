@@ -2391,3 +2391,9 @@ tar-ls () {
         tar -tf "$1"
     fi
 }
+
+ls-grep () {
+    # a simple function for simple searches of a directory
+    ls -1 | grep -i "$1"
+
+}
