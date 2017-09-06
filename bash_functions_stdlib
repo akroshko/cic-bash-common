@@ -1376,9 +1376,10 @@ vcs-grep-conflicted () {
     find . -not -path "*.git*" -type f -exec grep -nH --color "^<<<<<<< \|^>>>>>>> \|^=======$\|^####### " {} \;
 }
 
-flashplayer-update () {
-    sudo update-flashplugin-nonfree --install --verbose
-}
+# TODO: broken, rfigure out if I can remove
+# flashplayer-update () {
+#     sudo update-flashplugin-nonfree --install --verbose
+# }
 
 mdstat-status () {
     local MDSTAT="$(cat /proc/mdstat | sed -n '/^md\|^[[:space:]]*\[\|blocks/p')"
@@ -2397,3 +2398,9 @@ ls-grep () {
     ls -1 | grep -i "$1"
 
 }
+alias grep-ls="ls-grep"
+
+grep-less () {
+    grep --color=always -Ri $@ | less
+}
+alias less-grep="less-grep"
