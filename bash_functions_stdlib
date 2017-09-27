@@ -2215,7 +2215,7 @@ benchmark-compression-all () {
 
 pdftk-cat () {
     if [[ -z "$1" ]]; then
-        echo "pdftk-split <<pdf basename to create>>"
+        echo "pdftk-cat <<pdf basename to create>>"
     else
         # create pdf from alphabetically-order pdfs in current directory, using pdftk
         pdftk *.pdf cat output "$1".pdf
