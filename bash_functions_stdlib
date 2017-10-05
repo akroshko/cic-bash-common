@@ -445,7 +445,7 @@ watch-xclip () {
 
 du-sort () {
     # sort by size after using du
-    du --summarize --human-readable * 2>/dev/null | sort --human-numeric-sort
+    du --total --summarize --human-readable * 2>/dev/null | sort --human-numeric-sort
 }
 
 du-sort-dotfiles () {
