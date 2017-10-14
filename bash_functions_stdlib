@@ -1753,8 +1753,9 @@ fetch-build-sage-packages () {
     # install sage mode
     # TODO: remove, does not seem to exist, try melpa
     # ./sage -i sage_mode
-    echo "Setting up rlipython!"
-    ./sage -ipython -c "import rlipython;rlipython.install()"
+    # TODO: I can replace most of my keys now
+    # echo "Setting up rlipython!"
+    # ./sage -ipython -c "import rlipython;rlipython.install()"
 }
 
 caps-toggle () {
