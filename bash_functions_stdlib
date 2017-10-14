@@ -1717,19 +1717,8 @@ fetch-build-sage () {
     if [[ "$yn2" == "y" ]]; then
         msg "Exit sage when done!"
         ./sage
-        ./sage -i openssl
-        ./sage -pip install --upgrade pip
-        ./sage -pip install service_identity
-        ./sage -pip install dill
-        ./sage -pip install multiprocess
-        ./sage -pip install psycopg2
-        ./sage -pip install pycurl
-        ./sage -pip install pyopenssl
-        ./sage -pip install rlipython
-        # TODO: may not be necessary
-        ./sage -pip install readline
-        # install sage mode
-        ./sage -f sage_mode
+        # build packages
+        fetch-build-sage-packages
         # make docs
         make doc
         # TODO: overwrite binary, but ask first
@@ -1737,8 +1726,6 @@ fetch-build-sage () {
             sudo rm /usr/local/bin/sage
         fi
         sudo ln -s /opt/sage-"${SAGEVERSION}"/sage /usr/local/bin
-        echo "Setting up rlipython!"
-        sage -ipython -c "import rlipython;rlipython.install()"
     else
         echo "Not finalizing!  Can be done later with --finalize"
         return 1
@@ -1748,6 +1735,26 @@ fetch-build-sage () {
     ./sage
     msg "Installation done!"
     popd >/dev/null
+}
+
+fetch-build-sage-packages () {
+    # be in sage directory, the ./sage is safety for this
+    # http://doc.sagemath.org/html/en/reference/misc/sage/misc/package.html
+    ./sage -i openssl
+    ./sage -pip install --upgrade pip
+    ./sage -pip install --upgrade service_identity
+    ./sage -pip install --upgrade dill
+    ./sage -pip install --upgrade multiprocess
+    ./sage -pip install --upgrade psycopg2
+    ./sage -pip install --upgrade pycurl
+    ./sage -pip install --upgrade pyopenssl
+    ./sage -pip install --upgrade rlipython
+    ./sage -pip install --upgrade readline
+    # install sage mode
+    # TODO: remove, does not seem to exist, try melpa
+    # ./sage -i sage_mode
+    echo "Setting up rlipython!"
+    ./sage -ipython -c "import rlipython;rlipython.install()"
 }
 
 caps-toggle () {
@@ -1789,6 +1796,7 @@ dunst-notifications () {
 }
 
 build-install-software () {
+    # TODO: add some checks and warnings if things are not present
     pushd . >/dev/null
     cd "${HOME}"/cic-external-vcs
     # assumes I'm in directory with appropriate subdirectories
@@ -1798,14 +1806,16 @@ build-install-software () {
     # TODO: evantually make this the only one
     [[ ! -d "${HOME}"/cic-external-vcs ]] && mkdir -p "${HOME}"/cic-external-vcs
     cd "${HOME}"/cic-external-vcs
-    [[ ! -d "${HOME}"/cic-external-vcs/conkeror ]]            && git clone git://repo.or.cz/conkeror.git
-    [[ ! -d "${HOME}"/cic-external-vcs/urxvt-perls ]]         && git clone https://github.com/akroshko/urxvt-perls.git
-    [[ ! -d "${HOME}"/cic-external-vcs/feh ]]                 && git clone https://git.finalrewind.org/feh
-    [[ ! -d "${HOME}"/cic-external-vcs/girara ]]              && git clone https://git.pwmt.org/pwmt/girara.git
-    [[ ! -d "${HOME}"/cic-external-vcs/zathura ]]             && git clone https://git.pwmt.org/pwmt/zathura.git
-    [[ ! -d "${HOME}"/cic-external-vcs/zathura-cb ]]          && git clone https://git.pwmt.org/pwmt/zathura-cb.git
-    [[ ! -d "${HOME}"/cic-external-vcs/zathura-djvu ]]        && git clone https://git.pwmt.org/pwmt/zathura-djvu.git
-    [[ ! -d "${HOME}"/cic-external-vcs/zathura-pdf-poppler ]] && git clone https://git.pwmt.org/pwmt/zathura-pdf-poppler.git
+    [[ ! -d "${HOME}"/cic-external-vcs/conkeror-external ]]             && git clone git://repo.or.cz/conkeror.git                     conkeror-external
+    [[ ! -d "${HOME}"/cic-external-vcs/urxvt-perls-external ]]          && git clone https://github.com/akroshko/urxvt-perls.git       urxvt-perls-external
+    [[ ! -d "${HOME}"/cic-external-vcs/feh-external ]]                  && git clone https://git.finalrewind.org/feh                   feh-exteneral
+    [[ ! -d "${HOME}"/cic-external-vcs/girara-external ]]               && git clone https://git.pwmt.org/pwmt/girara.git              girara-external
+    [[ ! -d "${HOME}"/cic-external-vcs/PCSX-Reloaded-external ]]        && git clone https://github.com/SonofUgly/PCSX-Reloaded        PCSX-Reloaded-external
+    [[ ! -d "${HOME}"/cic-external-vcs/zathura-external ]]              && git clone https://git.pwmt.org/pwmt/zathura.git             zathura-external
+    [[ ! -d "${HOME}"/cic-external-vcs/zathura-cb-external ]]           && git clone https://git.pwmt.org/pwmt/zathura-cb.git          zathura-cb-external
+    [[ ! -d "${HOME}"/cic-external-vcs/zathura-djvu-external ]]         && git clone https://git.pwmt.org/pwmt/zathura-djvu.git        zathura-djvu-external
+    [[ ! -d "${HOME}"/cic-external-vcs/zathura-pdf-poppler-external ]]  && git clone https://git.pwmt.org/pwmt/zathura-pdf-poppler.git zathura-pdf-poppler-external
+    [[ ! -d "${HOME}"/cic-external-vcs/zathura-ps-external ]]           && git clone https://git.pwmt.org/pwmt/zathura-ps.git          zathura-ps-external
     # now build, copied from build-install-software, and should be synced up
     h2 "pip";
     curl https://bootstrap.pypa.io/get-pip.py | sudo python;
@@ -1815,7 +1825,7 @@ build-install-software () {
     build-install-software-feh
     h2 "girara";
     pushd . > /dev/null;
-    cd girara;
+    cd girara-external;
     git pull
     # TODO: this needs to be checked
     git checkout --track -b develop origin/develop
@@ -1825,7 +1835,7 @@ build-install-software () {
     popd > /dev/null;
     h2 "zathura";
     pushd . > /dev/null;
-    cd zathura;
+    cd zathura-external;
     git pull
     git checkout --track -b develop origin/develop
     make clean;
@@ -1836,7 +1846,7 @@ build-install-software () {
     # XXXX: a nasty hack
     sudo cp /usr/lib/pkgconfig/girara-gtk3.pc /usr/lib/pkgconfig/girara-gtk.pc
     pushd . > /dev/null;
-    cd zathura-pdf-poppler;
+    cd zathura-pdf-poppler-external;
     git pull
     git checkout --track -b develop origin/develop
     make clean;
@@ -1845,7 +1855,7 @@ build-install-software () {
     popd > /dev/null;
     h2 "zathura-djvu";
     pushd . > /dev/null;
-    cd zathura-djvu;
+    cd zathura-djvu-external;
     git pull
     git checkout --track -b develop origin/develop
     make clean;
@@ -1854,7 +1864,7 @@ build-install-software () {
     popd > /dev/null;
     h2 "zathura-cb";
     pushd . > /dev/null;
-    cd zathura-cb;
+    cd zathura-cb-external;
     git pull
     git checkout --track -b develop origin/develop
     make clean;
@@ -1863,7 +1873,7 @@ build-install-software () {
     popd >/dev/null
     h2 "zathura-ps";
     pushd . > /dev/null;
-    cd zathura-ps;
+    cd zathura-ps-external;
     git pull
     git checkout --track -b develop origin/develop
     make clean;
@@ -1874,7 +1884,7 @@ build-install-software () {
     if [[ "${HOSTNAME}" =~ main || "${HOSTNAME}" =~ laptop ]];then
         h2 "xpdf"
         pushd . >/dev/null
-        cd xpdf-3.04
+        cd xpdf-3.04-external
         # these work on debian 8.x
         make clean
         ./configure --with-freetype2-library=/usr/lib/x86_64-linux-gnu \
@@ -1886,13 +1896,27 @@ build-install-software () {
         popd >/dev/null
     fi
     popd >/dev/null
+    # PCSX-Reloaded
+    # TODO: check out as well
+    h2 "PCSX-Reloaded"
+    pushd . > /dev/null;
+    cd PCSX-Reloaded-external
+    git pull
+    make clean
+    bash ./autogen.sh
+    # TODO: broken on my machines
+    # ./configure --enable-opengl
+    ./configure
+    make
+    sudo make install
+    popd >/dev/null
 }
 
 # TODO: will do with more, but for now I build feh on its own a lot
 build-install-software-feh () {
     # must be in proper directory
     pushd . >/dev/null
-    cd feh
+    cd feh-external
     git pull
     make clean
     make exif=1 help=1 xinerama=0
@@ -2404,3 +2428,8 @@ grep-less () {
     grep --color=always -Ri $@ | less
 }
 alias less-grep="less-grep"
+
+sqlite-cat () {
+    sqlite3 "$1" .dump | less
+}
+alias cat-sqlite="sqlite-cat"
