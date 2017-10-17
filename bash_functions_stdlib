@@ -1086,56 +1086,7 @@ ssh-scs () {
     # ssh "$@" -t "bash --rcfile ~/.bash_libenv -li -c \"screen-select;/bin/bash\""
 }
 
-youtube-pause () {
-    # global function to pause a running Youtube in Conkeror
-    # get current window
-    local CURRENTWINDOW=$(xdotool getwindowfocus)
-    local CURRENTYOUTUBE=
-    xdotool search --onlyvisible --name youtube | while IFS= read -r line; do
-        if xdotool search --class conkeror | grep "${line}" >/dev/null; then
-            xdotool windowminimize "${line}"
-        fi
-    done
-    # turn off youtube
-    # TODO: limit to conkeror
-    xdotool search --name youtube | while IFS= read -r line; do
-        if xdotool search --class conkeror | grep "${line}" >/dev/null; then
-            xdotool windowfocus --sync "${line}";
-            # TODO: very arbitrary delay, perhaps wait for something to return
-            sleep 0.05
-            conkeror -f youtube-pause
-            if [[ "${line}" == "${CURRENTWINDOW}" ]]; then
-                local CURRENTYOUTUBE=1
-            fi
-        fi
-    done
-    # restore focus if not youtube window
-    if [[ -n "$CURRENTYOUTUBE" ]]; then
-        xdotool windowactivate --sync ${CURRENTWINDOW}
-    fi
-}
-
-youtube-restore () {
-    # global function to restore a running Youtube in Conkeror
-    local CURRENTWINDOW=$(xdotool getwindowfocus)
-    xdotool search --onlyvisible --name youtube | while IFS= read -r line; do
-        if xdotool search --class conkeror | grep "${line}" >/dev/null; then
-            xdotool windowfocus --sync "${line}"
-            xdotool windowactivate --sync "${line}"
-        fi
-    done
-    xdotool search --name youtube | while IFS= read -r line; do
-       if xdotool search --class conkeror | grep "${line}" >/dev/null; then
-           xdotool windowfocus --sync "${line}";
-           xdotool windowactivate --sync "${line}"
-           # TODO: very arbitrary delay, perhaps wait for something to return
-           sleep 0.05
-           conkeror -f youtube-play
-        fi
-    done
-    # restore focus
-    xdotool windowactivate --sync ${CURRENTWINDOW}
-}
+# TODO: move these out
 
 youtube-previous () {
     # global function to see previous video in youtube playlist
@@ -1147,7 +1098,7 @@ youtube-previous () {
             xdotool windowactivate --sync "${line}"
             # TODO: very arbitrary delay, perhaps wait for something to return
             sleep 0.1
-            conkeror -f youtube-previous
+            conkeror-batch -f youtube-previous
         fi
     done
     # TODO: very arbitrary, perhaps wait for something to return
@@ -1164,7 +1115,7 @@ youtube-next () {
             xdotool windowfocus --sync "${line}"
             # TODO: very arbitrary delay, perhaps wait for something to return
             sleep 0.1
-            conkeror -f youtube-next
+            conkeror-batch -f youtube-next
         fi
     done
     # TODO: very arbitrary delay, perhaps wait for something to return
@@ -1194,7 +1145,7 @@ master-boss-key () {
         if xdotool search --class conkeror | grep "${line}" >/dev/null; then
             xdotool windowfocus --sync "${line}";
             sleep 0.05
-            conkeror -f youtube-pause
+            conkeror-batch -f youtube-pause
         fi
     done
     # restore focus, but make sure its not browser window
@@ -2043,7 +1994,7 @@ youtube-normalize-volume () {
             xdotool windowactivate --sync "${line}"
             # TODO: very arbitrary delay, perhaps wait for something to return
             sleep 0.05
-            conkeror -f youtube-normalize-volume
+            conkeror-batch -f youtube-normalize-volume
         fi
     done
     # TODO: very arbitrary, perhaps wait for something to return
