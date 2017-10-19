@@ -25,26 +25,26 @@
 # create a really nice prompt for most terminals
 
 dictionary () {
-    local CLIPBOARD=`xclip -o selection c`
+    local CLIPBOARD="$(xclip -o selection primary)"
     local CLIPBOARD="${CLIPBOARD// /+}"
     # TODO: https broken when testing
     conkeror "http://www.dictionary.com/browse/$CLIPBOARD?s=t"
 }
 
 google () {
-    local CLIPBOARD=`xclip -o selection c`
+    local CLIPBOARD="$(xclip -o selection primary)"
     local CLIPBOARD="${CLIPBOARD// /+}"
     conkeror "https://google.ca/search?q=$CLIPBOARD"
 }
 
 scholar () {
-    local CLIPBOARD=`xclip -o selection c`
+    local CLIPBOARD="$(xclip -o selection primary)"
     local CLIPBOARD="${CLIPBOARD// /+}"
     conkeror "https://scholar.google.ca/scholar?q=$CLIPBOARD"
 }
 
 thesaurus () {
-    local CLIPBOARD=`xclip -o selection c`
+    local CLIPBOARD="$(xclip -o selection primary)"
     local CLIPBOARD="${CLIPBOARD// /+}"
     # TODO: https broken when testing
     conkeror "http://www.thesaurus.com/browse/$CLIPBOARD?s=t"
@@ -52,7 +52,7 @@ thesaurus () {
 }
 
 wikipedia () {
-    local CLIPBOARD=`xclip -o selection c`
+    local CLIPBOARD="$(xclip -o selection primary)"
     local CLIPBOARD="${CLIPBOARD// /+}"
     conkeror "https://en.wikipedia.org/w/index.php?search=$CLIPBOARD"
 }
