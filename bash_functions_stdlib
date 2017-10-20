@@ -1026,9 +1026,11 @@ sage-notebook () {
        # XXXX: grep to avoid just sage-notebook from scripts that might run this
        if ps -ef | grep "src/bin/sage-notebook" | grep -v grep >/dev/null; then
            sage-notebook-browser
+           return 255
        else
            # TODO: select firefox and chromium?
            SAGE_BROWSER="nohup firefox" sage --notebook=sagenb secure=True port=18080 automatic_login=True interface='' directory="${NBPATH}"
+           return 0
        fi
     else
         yell 'JUPYTER_NOTEBOOK_ROOT not defined!!!'
@@ -1040,10 +1042,10 @@ sage-notebook-browser () {
     # open just the browser for a running Sage notebook
     if false; then
         bleachbit --overwrite --clean google_chrome.*
-        chromium https://localhost:18080/
+        chromium https://localhost:18080/ >/dev/null 2>&1 &
     else
         # TODO: shred firefox if not running
-        firefox https://localhost:18080/
+        nohup firefox https://localhost:18080/ >/dev/null 2>&1 &
     fi
 }
 
@@ -1353,12 +1355,19 @@ repl-restartable () {
     local TRYAGAIN=" "
     while [[ "${TRYAGAIN}" == " " ]]; do
         ($@)
+        local RETURNVALUE=$?
+        echo "repl-restartable return code: $RETURNVALUE"
+        if [[ "$RETURNVALUE" == 255 ]]; then
+            # TODO: better return values than this?
+            return 255
+        fi
         while read -r -t 0;do read -r; done;
         IFS= read -n 1 -p 'Press [Enter] to exit or [Space] to restart...' TRYAGAIN
         if [[ "${TRYAGAIN}" == " " ]]; then
             reset
         fi
     done
+    return 0
 }
 
 vcs-attr () {
