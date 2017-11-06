@@ -169,6 +169,7 @@ alias ssh-controlmaster-kill='ssh -O exit'
 alias dc='aafire -driver curses -extended'
 alias df='df -h'
 alias df-all='df -aTh'
+# TODO: might break some functions, but might be other thing
 alias du='du -h'
 alias ec='launch-emacsclient nohup'
 alias ecnw='launch-emacsclient -nw'
