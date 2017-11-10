@@ -1713,6 +1713,7 @@ fetch-build-sage-packages () {
     ./sage -pip install --upgrade pip
     ./sage -pip install --upgrade service_identity
     ./sage -pip install --upgrade dill
+    ./sage -pip install --upgrade lxml
     ./sage -pip install --upgrade multiprocess
     ./sage -pip install --upgrade psycopg2
     ./sage -pip install --upgrade pycurl
