@@ -1903,6 +1903,14 @@ amixer-volumes () {
     echo $(amixer get Master | grep Front.*Playback | tr "\\n" " " | sed -e 's/Front//g' -e 's/Playback//g' -e 's/\s[0-9]\+//g' -e 's/  */ /g')
 }
 
+notify-amixer-mute () {
+    if amixer get Master | grep "\[on\]"; then
+        notify-send "Unmuted" -t 200
+    else
+        notify-send "Muted" -t 200
+    fi
+}
+
 notify-amixer-volumes () {
     notify-send "$(amixer-volumes)" -t 200
 }
