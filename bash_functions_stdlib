@@ -716,7 +716,7 @@ vcs-push-github () {
     local COMMITCORRECT=n
     while [[ "$COMMITCORRECT" != "y" ]]; do
         while read -r -t 0;do read -r; done;
-        read -p "Enter commit message: " COMMITMESSAGE
+        read -e -p "Enter commit message: " COMMITMESSAGE
         # TODO: add option for quit
         while read -r -t 0;do read -r; done;
         read -n  1 -p "Use commit message (y/n/q)? " COMMITCORRECT
