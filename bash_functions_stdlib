@@ -719,7 +719,7 @@ vcs-push-github () {
         read -e -p "Enter commit message: " COMMITMESSAGE
         # TODO: add option for quit
         while read -r -t 0;do read -r; done;
-        read -n  1 -p "Use commit message (y/n/q)? " COMMITCORRECT
+        read -n 1 -p "Use commit message (y/n/q)? " COMMITCORRECT
         echo ""
         if [[ "$COMMITCORRECT" == "q" ]]; then
             yell "Aborting!"
