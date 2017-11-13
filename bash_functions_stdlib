@@ -1983,7 +1983,7 @@ vcs-incoming () {
     h2 "The log: "
     # TODO: configure a little better, want to see on screen and not wierd pager stuff
     git log ..origin/"$(git rev-parse --abbrev-ref HEAD)"
-    read -p "Press enter to continue... "
+    read -s -r -p "Press any key to continue... "
     h2 "The diffs: "
     git diff --stat @{upstream}
     git diff @{upstream}
@@ -2404,9 +2404,9 @@ ls-grep () {
 alias grep-ls="ls-grep"
 
 grep-less () {
-    grep --color=always -Ri $@ | less
+    grep --color=always -Ri $@ | less -r
 }
-alias less-grep="less-grep"
+alias less-grep="grep-less"
 
 sqlite-cat () {
     sqlite3 "$1" .dump | less
