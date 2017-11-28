@@ -194,6 +194,7 @@ alias lsa='ls -la'
 # TODO: using for soemthing else for now
 # alias lsl='ls -l'
 alias lst='ls -ltr'
+alias kill-all-jobs='kill $(jobs -p)'
 alias mupdf='mupdf-gl'
 alias mv='mv --no-clobber'
 alias na='nautilus .'

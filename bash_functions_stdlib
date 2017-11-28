@@ -1390,7 +1390,7 @@ vcs-attr () {
 ## good scripts for slurping data from other ftp websites
 
 wget-download-canmatrix2-doc () {
-    local NEWDIR="${HOME}/mnt-secondary/"
+    local NEWDIR="/mnt-secondary/"
     mkdir -p "$NEWDIR"
     pushd . >/dev/null
     cd "$NEWDIR"
@@ -1411,7 +1411,7 @@ wget-download-canmatrix2-doc () {
 }
 
 wget-download-canmatrix2-50k-preview () {
-    local NEWDIR="${HOME}/mnt-secondary"
+    local NEWDIR="/mnt-secondary"
     mkdir -p "$NEWDIR"
     pushd . >/dev/null
     cd "$NEWDIR"
@@ -1432,7 +1432,7 @@ wget-download-canmatrix2-50k-preview () {
 }
 
 wget-download-canmatrix2-250k-preview () {
-    local NEWDIR="${HOME}/mnt-secondary"
+    local NEWDIR="/mnt-secondary"
     mkdir -p "$NEWDIR"
     pushd . >/dev/null
     cd "$NEWDIR"
@@ -1453,7 +1453,7 @@ wget-download-canmatrix2-250k-preview () {
 }
 
 wget-download-canmatrix2 () {
-    local NEWDIR="${HOME}/mnt-secondary"
+    local NEWDIR="/mnt-secondary"
     mkdir -p "$NEWDIR"
     pushd . >/dev/null
     cd "$NEWDIR"
@@ -1473,6 +1473,7 @@ wget-download-canmatrix2 () {
     popd >/dev/null
 }
 
+# TODO: this can be a lot better at some point
 wget-current-canmatrix () {
     # expect to take about 16*((16 * 12) + 60) per large grid = 4032min per large numbered grid
     # generally run this on my server to an external hard drive at ~/mnt
@@ -1484,12 +1485,11 @@ wget-current-canmatrix () {
         true
         send-returncode-mail "Canmatrix- starting!"
     fi
-    if grep -qs ${HOME}/mnt-secondary /proc/self/mounts >/dev/null; then
+    if grep -qs /mnt-secondary /proc/self/mounts >/dev/null; then
         {
             time {
-                mkdir -p "${HOME}"/mnt-secondary
                 pushd . >/dev/null
-                cd "${HOME}"/mnt-secondary
+                cd /mnt-secondary
                 # 83 urls, area around edmonton
                 h1 "Starting!!!"
                 for URL in "${URLS[@]}"; do
@@ -1505,7 +1505,7 @@ wget-current-canmatrix () {
                 done
                 popd >/dev/null
             }
-        } 2>&1 | tee -a "${HOME}"/mnt-secondary/canmatrix2-$(date-time-stamp).log
+        } 2>&1 | tee -a /mnt-secondary/canmatrix2-$(date-time-stamp).log
         send-returncode-mail "Canmatrix- done grid script!"
     else
         yell "Nothing mounted to collect data!!!"
@@ -1891,6 +1891,67 @@ build-install-software-feh () {
     git pull
     make clean
     make exif=1 help=1 xinerama=0
+    sudo make install
+    popd >/dev/null
+}
+
+build-install-software-dockapps () {
+    # need proper version of dockapps and wmgeneral built
+    # https://unix.stackexchange.com/questions/67781/use-shared-libraries-in-usr-local-lib
+    pushd . >/dev/null
+    cd dockapps-external
+    git pull
+    cd libdockapp
+    make clean
+    ./configure
+    make
+    sudo make install
+    popd >/dev/null
+    sudo ldconfig
+    #
+    pushd . >/dev/null
+    cd wmtimer
+    git pull
+    make clean
+    make
+    sudo make install
+    popd >/dev/null
+    #
+    pushd . >/dev/null
+    cd wmsun
+    LDFLAGS="-L/usr/local/lib" make
+    make clean
+    make
+    sudo make install
+    popd >/dev/null
+    #
+    pushd . >/dev/null
+    cd wmweather-external/wmweather-2.4.6
+    make clean
+    ./configure
+    make
+    sudo make install
+    popd >/dev/null
+    #
+    pushd . >/dev/null
+    cd wmweatherplus-external
+    make clean
+    ./configure
+    make
+    sudo make install
+    popd >/dev/null
+    #
+    pushd . >/dev/null
+    cd dockapps-external/wmcalc
+    make clean
+    make
+    sudo make install
+    popd >/dev/null
+    #
+    pushd . >/dev/null
+    cd dockapps-external/wmcpufreq/wmcpufreq
+    make clean
+    SYSTEM="-L/usr/local/lib" make
     sudo make install
     popd >/dev/null
 }
