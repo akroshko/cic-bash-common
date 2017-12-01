@@ -1220,6 +1220,22 @@ smartctl-disks () {
     done
 }
 
+smartctl-disks-errors () {
+    # check overall health of all disks
+    # TODO: current powered up time
+    for d in $(enumerate-physical-disks); do
+        h2 "$d"
+        local POWERONHOURS=$(sudo smartctl -A "$d" | grep Power_On_Hours)
+        local SMARTOUTPUT=$(sudo smartctl --log=error "$d")
+        if [[ $(($? & 1)) ]]; then
+            echo -n "$d: "
+            # XXXX: to use this in scripts I have to add smartctl to no password sudo files
+            echo "$POWERONHOURS"
+            echo "$SMARTOUTPUT"
+        fi
+    done
+}
+
 select-disk-uuid-usb () {
     # select a usb disk by UUID or alternately any other mounted drive
     # XXXX: doesn't work with more than 9 drives, but could be fixed
@@ -1898,6 +1914,7 @@ build-install-software-feh () {
 build-install-software-dockapps () {
     # need proper version of dockapps and wmgeneral built
     # https://unix.stackexchange.com/questions/67781/use-shared-libraries-in-usr-local-lib
+    h2 "libdockapps"
     pushd . >/dev/null
     cd dockapps-external
     git pull
@@ -1908,31 +1925,33 @@ build-install-software-dockapps () {
     sudo make install
     popd >/dev/null
     sudo ldconfig
-    #
+    h2 "wmtimer"
     pushd . >/dev/null
-    cd wmtimer
+    cd wmtimer-external
     git pull
+    cd wmtimer
     make clean
     make
     sudo make install
+    # TODO: a fix somehow needed
+    sudo chmod 755 /usr/local/bin/wmtimer
     popd >/dev/null
-    #
+    h2 "wmsun"
     pushd . >/dev/null
-    cd wmsun
+    cd dockapps-external/wmsun
+    make clean
     LDFLAGS="-L/usr/local/lib" make
-    make clean
-    make
     sudo make install
     popd >/dev/null
-    #
+    h2 "wmweather"
     pushd . >/dev/null
-    cd wmweather-external/wmweather-2.4.6
+    cd wmweather-external/wmweather-2.4.6/src
     make clean
     ./configure
     make
     sudo make install
     popd >/dev/null
-    #
+    h2 "wmweatherplus"
     pushd . >/dev/null
     cd wmweatherplus-external
     make clean
@@ -1940,14 +1959,14 @@ build-install-software-dockapps () {
     make
     sudo make install
     popd >/dev/null
-    #
+    h2 "wmcalc"
     pushd . >/dev/null
     cd dockapps-external/wmcalc
     make clean
     make
     sudo make install
     popd >/dev/null
-    #
+    h2 "wmcpufreq"
     pushd . >/dev/null
     cd dockapps-external/wmcpufreq/wmcpufreq
     make clean
@@ -2473,3 +2492,13 @@ sqlite-cat () {
     sqlite3 "$1" .dump | less
 }
 alias cat-sqlite="sqlite-cat"
+
+unzip-all () {
+    for F in ./*.zip; do
+        mkdir -p "${F}.d"
+        pushd . >/dev/null
+        cd "${F}.d"
+        unzip ../"${F}"
+        popd >/dev/null
+    done
+}
