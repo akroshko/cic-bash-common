@@ -1912,6 +1912,7 @@ build-install-software-feh () {
 }
 
 build-install-software-dockapps () {
+    cd "$HOME"/cic-external-vcs/
     # need proper version of dockapps and wmgeneral built
     # https://unix.stackexchange.com/questions/67781/use-shared-libraries-in-usr-local-lib
     h2 "libdockapps"
@@ -1963,6 +1964,15 @@ build-install-software-dockapps () {
     pushd . >/dev/null
     cd dockapps-external/wmcalc
     make clean
+    make
+    sudo make install
+    popd >/dev/null
+    h2 "wmgtemp"
+    pushd . >/dev/null
+    cd dockapps-external/wmgtemp
+    autoreconf -i
+    make clean
+    ./configure
     make
     sudo make install
     popd >/dev/null

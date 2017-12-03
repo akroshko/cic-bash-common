@@ -14,20 +14,21 @@ fi
 # TODO: --scroll-step Note that this option accepts negative numbers in case you need to inverse the scroll direction; see KEYS CONFIG SYNTAX to change it permanently.  Default: 20
 # TODO: microstep for smaller screens than I have?
 #       but I don't see it
+# taking out --force-aliasing
 if [[ ${HOSTNAME} == 'akroshko-main' ]]; then
     # TODO: try and "maximize"
     if [[ -d "$FULLPATH" ]];then
-        feh --scale-down --force-aliasing --scroll-step 100 --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" --action6 ";nohup gimp \"%f\" &" --geometry=1920x1080+1280+0 "$FULLPATH"
+        feh --scale-down --scroll-step 100 --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" --action6 ";nohup gimp \"%f\" &" --geometry=1920x1080+1280+0 "$FULLPATH"
     else
-        feh --scale-down --force-aliasing --scroll-step 100 --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" --action6 ";nohup gimp \";%f\" &" --geometry=1920x1080+1280+0 "$DNAME" --start-at "$FULLPATH"
+        feh --scale-down --scroll-step 100 --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" --action6 ";nohup gimp \";%f\" &" --geometry=1920x1080+1280+0 "$DNAME" --start-at "$FULLPATH"
     fi
 else
     # XXXX: fullscreen causes issues on viewing laptop from pcmanfm, specicific to laptop for now
     # TODO: try and "maximize", this is often what I do on other machines.... do something with this
     if [[ -d "FULLPATH" ]]; then
-        feh --scale-down --force-aliasing --scroll-step 100 --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" --action6 ";nohup gimp \"%f\" &" --geometry=1280x800+0+0 "$FULLPATH"
+        feh --scale-down --scroll-step 100 --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" --action6 ";nohup gimp \"%f\" &" --geometry=1280x800+0+0 "$FULLPATH"
     else
-        feh --scale-down --force-aliasing --scroll-step 100 --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" --action6 ";nohup gimp \"%f\" &" --geometry=1280x800+0+0 "$DNAME" --start-at "$FULLPATH"
+        feh --scale-down --scroll-step 100 --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" --action6 ";nohup gimp \"%f\" &" --geometry=1280x800+0+0 "$DNAME" --start-at "$FULLPATH"
     fi
 fi
 
