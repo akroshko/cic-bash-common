@@ -1387,7 +1387,7 @@ repl-restartable () {
             return 255
         fi
         while read -r -t 0;do read -r; done;
-        IFS= read -n 1 -p 'Press [Enter] to exit or [Space] to restart...' TRYAGAIN
+        IFS= read -n 1 -s -p 'Press [Enter] to exit or [Space] to restart...' TRYAGAIN
         if [[ "${TRYAGAIN}" == " " ]]; then
             reset
         fi
@@ -1926,6 +1926,12 @@ build-install-software-dockapps () {
     sudo make install
     popd >/dev/null
     sudo ldconfig
+    h2 "pywmdockapps"
+    pushd . >/dev/null
+    cd pywmdockapps-external/pywmdockapps-1.21
+    [[ -d ./build ]] && rm -rf ./build
+    sudo python ./setup.py install
+    popd >/dev/null
     h2 "wmtimer"
     pushd . >/dev/null
     cd wmtimer-external
