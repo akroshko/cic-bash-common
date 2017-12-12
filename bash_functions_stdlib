@@ -119,8 +119,16 @@ ag-search () {
 }
 
 ag-install () {
+    # TODO: check if already installed
+    sudo apt-get install --dry-run "$1"
+    echo "Do install for real?"
     # install a debian package
-    sudo apt-get install "$1"
+    read -n 1 -p "Install? (y/n)? " yn
+    if [[ "$yn" == 'y' ]]; then
+        sudo apt-get install "$1"
+    else
+        msg "Aborting!"
+    fi
 }
 
 ag-remove () {
