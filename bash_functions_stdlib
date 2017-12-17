@@ -2088,6 +2088,7 @@ vcs-incoming () {
     # TODO: configure a little better, want to see on screen and not wierd pager stuff
     git log ..origin/"$(git rev-parse --abbrev-ref HEAD)"
     read -n 1 -s -r -p "Press any key to continue... "
+    echo ""
     h2 "The diffs: "
     git diff --stat @{upstream}
     git diff @{upstream}
