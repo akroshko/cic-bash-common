@@ -462,7 +462,7 @@ watch-xclip-show-all () {
 
 du-sort () {
     # sort by size after using du
-    \du --total --summarize --human-readable * 2>/dev/null | sort --human-numeric-sort
+    \du --total --summarize --human-readable -- * 2>/dev/null | sort --human-numeric-sort
 }
 
 du-sort-dotfiles () {
