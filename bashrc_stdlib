@@ -103,11 +103,13 @@ case "$TERM" in
         else
             export PS1="\[${BPurple}\]\H $(if [[ -n $SSH_CLIENT && $TERM =~ screen ]];then echo -n '(ssh,screen) ';elif [[ -n $SSH_CLIENT ]];then echo -n '(ssh) ';elif [[ $TERM =~ screen ]];then echo -n '(screen) ';fi)\[${Purple}\]\j \[${BBLue}\]\w
 \[${Yellow}\][\!] \`exitstatus=\$?;if [[ exitstatus -eq 0 ]];then echo \[\033[32m\]\${exitstatus}\[\e[0m\];else echo \[\033[31m\]\${exitstatus}\[\e[0m\]; fi\` \[${Cyan}\]\t \[${Green}\]\u \[${BGreen}\]\$\[${Color_Off}\] "
-            # TODO: this might be problematic, but we will see
-            if [[ $TERM == rxvt-unicode-256color ]]; then
-                # export TERM=xterm-256color
-                export TERM=linux
-            fi
+            # TODO: this is problematic and interferes with htop
+            #       originally here to help with sage I think...
+            #       things seem fine when I use "linux" colors in sage
+            # if [[ $TERM == rxvt-unicode-256color ]]; then
+            #     # export TERM=xterm-256color
+            #     export TERM=linux
+            # fi
         fi
         ;;
     *)
@@ -217,4 +219,7 @@ alias sftp-fallback='sftp -o "BatchMode no" -o "ChallengeResponseAuthentication 
 # for testing my raspberry pi
 alias ssh-pi='ssh pi@raspberrypi.local'
 alias sage-python='sage -python'
+# TODO: silly but I can remember these things
+alias xmodmap-ls='xmodmap -pm'
+alias ls-xmodmap='xmodmap -pm'
 # TODO: change this later?
