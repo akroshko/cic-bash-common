@@ -33,6 +33,12 @@ if ! ps -ef | grep "emacs --daemon" | grep -v grep >/dev/null; then
     emacs --daemon
     sleep 10
 fi
+# get emacsclient command based on nice value
+if [[ $(ulimit -e) -gt "29" ]]; then
+    EMACSCLIENT="nice --adjustment=-10 emacsclient"
+else
+    EMACSCLIENT="emacsclient"
+fi
 case $firstarg in
     batch )
         shift
@@ -41,10 +47,10 @@ case $firstarg in
         shift
         # check if the server is running, if not start the server
         if ! ps -ef | grep "emacs --daemon" | grep -v grep >/dev/null; then
-            exec emacsclient --alternate-editor="" --create-frame --eval "(make-frame '((name . \"capture\") (top . 40) (left . 40) (width . 200) (height . 60)))" --eval "(select-frame-by-name \"capture\")" "$@"
+            $EMACSCLIENT --alternate-editor="" --create-frame --eval "(make-frame '((name . \"capture\") (top . 40) (left . 40) (width . 200) (height . 60)))" --eval "(select-frame-by-name \"capture\")" "$@"
         else
             # TODO: why does this seem to be creating a frame anyways?
-            exec emacsclient --alternate-editor=""                --eval "(make-frame '((name . \"capture\") (top . 40) (left . 40) (width . 200) (height . 60)))" --eval "(select-frame-by-name \"capture\")" "$@"
+            exec $EMACSCLIENT --alternate-editor=""                --eval "(make-frame '((name . \"capture\") (top . 40) (left . 40) (width . 200) (height . 60)))" --eval "(select-frame-by-name \"capture\")" "$@"
         fi
         ;;
     # similar to capture but with different name, decide have "maximized" as frame name, decide if I really want to do this or if it's useful
@@ -52,50 +58,51 @@ case $firstarg in
         shift
         # check if the server is running, if not start the server
         if ! ps -ef | grep "emacs --daemon" | grep -v grep >/dev/null; then
-            exec emacsclient --alternate-editor="" --create-frame --eval "(make-frame '((name . \"maximized\") (top . 40) (left . 40) (width . 200) (height . 60)))" --eval "(select-frame-by-name \"maximized\")" "$@"
+            exec $EMACSCLIENT --alternate-editor="" --create-frame --eval "(make-frame '((name . \"maximized\") (top . 40) (left . 40) (width . 200) (height . 60)))" --eval "(select-frame-by-name \"maximized\")" "$@"
         else
             # TODO: why does this seem to be creating a frame anyways?
-            exec emacsclient --alternate-editor=""                --eval "(make-frame '((name . \"maximized\") (top . 40) (left . 40) (width . 200) (height . 60)))" --eval "(select-frame-by-name \"maximized\")" "$@"
+            exec $EMACSCLIENT --alternate-editor=""                --eval "(make-frame '((name . \"maximized\") (top . 40) (left . 40) (width . 200) (height . 60)))" --eval "(select-frame-by-name \"maximized\")" "$@"
         fi
         ;;
     noframe )
         shift
         if ! ps -ef | grep "emacs --daemon" | grep -v grep >/dev/null; then
-            exec emacsclient --alternate-editor="" -c "$@"
+            $EMACSCLIENT --alternate-editor="" -c "$@"
         else
             emacsclient --no-wait --eval "(if (> (length (frame-list)) 1) 't)" | grep t
             if [[ $? = "1" ]]; then
-                emacsclient --create-frame --no-wait --alternate-editor="" "$@"
+                exec $EMACSCLIENT --create-frame --no-wait --alternate-editor="" "$@"
             else
                 # TODO: why does this seem to be creating a frame anyways?
-                emacsclient                --no-wait --alternate-editor="" "$@"
+                exec $EMACSCLIENT                --no-wait --alternate-editor="" "$@"
             fi
         fi
         ;;
     protocol )
         shift
         if ! ps -ef | grep "emacs --daemon" | grep -v grep >/dev/null; then
-            exec emacsclient --create-frame --no-wait --alternate-editor="" -c "$@"
+            $EMACSCLIENT --create-frame --no-wait --alternate-editor="" -c "$@"
         else
             emacsclient --no-wait --eval "(if (> (length (frame-list)) 1) 't)" | grep t
             if [[ $? = "1" ]]; then
-                emacsclient --create-frame --no-wait --alternate-editor="" "$@"
+                exec $EMACSCLIENT --create-frame --no-wait --alternate-editor="" "$@"
             else
                 # TODO: why does this seem to be creating a frame anyways?
-                emacsclient                --no-wait --alternate-editor="" "$@"
+                exec $EMACSCLIENT                --no-wait --alternate-editor="" "$@"
             fi
         fi
         ;;
     nohup )
         shift
-        nohup emacsclient --alternate-editor="" --create-frame "$@" 2>&1 >/dev/null &
+        # TODO: should nohup use exec?
+        nohup $EMACSCLIENT --alternate-editor="" --create-frame "$@" 2>&1 >/dev/null &
         ;;
     sameframe )
         shift
-        exec emacsclient --alternate-editor="" "$@"
+        exec $EMACSCLIENT --alternate-editor="" "$@"
         ;;
     * )
-        exec emacsclient --alternate-editor="" --create-frame "$@"
+        exec $EMACSCLIENT --alternate-editor="" --create-frame "$@"
         ;;
 esac
 # TODO: might want to make sure these work without server?
