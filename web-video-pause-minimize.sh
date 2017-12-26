@@ -7,11 +7,14 @@
 CURRENTWINDOW=$(xdotool getwindowfocus)
 CURRENTYOUTUBE=
 # TODO minimize all windows first
+# filtering by name probably cuts out more windows more quickly than class
 xdotool search --onlyvisible --name "twitch|youtube" | while IFS= read -r line; do
     if xdotool search --class conkeror | grep "${line}" >/dev/null; then
         xdotool windowminimize "${line}"
     fi
 done
+# filtering by class in this case really limits it to what is up,
+# probably won't have multiple windows of these classes
 xdotool search --class "Fceux|zsnes|PCSXR|PPSSPPSDL" | while IFS= read -r line; do
     # now go through rest of potential websites
     # TODO: eventually just flip them off without muting
@@ -19,6 +22,7 @@ xdotool search --class "Fceux|zsnes|PCSXR|PPSSPPSDL" | while IFS= read -r line; 
     xdotool windowminimize "${line}"
     amixer set Master mute
 done
+# filtering by name probably cuts out more windows more quickly than class
 # turn off youtube even if not visible
 xdotool search --name "twitch|youtube" | while IFS= read -r line; do
     if xdotool search --class conkeror | grep "${line}" >/dev/null; then
