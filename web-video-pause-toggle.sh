@@ -4,7 +4,7 @@
 CURRENTWINDOW=$(xdotool getwindowfocus)
 CURRENTYOUTUBE=
 # turn off youtube
-xdotool search --name "youtube|twitch" | while IFS= read -r line; do
+xdotool search --name "twitch|youtube" | while IFS= read -r line; do
     if xdotool search --class conkeror | grep "${line}" >/dev/null; then
         xdotool windowfocus --sync "${line}";
         # TODO: very arbitrary delay, perhaps wait for something to return

@@ -7,16 +7,9 @@
 CURRENTWINDOW=$(xdotool getwindowfocus)
 CURRENTYOUTUBE=
 # TODO minimize all windows first
-xdotool search --onlyvisible --name "youtube" | while IFS= read -r line; do
+xdotool search --onlyvisible --name "twitch|youtube" | while IFS= read -r line; do
     if xdotool search --class conkeror | grep "${line}" >/dev/null; then
         xdotool windowminimize "${line}"
-    fi
-done
-# mute but nothing else here
-xdotool search --onlyvisible --name "twitch" | while IFS= read -r line; do
-    if xdotool search --class conkeror | grep "${line}" >/dev/null; then
-        xdotool windowminimize "${line}"
-        amixer set Master mute
     fi
 done
 xdotool search --class "Fceux|zsnes|PCSXR|PPSSPPSDL" | while IFS= read -r line; do
@@ -27,7 +20,7 @@ xdotool search --class "Fceux|zsnes|PCSXR|PPSSPPSDL" | while IFS= read -r line; 
     amixer set Master mute
 done
 # turn off youtube even if not visible
-xdotool search --name "youtube|twitch" | while IFS= read -r line; do
+xdotool search --name "twitch|youtube" | while IFS= read -r line; do
     if xdotool search --class conkeror | grep "${line}" >/dev/null; then
         xdotool windowfocus --sync "${line}";
         # TODO: very arbitrary delay, perhaps wait for something to return
