@@ -24,7 +24,7 @@ main () {
             # XXXX: png seems slower but does not take up 2.5GB for a 443 page book, more like 178mb, deleting pdfs would get that down to 108M
             # TODO: resolution down to 75 on slow computers? seems to be about 4 times as fast and quite adequate
             # TODO: can I calculate best size for device?
-            /usr/bin/nice -n 19 find "$TMPDIR" -iname "pg*.pdf" -print0 | sort -z | parallel -r0 --progress -I FILE -n 1 -j$(nproc) /usr/bin/pdftoppm -png -r 150 -singlefile FILE FILE
+            /usr/bin/nice --adjustment=20 find "$TMPDIR" -iname "pg*.pdf" -print0 | sort -z | parallel -r0 --progress -I FILE -n 1 -j$(nproc) /usr/bin/pdftoppm -png -r 150 -singlefile FILE FILE
             # this is a hack
             rename "s/.pdf.png/.png/" "${TMPDIR}"/*.pdf.png
             # XXXX: this fence may not always work, but ensures pdfs in current dir are not accidently deleted
