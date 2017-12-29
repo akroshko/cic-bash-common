@@ -113,6 +113,7 @@ ag-show () {
 # XXXX: only different when using bash completion
 alias ag-show-installed=ag-show
 
+# TODO: search multiple terms?
 ag-search () {
     # search for a debian package
     apt-cache search "$1"
@@ -120,12 +121,12 @@ ag-search () {
 
 ag-install () {
     # TODO: check if already installed
-    sudo apt-get install --dry-run "$1"
+    sudo apt-get install --dry-run "$@"
     echo "Do install for real?"
     # install a debian package
     read -n 1 -p "Install? (y/n)? " yn
     if [[ "$yn" == 'y' ]]; then
-        sudo apt-get install "$1"
+        sudo apt-get install "$@"
     else
         msg "Aborting!"
     fi
@@ -133,7 +134,7 @@ ag-install () {
 
 ag-remove () {
     # uninstall a debian package
-    sudo apt-get remove "$1"
+    sudo apt-get remove "$@"
 }
 
 ag-list () {
@@ -141,6 +142,7 @@ ag-list () {
     dpkg-query -L "$1"
 }
 
+# TODO: search multiple terms?
 ag-list-installed () {
     if [[ -z "$1" ]]; then
         dpkg-query -l
