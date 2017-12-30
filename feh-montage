@@ -72,7 +72,7 @@ feh-display-montage () {
         # TODO: feh often segfaults on big files
         # TODO: what do I want for zoom?
         # TODO: calculate sizes this sometime, decide on defaults based on 4GB memory and number of pages
-        if [[ ${HOSTNAME} == "akroshko-main" ]]; then
+        if [[ "${HOSTNAME}" == "akroshko-main" ]]; then
             if [[ $1 == "--thumbnails" ]];then
                 # TODO: not default output for thumbs, segfaults on many documents
                 feh --geometry=1920x1080+1280+0 --thumbnails --thumb-height "$THUMBHEIGHT" --thumb-width "$THUMBWIDTH" --limit-width "$MAXWIDTH" *.png

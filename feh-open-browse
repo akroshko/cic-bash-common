@@ -15,7 +15,7 @@ fi
 # TODO: microstep for smaller screens than I have?
 #       but I don't see it
 # taking out --force-aliasing
-if [[ ${HOSTNAME} == 'akroshko-main' ]]; then
+if [[ "${HOSTNAME}" == 'akroshko-main' ]]; then
     # TODO: extremely specific to my computer
     # TODO: check for dockapps
     # the geometry

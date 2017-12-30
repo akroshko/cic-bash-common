@@ -42,7 +42,7 @@ test-fail () {
 check-host () {
     # check if current host is a particular host, this will probably
     # become more complex as time goes on
-    [[ $(hostname) == "$1" ]]
+    [[ "${HOSTNAME}" == "$1" ]]
 }
 
 need_new_directory () {
@@ -1691,7 +1691,7 @@ fetch-build-sage () {
             return 1
         fi
         # make sure I don't overload my crappy vunerable portable computers
-        if [[ "$HOSTNAME" =~ laptop || "$HOSTNAME" =~ netbook ]]; then
+        if [[ "${HOSTNAME}" =~ laptop || "$HOSTNAME" =~ netbook ]]; then
             MAKE='make -j1' time make
         else
             MAKE='make -j8' time make
