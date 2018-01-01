@@ -1628,7 +1628,7 @@ fetch-build-sage () {
         # TODO: put this somewhere else
         local SAGELOCATION=/home/akroshko/cic-small/distfiles-current
     fi
-    if [[ -d /opt/sage-"$SAGEVERSION" && "$1" != "--finalize" ]]; then
+    if [[ -d /opt/sage-"$SAGEVERSION" && $@ != *"--finalize"* ]]; then
         if /opt/sage-"$SAGEVERSION"/sage --version; then
             warn "/opt/sage-$SAGEVERSION already present and appears functional."
         else
@@ -1637,7 +1637,7 @@ fetch-build-sage () {
         return 1
     fi
     sudo true
-    if [[ "$1" != "--finalize" ]]; then
+    if [[ $@ != *"--finalize"* ]]; then
         sudo apt-get update
         sudo apt-get install gnutls-bin gnutls-doc libssl1.0.0 libssl-dev libssl-doc libcurl4-gnutls-dev libgnutls28-dev
         sudo apt-get install texlive dvipng ImageMagick
@@ -1779,7 +1779,7 @@ srvs () {
 }
 
 flatten-current-directory () {
-    if [[ "$1" != "--for-real" ]]; then
+    if [[ $@ != *"--for-real"* ]]; then
         find . -mindepth 2 -type f -exec mv {} .
     else
         yell "Dangerous function!!! Use --for-real!!!"

@@ -59,7 +59,7 @@ feh-display-montage () {
     echo "Width ratio: $WIDTHRATIO"
     echo "Thumbnail height: $THUMBHEIGHT"
     echo "Thumbnail width: $THUMBWIDTH"
-    if [[ "$1" == "--slideshow" ]]; then
+    if [[ $@ == *"--slideshow"* ]]; then
         if [[ "${NIMAGES}" == "1" ]]; then
             # no --keep-zoom-vp if only one image
             feh --scale-down --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" *.png
@@ -73,14 +73,14 @@ feh-display-montage () {
         # TODO: what do I want for zoom?
         # TODO: calculate sizes this sometime, decide on defaults based on 4GB memory and number of pages
         if [[ "${HOSTNAME}" == "akroshko-main" ]]; then
-            if [[ $1 == "--thumbnails" ]];then
+            if [[ $@ == *"--thumbnails"* ]];then
                 # TODO: not default output for thumbs, segfaults on many documents
                 feh --geometry=1920x1080+1280+0 --thumbnails --thumb-height "$THUMBHEIGHT" --thumb-width "$THUMBWIDTH" --limit-width "$MAXWIDTH" *.png
             else
                 feh --geometry=1920x1080+1280+0 --montage --thumb-height "$THUMBHEIGHT" --thumb-width "$THUMBWIDTH" --limit-width "$MAXWIDTH" *.png  --output ~/tmp/document-montages/"$2".jpg
             fi
         else
-            if [[ $1 == "--thumbnails" ]];then
+            if [[ $@ == *"--thumbnails"* ]];then
                 feh --fullscreen --geometry=1280x800+0+0 --thumbnails --thumb-height "$THUMBHEIGHT" --thumb-width "$THUMBWIDTH" --limit-width "$MAXWIDTH" *.png
             else
                 feh --fullscreen --montage --thumb-height "$THUMBHEIGHT" --thumb-width "$THUMBWIDTH" --limit-width "$MAXWIDTH" *.png --output ~/tmp/document-montages/"$2".jpg
