@@ -1745,7 +1745,7 @@ fetch-build-sage-packages () {
     ./sage -pip install --upgrade psycopg2
     ./sage -pip install --upgrade pycurl
     ./sage -pip install --upgrade pyopenssl
-    ./sage -pip install --upgrade rlipython
+    # ./sage -pip install --upgrade rlipython
     ./sage -pip install --upgrade readline
     # install sage mode
     # TODO: remove, does not seem to exist, try melpa
