@@ -1740,6 +1740,8 @@ fetch-build-sage-packages () {
     ./sage -pip install --upgrade dill
     ./sage -pip install --upgrade lxml
     ./sage -pip install --upgrade multiprocess
+    # out of date pillow has been an issue for me before
+    ./sage -pip install --upgrade pillow
     ./sage -pip install --upgrade psycopg2
     ./sage -pip install --upgrade pycurl
     ./sage -pip install --upgrade pyopenssl
@@ -2543,4 +2545,8 @@ less-sh () {
     # faster... but looks terrible by default
     # TODO: fix colors on this
     /usr/share/source-highlight/src-hilite-lesspipe.sh "$1" | less
+}
+
+count-nondot-files () {
+    find . -type f -not -path '*/\.*' | wc -l
 }
