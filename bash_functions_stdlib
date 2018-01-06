@@ -2540,6 +2540,7 @@ less-pyg () {
     # slight delay....
     pygmentize -O style=native -g -f terminal256 "$1" | less -R
 }
+alias lh='less-pyg'
 
 less-sh () {
     # faster... but looks terrible by default

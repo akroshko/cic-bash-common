@@ -24,11 +24,17 @@
 
 # https://www.debian-administration.org/article/317/An_introduction_to_bash_completion_part_2
 
+# TODO: see if this causes problems..... it used to for me
+# TODO: update my things below...
+source /etc/bash_completion
+
 _bash_functions () {
     IFS=$(echo -en "\n\b")
     COMPREPLY=( $(compgen -A function | grep "${COMP_WORDS[COMP_CWORD]}") )
 }
 
+# TODO: replace with bash_completion.d/apt-file
+# TODO: replace with bash_completion.d/apt-show-versions
 _apt_all_packages () {
     IFS=$(echo -en "\n\b")
     COMPREPLY=( $(apt-cache search "${COMP_WORDS[COMP_CWORD]}" | cut -d' ' -f1 | grep "${COMP_WORDS[COMP_CWORD]}") )
