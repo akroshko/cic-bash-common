@@ -522,6 +522,15 @@ harm-bashrc () {
     source ${HOME}/.bashrc
 }
 
+harm-xresources () {
+    # reload x-resources for development purposes
+    # otherwise it is done in bash-profile....
+    if [[ -f "${HOME}/.Xresources" ]]; then
+        msg "Loading Xresources!!!"
+        xrdb ${HOME}/.Xresources
+    fi
+}
+
 fix-standard-permissions () {
     true
 }
