@@ -21,17 +21,17 @@ if [[ "${HOSTNAME}" == 'akroshko-main' ]]; then
     # TODO: check for dockapps
     # the geometry
     if [[ -d "$FULLPATH" ]];then
-        exec feh --scale-down --scroll-step 100 --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" --action6 ";nohup gimp \"%f\" &" --geometry=1848x1055+1280+0 "$FULLPATH"
+        feh --scale-down --scroll-step 100 --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" --draw-actions --action6 ";[Edit in GIMP]nohup gimp \"%f\" &" --action7 ";[Copy filename to clipboard]echo \"%f\" | xclip -selection clipboard -i" --geometry=1848x1055+1280+0 "$FULLPATH"
     else
-        exec feh --scale-down --scroll-step 100 --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" --action6 ";nohup gimp \";%f\" &" --geometry=1848x1055+1280+0 "$DNAME" --start-at "$FULLPATH"
+        feh --scale-down --scroll-step 100 --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" --draw-actions --action6 ";[Edit in GIMP]nohup gimp \"%f\" &" --action7 ";[Copy filename to clipboard]echo \"%f\" | xclip -selection clipboard -i" --geometry=1848x1055+1280+0 "$DNAME" --start-at "$FULLPATH"
     fi
 else
     # XXXX: fullscreen causes issues on viewing laptop from pcmanfm, specicific to laptop for now
     # TODO: try and "maximize", this is often what I do on other machines.... do something with this
     if [[ -d "FULLPATH" ]]; then
-        exec feh --scale-down --scroll-step 100 --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" --action6 ";nohup gimp \"%f\" &" --geometry=1280x800+0+0 "$FULLPATH"
+        exec feh --scale-down --scroll-step 100 --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" --draw-actions --action6 ";[Edit in GIMP]nohup gimp \"%f\" &" --action7 ";[Copy filename to clipboard]echo \"%f\" | xclip -selection clipboard -i" --geometry=1280x800+0+0 "$FULLPATH"
     else
-        exec feh --scale-down --scroll-step 100 --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" --action6 ";nohup gimp \"%f\" &" --geometry=1280x800+0+0 "$DNAME" --start-at "$FULLPATH"
+        exec feh --scale-down --scroll-step 100 --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" --draw-actions --action6 ";[Edit in GIMP]nohup gimp \"%f\" &" --action7 ";[Copy filename to clipboard]echo \"%f\" | xclip -selection clipboard -i" --geometry=1280x800+0+0 "$DNAME" --start-at "$FULLPATH"
     fi
 fi
 
