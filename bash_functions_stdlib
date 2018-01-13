@@ -586,13 +586,15 @@ vcs-check-root () {
             h1 "Checking $dirname/.git"
             pushd . >/dev/null
             cd "$dirname"
-            git fetch
-            git fetch --verbose
+            # TODO: why was first git fetch here?
+            #       does it stil work the same now?
+            # git fetch
+            git -c color.ui=always fetch --verbose
             # h2 "diff origin/master"
             # git diff origin/master --summary
             h2 "pull needed?"
             # TODO: indicate no pull needed
-            local STATUS=$(git status -uno)
+            local STATUS=$(git -c color.ui=always status -uno)
             if echo "$STATUS" | grep "up-to-date" >/dev/null; then
                 msg "Seems up to date!"
             else
