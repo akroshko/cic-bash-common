@@ -726,12 +726,12 @@ vcs-push-github () {
         yell "Error connecting to github! Aborting!"
         return 1
     fi
-    if ! git checkout public; then
+    if ! git -c color.ui=always checkout public; then
         yell "Checkout unsuccessful!"
         return 1
     fi
     # test the connection before doing any funny business
-    git merge --squash -X theirs master
+    git -c color.ui=always merge --squash -X theirs master --stat
     local COMMITCORRECT=n
     while [[ "$COMMITCORRECT" != "y" ]]; do
         while read -r -t 0;do read -r; done;
@@ -742,13 +742,13 @@ vcs-push-github () {
         echo ""
         if [[ "$COMMITCORRECT" == "q" ]]; then
             yell "Aborting!"
-            git checkout master
+            git -c color.ui=always checkout master
             return 1
         fi
     done
-    git commit -a -m "$COMMITMESSAGE"
+    git -c color.ui=always commit -a -m "$COMMITMESSAGE"
     # TODO: eventually go "public" locally to "master" globally
-    git push --force --set-upstream github public:master
+    git -c color.ui=always push --force --set-upstream github public:master
     git checkout master
 }
 
