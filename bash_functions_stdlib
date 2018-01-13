@@ -2098,7 +2098,7 @@ vcs-incoming () {
     # https://stackoverflow.com/questions/1800783/compare-local-git-branch-with-remote-branch
     h2 "The log: "
     # TODO: configure a little better, want to see on screen and not wierd pager stuff
-    git log ..origin/"$(git rev-parse --abbrev-ref HEAD)"
+    git log --decorate=full --graph --stat ..origin/"$(git rev-parse --abbrev-ref HEAD)"
     read -n 1 -s -r -p "Press any key to continue... "
     echo ""
     h2 "The diffs: "

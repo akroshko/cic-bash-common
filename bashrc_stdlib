@@ -178,6 +178,7 @@ alias ecnw='launch-emacsclient -nw'
 alias f90=gfortran
 alias gccr='gcc-compile-run'
 alias gi='grep --color -i'
+alias git-log-full='git log --decorate=full --graph --stat'
 alias gpg='gpg2'
 alias grep='grep --color'
 alias grep-fileonly='grep --color --files-with-matches'
