@@ -52,13 +52,81 @@ _screen_sockets () {
     COMPREPLY=( $(screen -ls | grep "^[[:space:]]\+[0-9]\+" | cut -f1 -d"." | sed -e 's/^[[:space:]]*//g' | grep "${COMP_WORDS[COMP_CWORD]}") )
 }
 
-complete -F _bash_functions view-def
-complete -F _apt_installed_packages ag-list
-complete -F _apt_installed_packages ag-remove
-complete -F _apt_installed_packages ag-show-installed
-complete -F _apt_all_packages ag-show
-complete -F _apt_all_packages ag-install
-complete -F _screen_sockets scr
+# https://unix.stackexchange.com/questions/4219/how-do-i-get-bash-completion-for-command-aliases
+# TODO: figure out how to use this... consistently.... somehow screws up my "hrc" bash reload...
+function make-completion-wrapper () {
+  local function_name="$2"
+  local arg_count=$(($#-3))
+  local comp_function_name="$1"
+  shift 2
+  local function="
+    function $function_name {
+      ((COMP_CWORD+=$arg_count))
+      COMP_WORDS=( "$@" \${COMP_WORDS[@]:1} )
+      "$comp_function_name"
+      return 0
+    }"
+  eval "$function"
+  echo $function_name
+  echo "$function"
+}
+
+function _apt_get_install {
+    ((COMP_CWORD+=1))
+    COMP_WORDS=( apt-get install ${COMP_WORDS[@]:1} )
+    # XXXX: behaves wierdly if I do not do this
+    #       not in original...
+    # TODO: use printf...
+    #       https://superuser.com/questions/461981/how-do-i-convert-a-bash-array-variable-to-a-string-delimited-with-newlines
+    COMP_LINE=$(IFS=" "; echo "${COMP_WORDS[*]}" )
+    COMP_POINT=${#COMP_LINE}
+    _apt_get
+}
+
+function _apt_get_remove {
+    ((COMP_CWORD+=1))
+    COMP_WORDS=( apt-get remove ${COMP_WORDS[@]:1} )
+    # XXXX: behaves wierdly if I do not do this
+    #       not in original...
+    # TODO: use printf...
+    #       https://superuser.com/questions/461981/how-do-i-convert-a-bash-array-variable-to-a-string-delimited-with-newlines
+    COMP_LINE=$(IFS=" "; echo "${COMP_WORDS[*]}" )
+    COMP_POINT=${#COMP_LINE}
+    _apt_get
+}
+
+function _apt_cache_show {
+    ((COMP_CWORD+=1))
+    COMP_WORDS=( apt-cache show ${COMP_WORDS[@]:1} )
+    # XXXX: behaves wierdly if I do not do this
+    #       not in original...
+    # TODO: use printf...
+    #       https://superuser.com/questions/461981/how-do-i-convert-a-bash-array-variable-to-a-string-delimited-with-newlines
+    COMP_LINE=$(IFS=" "; echo "${COMP_WORDS[*]}" )
+    COMP_POINT=${#COMP_LINE}
+    _apt_cache
+}
+
+function _dpkg_l {
+    ((COMP_CWORD+=1))
+    COMP_WORDS=( dpkgquery -L ${COMP_WORDS[@]:1} )
+    COMP_LINE=$(IFS=" "; echo "${COMP_WORDS[*]}" )
+    COMP_POINT=${#COMP_LINE}
+    _dpkg
+}
+
+complete -F _bash_functions         view-def
+_completion_loader apt-get
+_completion_loader apt-cache
+# TODO: should this be dpkg-query?
+_completion_loader dpkg
+complete -F _dpkg_l                 ag-list
+complete -F _apt_get_remove         ag-remove
+# TODO: this is a wierd alias... no completion for now
+# complete -F _apt_installed_packages ag-show-installed
+complete -F _apt_cache_show         ag-show
+complete -F _apt_get_install        ag-install
+complete -F _screen_sockets         scr
 
 # https://wiki.sagemath.org/Tips
 # TODO: non functional, fix

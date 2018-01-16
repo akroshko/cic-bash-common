@@ -121,7 +121,8 @@ ag-search () {
 
 ag-install () {
     # TODO: check if already installed
-    sudo apt-get install --dry-run "$@"
+    # TODO: no sudo for dry run??? abort if can't sudo?
+    apt-get install --dry-run "$@"
     echo "Do install for real?"
     # install a debian package
     read -n 1 -p "Install? (y/n)? " yn
@@ -358,6 +359,7 @@ not_match_string_array () {
 
 view-def () {
     # view the definition of a bash function
+    # TODO: check if it is an alias first
     declare -f "$1"
 }
 
