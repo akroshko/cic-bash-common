@@ -126,6 +126,7 @@ ag-install () {
     echo "Do install for real?"
     # install a debian package
     read -n 1 -p "Install? (y/n)? " yn
+    echo ""
     if [[ "$yn" == 'y' ]]; then
         sudo apt-get install "$@"
     else
