@@ -185,6 +185,7 @@ alias grep-fileonly='grep --color --files-with-matches'
 alias gf="grep-functions"
 alias hrc='harm-bashrc'
 alias f='feh-open-browse'
+alias firefox-profile-manager="firefox --ProfileManager"
 # TODO: change these, no longer relevant
 alias fm='feh-montage --montage'
 alias fp='feh-montage --montage'
