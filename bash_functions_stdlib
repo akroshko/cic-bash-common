@@ -1062,7 +1062,7 @@ sage-notebook () {
            return 255
        else
            # TODO: select firefox and chromium?
-           SAGE_BROWSER="nohup firefox" sage --notebook=sagenb secure=True port=18080 automatic_login=True interface='' directory="${NBPATH}"
+           SAGE_BROWSER="nohup firefox -P default" sage --notebook=sagenb secure=True port=18080 automatic_login=True interface='' directory="${NBPATH}"
            return 0
        fi
     else
@@ -1078,7 +1078,7 @@ sage-notebook-browser () {
         chromium https://localhost:18080/ >/dev/null 2>&1 &
     else
         # TODO: shred firefox if not running
-        nohup firefox https://localhost:18080/ >/dev/null 2>&1 &
+        nohup firefox -P default https://localhost:18080/ >/dev/null 2>&1 &
     fi
 }
 
@@ -1095,7 +1095,7 @@ sage-jupyter-notebook () {
         if ps -ef | grep -- "--notebook=jupyter" | grep -v grep >/dev/null; then
             sage-jupyter-notebook-browser
         else
-            sage --notebook=jupyter --notebook-dir="${NBPATH}" --browser="firefox" --port=18888
+            sage --notebook=jupyter --notebook-dir="${NBPATH}" --browser="firefox -P default" --port=18888
         fi
     else
         yell '${PYTHON_NOTEBOOK_ROOT} not defined!!!'
@@ -1106,7 +1106,7 @@ sage-jupyter-notebook () {
 sage-jupyter-notebook-browser () {
     # open just the browser for a running iPython notebook
     bleachbit --overwrite --clean epiphany.* google_chrome.*
-    firefox http://localhost:18888/
+    firefox -P default http://localhost:18888/
 }
 
 file-mimetype () {
