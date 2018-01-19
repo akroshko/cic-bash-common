@@ -2552,7 +2552,13 @@ grep-ri () {
 
 less-pyg () {
     # slight delay....
-    pygmentize -O style=native -g -f terminal256 "$1" | less -R
+    if [[ -z "$1" ]]; then
+        echo "A filename is required for less-pyg!"
+    elif [[ -e "$1" ]]; then
+        pygmentize -O style=native -g -f terminal256 "$1" | less -R
+    else
+        echo "File $1 does does not exist!"
+    fi
 }
 alias lh='less-pyg'
 
