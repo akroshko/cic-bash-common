@@ -125,8 +125,7 @@ if [[ "$TERM" =~ linux|xterm*|rxvt* ]];then
     SHORTPWD=$(echo "$PWD" | sed -r 's|'"${HOME}"'|~|g')
     export PROMPT_COMMAND='history -a; history -n;echo -ne "\033]0;${HOSTNAME}:${SHORTPWD}\007"'
     # see http://askubuntu.com/questions/126737/make-gnome-terminal-show-the-command-running-as-title
-    show_command_in_title_bar()
-    {
+    show_command_in_title_bar() {
         export SHORTPWD=$(echo "$PWD" | sed -r 's|'"${HOME}"'|~|g')
         case "$BASH_COMMAND" in
             *"\033]0"*)
