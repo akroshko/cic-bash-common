@@ -2182,6 +2182,7 @@ gpg-batch () {
 android-screenshot-all () {
     pushd . >/dev/null
     cd "${HOME}"
+    # TODO: better name...
     local FNAME=android-screen-$(date-time-stamp).png
     adb shell screencap -p /sdcard/"$FNAME"
     adb pull /sdcard/"$FNAME"
