@@ -1818,6 +1818,7 @@ build-install-software () {
     # TODO: evantually make this the only one
     [[ ! -d "${HOME}"/cic-external-vcs ]] && mkdir -p "${HOME}"/cic-external-vcs
     cd "${HOME}"/cic-external-vcs
+    # TODO: update this as something better and potentially less destructive
     [[ ! -d "${HOME}"/cic-external-vcs/conkeror-external ]]             && git clone git://repo.or.cz/conkeror.git                     conkeror-external
     [[ ! -d "${HOME}"/cic-external-vcs/urxvt-perls-external ]]          && git clone https://github.com/akroshko/urxvt-perls.git       urxvt-perls-external
     [[ ! -d "${HOME}"/cic-external-vcs/feh-external ]]                  && git clone https://git.finalrewind.org/feh                   feh-exteneral
@@ -1833,8 +1834,14 @@ build-install-software () {
     curl https://bootstrap.pypa.io/get-pip.py | sudo python;
     h2 "wayback downloader"
     sudo gem install wayback_machine_downloader
-    h2 "feh"
     build-install-software-feh
+    build-install-software-mgba
+    build-install-software-pcsx-reloaded
+    build-install-software-xpdf
+    build-install-software-zathura
+}
+
+build-install-software-zathura () {
     h2 "girara";
     pushd . > /dev/null;
     cd girara-external;
@@ -1892,6 +1899,9 @@ build-install-software () {
     make;
     sudo make install;
     popd >/dev/null
+}
+
+build-install-software-xpdf () {
     # do xpdf, but not on all machines
     if [[ "${HOSTNAME}" =~ main || "${HOSTNAME}" =~ laptop ]];then
         h2 "xpdf"
@@ -1908,6 +1918,22 @@ build-install-software () {
         popd >/dev/null
     fi
     popd >/dev/null
+}
+
+# TODO: will do with more, but for now I build feh on its own a lot
+build-install-software-feh () {
+    h2 "feh"
+    # must be in proper directory
+    pushd . >/dev/null
+    cd feh-external
+    git pull
+    make clean
+    make exif=1 help=1 xinerama=0
+    sudo make install
+    popd >/dev/null
+}
+
+build-install-software-pcsx-reloaded () {
     # PCSX-Reloaded
     # TODO: check out as well
     h2 "PCSX-Reloaded"
@@ -1924,14 +1950,16 @@ build-install-software () {
     popd >/dev/null
 }
 
-# TODO: will do with more, but for now I build feh on its own a lot
-build-install-software-feh () {
-    # must be in proper directory
-    pushd . >/dev/null
-    cd feh-external
+build-install-software-mgba () {
+    h2 "mgba"
+    pushd . > /dev/null;
+    cd mgba-external
     git pull
+    mkdir -p build
+    cd build
     make clean
-    make exif=1 help=1 xinerama=0
+    cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/local ..
+    make
     sudo make install
     popd >/dev/null
 }
