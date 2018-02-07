@@ -1051,20 +1051,23 @@ screen-select () {
 
 sage-notebook () {
     # open a Sage notebook and browser securely on port 18080
-    # XXXX: requires defining of ${PYTHON_NOTEBOOK_ROOT} before calling
+    # XXXX: requires defining of ${PYTHON_NOTEBOOK_ROOT} before calling, do I want this for sage.... fix...
+    # TODO: JUPYTER_NOTEBOOK_ROOT is forward-looking...
     if [[ -n "${JUPYTER_NOTEBOOK_ROOT}" ]]; then
-       bleachbit --overwrite --clean epiphany.* google_chrome.*
-       local NBPATH="${JUPYTER_NOTEBOOK_ROOT}/sage-notebooks-${HOSTNAME}.sagenb"
-       mkdir -p "${NBPATH}"
-       # XXXX: grep to avoid just sage-notebook from scripts that might run this
-       if ps -ef | grep "src/bin/sage-notebook" | grep -v grep >/dev/null; then
-           sage-notebook-browser
-           return 255
-       else
-           # TODO: select firefox and chromium?
-           SAGE_BROWSER="nohup firefox -P default" sage --notebook=sagenb secure=True port=18080 automatic_login=True interface='' directory="${NBPATH}"
-           return 0
-       fi
+        # TODO: do I still need this?
+        bleachbit --overwrite --clean epiphany.* google_chrome.*
+        local NBPATH="${JUPYTER_NOTEBOOK_ROOT}/sage-notebooks-${HOSTNAME}.sagenb"
+        mkdir -p "${NBPATH}"
+        # XXXX: grep to avoid just sage-notebook from scripts that might run this
+        if ps -ef | grep "src/bin/sage-notebook" | grep -v grep >/dev/null; then
+            sage-notebook-browser
+            return 255
+        else
+            # TODO: select firefox and chromium?
+            SAGE_BROWSER="nohup firefox -P sagenotebook" sage --notebook=sagenb secure=True port=18080 automatic_login=True interface='' directory="${NBPATH}"
+            # SAGE_BROWSER="nohup chromium" sage --notebook=sagenb secure=True port=18080 automatic_login=True interface='' directory="${NBPATH}"
+            return 0
+        fi
     else
         yell 'JUPYTER_NOTEBOOK_ROOT not defined!!!'
     fi
@@ -1078,7 +1081,7 @@ sage-notebook-browser () {
         chromium https://localhost:18080/ >/dev/null 2>&1 &
     else
         # TODO: shred firefox if not running
-        nohup firefox -P default https://localhost:18080/ >/dev/null 2>&1 &
+        nohup firefox -P sagenotebook https://localhost:18080/ >/dev/null 2>&1 &
     fi
 }
 
@@ -1842,24 +1845,35 @@ build-install-software () {
 }
 
 build-install-software-zathura () {
+    # TODO: use some better versions than these giant hashes....
+    #       have checks to make sure branches don't hang around
     h2 "girara";
     pushd . > /dev/null;
     cd girara-external;
     git pull
-    # TODO: this needs to be checked
+    # TODO: this needs to be checked, check if branch develop already exists
     git checkout --track -b develop origin/develop
+    # TODO: temporary until I upgrade debian
+    # 0.2.7 release, last version my zathura will work with
+    git checkout fe7e9194e2005a263e77c132afb3b3ef13b2aefe
     make clean;
     make;
     sudo make install;
+    # TODO: back to develop
+    git checkout develop
     popd > /dev/null;
     h2 "zathura";
     pushd . > /dev/null;
     cd zathura-external;
     git pull
     git checkout --track -b develop origin/develop
+    # TODO: temporary until I upgrade debian
+    #       last version supporting girara 0.2.7
+    git checkout cd8931cb14a89a3558d6bbbc3f9bfbe972d713dd
     make clean;
     make;
     sudo make install;
+    git checkout develop
     popd > /dev/null;
     h2 "zathura-poppler";
     # XXXX: a nasty hack
@@ -1868,36 +1882,48 @@ build-install-software-zathura () {
     cd zathura-pdf-poppler-external;
     git pull
     git checkout --track -b develop origin/develop
+    # TODO: temporary until I upgrade debian
+    git checkout ced9b3cfb0d7440a6a049f200a2f419ce09abe1e
     make clean;
     make;
     sudo make install;
+    git checkout develop
     popd > /dev/null;
     h2 "zathura-djvu";
     pushd . > /dev/null;
     cd zathura-djvu-external;
     git pull
     git checkout --track -b develop origin/develop
+    # TODO: temporary until I upgrade debian
+    git checkout e4a9ec93e2a4ff68255a38ff327179241fb69ebe
     make clean;
     make;
     sudo make install;
+    git checkout develop
     popd > /dev/null;
     h2 "zathura-cb";
     pushd . > /dev/null;
     cd zathura-cb-external;
     git pull
     git checkout --track -b develop origin/develop
+    # TODO: temporary until I upgrade debian
+    git checkout 21fa0f4d8da39ed9be449400d2147b876b739f56
     make clean;
     make;
     sudo make install;
+    git checkout develop
     popd >/dev/null
     h2 "zathura-ps";
     pushd . > /dev/null;
     cd zathura-ps-external;
     git pull
     git checkout --track -b develop origin/develop
+    # TODO: temporary until I upgrade debian
+    git checkout 91a22c4d44eabfca37f0c4488c4b2d18cab3ddb
     make clean;
     make;
     sudo make install;
+    git checkout develop
     popd >/dev/null
 }
 
@@ -1917,6 +1943,16 @@ build-install-software-xpdf () {
         sudo make install
         popd >/dev/null
     fi
+    popd >/dev/null
+}
+
+build-install-software-mupdf () {
+    h2 "mupdf"
+    pushd . >/dev/null
+    cd mupdf-external
+    git submodule update --init
+    make prefix=/usr/local
+    sudo make prefix=/usr/local install
     popd >/dev/null
 }
 
