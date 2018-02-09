@@ -1631,6 +1631,7 @@ fetch-build-sage-nice () {
     /usr/bin/nice --adjustment 20 /usr/bin/ionice -c3 fetch-build-sage
 }
 
+# TODO: reverse these...
 fetch-build-sage () {
     # fetch and compile current version of sage
     # usage: use --finalize to finalize the setup
