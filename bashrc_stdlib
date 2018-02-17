@@ -197,7 +197,7 @@ alias lsa='ls -la'
 # TODO: using for soemthing else for now
 # alias lsl='ls -l'
 alias lst='ls -ltr'
-alias kill-all-jobs='kill $(jobs -p)'
+alias killall-jobs='kill $(jobs -p)'
 alias man-find='man -k'
 alias man-scan='man -K'
 alias mupdf='mupdf-gl'
