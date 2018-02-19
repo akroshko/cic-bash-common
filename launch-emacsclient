@@ -30,7 +30,7 @@
 firstarg=$1
 # start emacs deamon if not already started
 if ! ps -ef | grep "emacs --daemon" | grep -v grep >/dev/null; then
-    emacs --daemon --no-init-file --load ~/emacs-daemon.el
+    emacs --daemon --no-init-file --load "$HOME"/.emacs-cic.el
     sleep 10
 fi
 # get emacsclient command based on nice value

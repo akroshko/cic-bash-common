@@ -2637,3 +2637,11 @@ less-sh () {
 count-nondot-files () {
     find . -type f -not -path '*/\.*' | wc -l
 }
+
+geotiff-info () {
+    for F in $@; do
+        [[ "$F" =~ "tif" ]] || continue
+        h2 "$F"
+        gdalinfo "$F"
+    done
+}
