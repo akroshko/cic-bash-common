@@ -161,6 +161,8 @@ force_color_prompt=yes
 # aliases, generally spice up some already existing commands
 alias bash-debug='set -xv'
 alias bash-nodebug='set +xv'
+# stops things from overflowing /tmp if space is limited
+alias convert-safe='MAGICK_TEMPORARY_PATH=$HOME/tmp/imagemagick convert -limit memory 2GB -limit area 2GB -limit map 2GB'
 alias agu='sudo apt-get update && sudo apt-get dist-upgrade'
 alias ag-autoremove='sudo apt-get autoremove'
 alias al='alias'
