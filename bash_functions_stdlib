@@ -2545,6 +2545,8 @@ wget-check-log-unknown-codes () {
     # TODO: find things that are not these, so I can start catologuing good errors
     # TODO: see if I can identify fatal errors
     grep -Hn "awaiting response" "$1" | grep -v "$WGETOKCODES"  | grep -v "$WGETERRORCODES"
+    # TODO: more informative return code?
+    return 0
 }
 
 wget-check-log () {
