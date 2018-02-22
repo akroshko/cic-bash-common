@@ -2539,28 +2539,21 @@ vcs-change-remote () {
 }
 
 WGETOKCODES="200 OK\|302 Found"
-WGETERRORCODES="301 Moved Permanently\|404 Not Found\|406 Not Acceptable\|503 Service Unavailable\|504 Gateway Time-out\|Read error\|416 Requested Range Not Satisfiable\|300 Multiple Choices\|500 Internal Server Error"
+WGETERRORCODES="301 Moved Permanently\|404 Not Found\|406 Not Acceptable\|503 Service Unavailable\|504 Gateway Time-out\|Read error\|416 Requested Range Not Satisfiable\|300 Multiple Choices\|500 Internal Server Error\|^Error\|^Retrying\|^Giving\|Data connection: Connection timed out"
 
 wget-check-log-unknown-codes () {
     # TODO: find things that are not these, so I can start catologuing good errors
-     grep -Hn "awaiting response" "$1" | grep -v "$WGETOKCODES"  | grep -v "$WGETERRORCODES"
+    # TODO: see if I can identify fatal errors
+    grep -Hn "awaiting response" "$1" | grep -v "$WGETOKCODES"  | grep -v "$WGETERRORCODES"
 }
 
 wget-check-log () {
     # TODO: find things that are not these, so I can start catologuing good errors
+    # TODO: can I search in a grep function
     h1 "Error codes"
     grep --color=always -Hn -B 2 -A 4 "$WGETERRORCODES" "$1"
     h1 "Unknown codes"
     wget-check-log-unknown-codes "$1"
-}
-
-WGETFTPERRORPATTERNS="^Error\|^Retrying\|^Giving"
-wget-check-ftp-log () {
-    # TODO: find things that are not these, so I can start catologuing good errors
-    h1 "Error patterns for ftp"
-    grep --color=always -Hn -B 2 -A 4 "$WGETFTPERRORPATTERNS" "$1"
-    # h1 "Unknown codes"
-    # wget-check-log-unknown-codes "$1"
 }
 
 als () {
