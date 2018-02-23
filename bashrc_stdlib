@@ -243,4 +243,5 @@ alias sageipy='sage -ipython'
 # TODO: silly but I can remember these things
 alias xmodmap-ls='xmodmap -pm'
 alias ls-xmodmap='xmodmap -pm'
+alias gnuplot-test='gnuplot --persist -e "test;"'
 # TODO: change this later?
