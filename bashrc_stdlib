@@ -206,7 +206,8 @@ alias fp='feh-montage --montage'
 alias ft='feh-thumbnail'
 alias ifconfig='/sbin/ifconfig'
 # TODO: causes issues with ^M when viewing recorded wget output
-alias less='less -iMR +Gg'
+alias less='less --ignore-case --LONG-PROMPT --RAW-CONTROL-CHARS +Gg'
+alias less-raw='less --ignore-case --LONG-PROMPT --raw-control-chars +Gg'
 alias ls='ls -hF --color'
 alias lsa='ls -la'
 # TODO: using for soemthing else for now
