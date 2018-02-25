@@ -177,6 +177,7 @@ alias bash-nodebug='set +xv'
 # stops things from overflowing /tmp if space is limited
 alias convert-safe='MAGICK_TEMPORARY_PATH=$HOME/tmp/imagemagick convert -limit memory 2GB -limit area 2GB -limit map 2GB'
 alias agu='sudo apt-get update && sudo apt-get dist-upgrade'
+alias agu-dry-run='sudo apt-get update && sudo apt-get dist-upgrade --dry-run'
 alias ag-autoremove='sudo apt-get autoremove'
 alias al='alias'
 # improve this

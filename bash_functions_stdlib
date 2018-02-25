@@ -122,6 +122,7 @@ ag-search () {
 ag-install () {
     # TODO: check if already installed
     # TODO: no sudo for dry run??? abort if can't sudo?
+    # TODO: check if apt-get update needed
     apt-get install --dry-run "$@"
     echo "Do install for real?"
     # install a debian package
@@ -132,6 +133,10 @@ ag-install () {
     else
         msg "Aborting!"
     fi
+}
+
+ag-install-dry-run () {
+    apt-get install --dry-run "$@"
 }
 
 ag-remove () {
