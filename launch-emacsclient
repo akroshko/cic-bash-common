@@ -46,11 +46,12 @@ case $firstarg in
     capture )
         shift
         # check if the server is running, if not start the server
+        # TODO: change name...
         if ! ps -ef | grep "emacs --daemon" | grep -v grep >/dev/null; then
             $EMACSCLIENT --alternate-editor="" --create-frame --eval "(make-frame '((name . \"capture\") (top . 40) (left . 40) (width . 200) (height . 60)))" --eval "(select-frame-by-name \"capture\")" "$@"
         else
             # TODO: why does this seem to be creating a frame anyways?
-            exec $EMACSCLIENT --alternate-editor=""                --eval "(make-frame '((name . \"capture\") (top . 40) (left . 40) (width . 200) (height . 60)))" --eval "(select-frame-by-name \"capture\")" "$@"
+            exec $EMACSCLIENT --alternate-editor=""           --eval "(make-frame '((name . \"capture\") (top . 40) (left . 40) (width . 200) (height . 60)))" --eval "(select-frame-by-name \"capture\")" "$@"
         fi
         ;;
     # similar to capture but with different name, decide have "maximized" as frame name, decide if I really want to do this or if it's useful
@@ -58,12 +59,27 @@ case $firstarg in
         shift
         # check if the server is running, if not start the server
         if ! ps -ef | grep "emacs --daemon" | grep -v grep >/dev/null; then
-            exec $EMACSCLIENT --alternate-editor="" --create-frame --eval "(make-frame '((name . \"maximized\") (top . 40) (left . 40) (width . 200) (height . 60)))" --eval "(select-frame-by-name \"maximized\")" "$@"
+            exec $EMACSCLIENT --alternate-editor="" --create-frame --eval "(make-frame '((name . \"*maximized*\") (top . 40) (left . 40) (width . 200) (height . 60) (user-position . t)))" --eval "(select-frame-by-name \"*maximized*\")" "$@"
         else
             # TODO: why does this seem to be creating a frame anyways?
-            exec $EMACSCLIENT --alternate-editor=""                --eval "(make-frame '((name . \"maximized\") (top . 40) (left . 40) (width . 200) (height . 60)))" --eval "(select-frame-by-name \"maximized\")" "$@"
+            exec $EMACSCLIENT --alternate-editor=""                --eval "(make-frame '((name . \"*maximized*\") (top . 40) (left . 40) (width . 200) (height . 60) (user-position . t)))" --eval "(select-frame-by-name \"*maximized*\")" "$@"
         fi
         ;;
+
+    # similar to capture but with different name, decide have "*transient*" as frame name, decide if I really want to do this?
+    # TODO: figure out size from window
+    # TODO: more custom names...
+    transient )
+        shift
+        # check if the server is running, if not start the server
+        if ! ps -ef | grep "emacs --daemon" | grep -v grep >/dev/null; then
+            exec $EMACSCLIENT --alternate-editor="" --create-frame --eval "(make-frame '((name . \"*transient*\") (top . 40) (left . 40)   (width . 120) (height . 60) (user-position . t) (user-size . t)))" --eval "(select-frame-by-name \"*transient*\")" "$@"
+        else
+            # TODO: why does this seem to be creating a frame anyways?
+            exec $EMACSCLIENT --alternate-editor=""                --eval "(make-frame '((name . \"*transient*\") (top . 40) (left . 1320) (width . 120) (height . 60) (user-position . t) (user-size . t)))" --eval "(select-frame-by-name \"*transient*\")" "$@"
+        fi
+        ;;
+    # no frame,
     noframe )
         shift
         if ! ps -ef | grep "emacs --daemon" | grep -v grep >/dev/null; then
