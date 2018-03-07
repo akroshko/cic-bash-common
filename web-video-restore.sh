@@ -3,7 +3,7 @@
 CURRENTWINDOW=$(xdotool getwindowfocus)
 # filtering by name probably cuts out more windows more quickly than class
 xdotool search --onlyvisible --name "twitch|youtube" | while IFS= read -r line; do
-    if xdotool search --class conkeror | grep "${line}" >/dev/null; then
+    if xdotool search --class "chromium-browser|conkeror|firefox" | grep "${line}" >/dev/null; then
         xdotool windowfocus --sync "${line}"
         xdotool windowactivate --sync "${line}"
     fi
