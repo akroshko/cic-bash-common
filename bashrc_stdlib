@@ -6,7 +6,7 @@
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Fri Mar 27, 2015
-# Version: 20171214
+# Version: 20180407
 # URL: https://github.com/akroshko/bash-stdlib
 #
 # This program is free software: you can redistribute it and/or modify
@@ -104,6 +104,12 @@ export LESS_TERMCAP_se=$'\E[0m'        # reset reverse video
 export LESS_TERMCAP_us=$'\E[1;32m'     # begin underline
 export LESS_TERMCAP_ue=$'\E[0m'        # reset underline
 # and so on
+# TODO: I have more stuff I can move here
+export PAGER="$(type -P less) --ignore-case --LONG-PROMPT"
+
+export VISUAL="launch-emacsclient -nw"
+export ALTERNATE_EDITOR="launch-emacsclient -nw"
+export EDITOR="launch-emacsclient -nw"
 
 case "$TERM" in
     "dumb")
@@ -221,13 +227,15 @@ alias mupdf='mupdf-gl'
 alias mv='mv --no-clobber'
 alias na='nautilus .'
 alias netstat-pid='sudo netstat -nlpt'
+alias openbox-restart="openbox --restart"
 alias pc='cmatrix'
 alias pgtop='sudo -u postgres pg_activity -U postgres'
 alias po='popd'
 alias pu='pushd .'
 alias pdw='fortune | cowsay'
 alias phoronix-test-suite='time phoronix-test-suite'
-# need a fun way to complete aliases
+alias restart-openbox="openbox --restart"
+# TODO: need a fun way to complete aliases
 alias scd='screen -d'
 alias scl='screen -ls'
 alias scr='screen -dr'

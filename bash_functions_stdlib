@@ -1833,6 +1833,8 @@ build-install-software () {
     [[ ! -d "${HOME}"/cic-external-vcs/feh-external ]]                  && git clone https://git.finalrewind.org/feh                   feh-exteneral
     [[ ! -d "${HOME}"/cic-external-vcs/girara-external ]]               && git clone https://git.pwmt.org/pwmt/girara.git              girara-external
     [[ ! -d "${HOME}"/cic-external-vcs/PCSX-Reloaded-external ]]        && git clone https://github.com/SonofUgly/PCSX-Reloaded        PCSX-Reloaded-external
+    [[ ! -d "${HOME}"/cic-external-vcs/ppsspp-source-external ]]        && git clone https://github.com/hrydgard/ppsspp                ppsspp-source-external
+    [[ ! -d "${HOME}"/cic-external-vcs/desmume/ ]]                      && git clone https://github.com/TASVideos/desmume/             desmume-external
     [[ ! -d "${HOME}"/cic-external-vcs/zathura-external ]]              && git clone https://git.pwmt.org/pwmt/zathura.git             zathura-external
     [[ ! -d "${HOME}"/cic-external-vcs/zathura-cb-external ]]           && git clone https://git.pwmt.org/pwmt/zathura-cb.git          zathura-cb-external
     [[ ! -d "${HOME}"/cic-external-vcs/zathura-djvu-external ]]         && git clone https://git.pwmt.org/pwmt/zathura-djvu.git        zathura-djvu-external
@@ -1846,8 +1848,13 @@ build-install-software () {
     build-install-software-feh
     build-install-software-mgba
     build-install-software-pcsx-reloaded
+    # TODO: dummy for now
+    build-install-software-ppsspp
+    # TODO: dummy for now
+    build-install-software-desmume
     build-install-software-xpdf
     build-install-software-zathura
+    popd >/dev/null
 }
 
 build-install-software-zathura () {
@@ -1856,7 +1863,9 @@ build-install-software-zathura () {
     h2 "girara";
     pushd . > /dev/null;
     cd girara-external;
-    git pull
+    if [[ "$HOSTNAME" == "akroshko-main" ]]; then
+       git pull
+    fi
     # TODO: this needs to be checked, check if branch develop already exists
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
@@ -1871,7 +1880,9 @@ build-install-software-zathura () {
     h2 "zathura";
     pushd . > /dev/null;
     cd zathura-external;
-    git pull
+    if [[ "$HOSTNAME" == "akroshko-main" ]]; then
+        git pull
+    fi
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
     #       last version supporting girara 0.2.7
@@ -1886,7 +1897,9 @@ build-install-software-zathura () {
     sudo cp /usr/lib/pkgconfig/girara-gtk3.pc /usr/lib/pkgconfig/girara-gtk.pc
     pushd . > /dev/null;
     cd zathura-pdf-poppler-external;
-    git pull
+    if [[ "$HOSTNAME" == "akroshko-main" ]]; then
+        git pull
+    fi
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
     git checkout ced9b3cfb0d7440a6a049f200a2f419ce09abe1e
@@ -1898,7 +1911,9 @@ build-install-software-zathura () {
     h2 "zathura-djvu";
     pushd . > /dev/null;
     cd zathura-djvu-external;
-    git pull
+    if [[ "$HOSTNAME" == "akroshko-main" ]]; then
+        git pull
+    fi
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
     git checkout e4a9ec93e2a4ff68255a38ff327179241fb69ebe
@@ -1910,7 +1925,9 @@ build-install-software-zathura () {
     h2 "zathura-cb";
     pushd . > /dev/null;
     cd zathura-cb-external;
-    git pull
+    if [[ "$HOSTNAME" == "akroshko-main" ]]; then
+        git pull
+    fi
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
     git checkout 21fa0f4d8da39ed9be449400d2147b876b739f56
@@ -1922,7 +1939,9 @@ build-install-software-zathura () {
     h2 "zathura-ps";
     pushd . > /dev/null;
     cd zathura-ps-external;
-    git pull
+    if [[ "$HOSTNAME" == "akroshko-main" ]]; then
+        git pull
+    fi
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
     git checkout 91a22c4d44eabfca37f0c4488c4b2d18cab3ddb
@@ -1949,7 +1968,6 @@ build-install-software-xpdf () {
         sudo make install
         popd >/dev/null
     fi
-    popd >/dev/null
 }
 
 build-install-software-mupdf () {
@@ -1968,9 +1986,27 @@ build-install-software-feh () {
     # must be in proper directory
     pushd . >/dev/null
     cd feh-external
-    git pull
+    if [[ "$HOSTNAME" == "akroshko-main" ]]; then
+        git pull
+    fi
     make clean
     make exif=1 help=1 xinerama=0
+    sudo make install
+    popd >/dev/null
+}
+
+build-install-software-mgba () {
+    h2 "mgba"
+    pushd . > /dev/null;
+    cd mgba-external
+    if [[ "$HOSTNAME" == "akroshko-main" ]]; then
+        git pull
+    fi
+    mkdir -p build
+    cd build
+    make clean
+    cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/local ..
+    make
     sudo make install
     popd >/dev/null
 }
@@ -1981,7 +2017,9 @@ build-install-software-pcsx-reloaded () {
     h2 "PCSX-Reloaded"
     pushd . > /dev/null;
     cd PCSX-Reloaded-external
-    git pull
+    if [[ "$HOSTNAME" == "akroshko-main" ]]; then
+        git pull
+    fi
     make clean
     bash ./autogen.sh
     # TODO: broken on my machines
@@ -1992,17 +2030,23 @@ build-install-software-pcsx-reloaded () {
     popd >/dev/null
 }
 
-build-install-software-mgba () {
-    h2 "mgba"
+build-install-software-ppsspp () {
+    h2 "ppsspp (empty)"
     pushd . > /dev/null;
-    cd mgba-external
-    git pull
-    mkdir -p build
-    cd build
-    make clean
-    cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/local ..
-    make
-    sudo make install
+    cd ppsspp-source-external
+    if [[ "$HOSTNAME" == "akroshko-main" ]]; then
+        git pull
+    fi
+    popd >/dev/null
+}
+
+build-install-software-desmume () {
+    h2 "desmume (empty)"
+    pushd . > /dev/null;
+    cd desmume-external
+    if [[ "$HOSTNAME" == "akroshko-main" ]]; then
+        git pull
+    fi
     popd >/dev/null
 }
 
@@ -2013,7 +2057,9 @@ build-install-software-dockapps () {
     h2 "libdockapps"
     pushd . >/dev/null
     cd dockapps-external
-    git pull
+    if [[ "$HOSTNAME" == "akroshko-main" ]]; then
+        git pull
+    fi
     cd libdockapp
     make clean
     ./configure
@@ -2030,7 +2076,9 @@ build-install-software-dockapps () {
     h2 "wmtimer"
     pushd . >/dev/null
     cd wmtimer-external
-    git pull
+    if [[ "$HOSTNAME" == "akroshko-main" ]]; then
+        git pull
+    fi
     cd wmtimer
     make clean
     make
