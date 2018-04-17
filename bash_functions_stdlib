@@ -2659,6 +2659,26 @@ unzip-all () {
     done
 }
 
+unzip-in-path () {
+    if [[ -n "$1" ]] || [[ -f "$1" ]]; then
+        mkdir -p "${1}.d"
+        cd "${1}.d"
+        unzip ../"${1}"
+    else
+        yell "Does not exist or is not a file!"
+    fi
+}
+
+
+unzip-ls () {
+    # TODO: check if zip is not here
+    for F in ./*.zip; do
+        h2 "${F}"
+        unzip -l "${F}"
+    done
+}
+
+
 # TODO: are these enough patterns?
 grep-ri () {
     grep --color=always -Ri "$@" . | less -R
