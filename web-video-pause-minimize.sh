@@ -15,7 +15,7 @@ xdotool search --onlyvisible --name "twitch|youtube" | while IFS= read -r line; 
 done
 # filtering by class in this case really limits it to what is up,
 # probably won't have multiple windows of these classes
-xdotool search --class "Fceux|mGBA|PCSXR|PPSSPPSDL|zsnes" | while IFS= read -r line; do
+xdotool search --class "Fceux|mGBA|PCSXR|PPSSPPSDL|zsnes|mpv" | while IFS= read -r line; do
     # now go through rest of potential websites
     # TODO: eventually just flip them off without muting
     # TODO: eventually have restore for all of these
