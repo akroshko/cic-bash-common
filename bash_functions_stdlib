@@ -7,7 +7,7 @@
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Fri Mar 27, 2015
-# Version: 20160716
+# Version: 20180516
 # URL: https://github.com/akroshko/bash-stdlib
 #
 # This program is free software: you can redistribute it and/or modify
@@ -154,7 +154,7 @@ ag-list-installed () {
     if [[ -z "$1" ]]; then
         dpkg-query -l
     else
-        dpkg-query -l | grep "$1"
+        dpkg-query -l | grep -- "$1"
     fi
 }
 
@@ -406,7 +406,7 @@ psg () {
     else
         # TODO: this can be done better!
         ps -efj | head -n 1
-        ps -efj | grep "$1"
+        ps -efj | grep -- "$1"
     fi
 }
 
@@ -499,7 +499,7 @@ youtube-mp3 () {
 
 dconf-grep () {
     # grep the GNOME config database
-    dconf dump / | grep -i "$1"
+    dconf dump / | grep -i -- "$1"
 }
 
 dconf-less () {
@@ -514,9 +514,9 @@ fdi () {
 
 fgi () {
     if [[ -z "${2}" ]]; then
-        find . -type f -exec grep -H --color -n "${1}" {}  \;
+        find . -type f -exec grep -H --color -n -- "${1}" {}  \;
     else
-        find . -type f -iname "*${1}*" -exec grep -H --color -n "${2}" {}  \;
+        find . -type f -iname "*${1}*" -exec grep -H --color -n -- "${2}" {}  \;
     fi
 }
 
@@ -641,21 +641,21 @@ vcs-update-versions () {
             # hash comment
             sed -i -e "s/^# Version:.*$/# Version: $(date-stamp)/g" "$f"
             # if not copyright matches this year
-            if grep "^# Copyright" $f >/dev/null && ! grep "^# Copyright.*2016" $f >> /dev/null; then
+            if grep -- "^# Copyright" $f >/dev/null && ! grep -- "^# Copyright.*2016" $f >> /dev/null; then
                 warn "Need to update year in $f"
             fi
         elif [[ "$FILETYPE" =~ "Lisp/Scheme program" || "$VERSIONFILE" =~ \.el$ ]]; then
             # lisp
             sed -i -e "s/^;; Version:.*$/;; Version: $(date-stamp)/g" "$f"
             # if not copyright matches this year
-            if grep "^;; Copyright" $f >/dev/null && ! grep "Copyright.*2016" $f >> /dev/null; then
+            if grep -- "^;; Copyright" $f >/dev/null && ! grep -- "Copyright.*2016" $f >> /dev/null; then
                 warn "Need to update year in $f"
             fi
         elif [[ "$FILETYPE" =~ "LaTeX document" ]]; then
             # latex
             sed -i -e "s/^% Version:.*$/% Version: $(date-stamp)/g" "$f"
             # if not copyright matches this year
-            if ! grep "Copyright.*2016" $f >/dev/null; then
+            if ! grep -- "Copyright.*2016" $f >/dev/null; then
                 warn "Need to update year in $f"
             fi
         fi
@@ -684,8 +684,8 @@ mount-disk-uuid () {
     else
         local UUIDDEVICE="$(readlink -f /dev/disk/by-uuid/${UUID})"
     fi
-    if grep -qs "$UUIDDEVICE" /etc/mtab; then
-        echo -e $(grep ^"${UUIDDEVICE}[[:space:]]\+" /etc/mtab | cut -d ' ' -f 2)
+    if grep -qs -- "$UUIDDEVICE" /etc/mtab; then
+        echo -e $(grep -- ^"${UUIDDEVICE}[[:space:]]\+" /etc/mtab | cut -d ' ' -f 2)
         return 0
     else
         # TODO: for now I have gnome mount for me but would like to change this
@@ -846,7 +846,7 @@ ls-id3 () {
 }
 
 ag-list-doc () {
-    apt-cache search . | grep "\-doc " | cut -d' ' -f1
+    apt-cache search . | grep -- "\-doc " | cut -d' ' -f1
 }
 
 ag-list-packages-only () {
@@ -955,7 +955,7 @@ vcs-init-full () {
 }
 
 check-emacs-daemon () {
-    ps -ef | grep "emacs --daemon" | grep -v grep >/dev/null
+    ps -ef | grep -- "emacs --daemon" | grep -v grep >/dev/null
     return $?
 }
 
@@ -1026,7 +1026,7 @@ fix-permissive-permissions-recursive () {
 add-line-if-not-exist () {
     local THEFILE="$1"
     local NEWLINE="$2"
-    grep -q -F "$NEWLINE" "$THEFILE" || echo "$NEWLINE" >> "$THEFILE"
+    grep -q -F -- "$NEWLINE" "$THEFILE" || echo "$NEWLINE" >> "$THEFILE"
 }
 
 kill-blank-lines () {
@@ -1136,7 +1136,7 @@ youtube-previous () {
     # TODO: if no window here
     local CURRENTWINDOW=$(xdotool getwindowfocus)
     xdotool search --name youtube | while IFS= read -r line; do
-        if xdotool search --class conkeror | grep "${line}" >/dev/null; then
+        if xdotool search --class conkeror | grep -- "${line}" >/dev/null; then
             xdotool windowfocus --sync "${line}";
             xdotool windowactivate --sync "${line}"
             # TODO: very arbitrary delay, perhaps wait for something to return
@@ -1154,7 +1154,7 @@ youtube-next () {
     # TODO: if no window here
     local CURRENTWINDOW=$(xdotool getwindowfocus)
     xdotool search --name youtube | while IFS= read -r line; do
-        if xdotool search --class conkeror | grep "${line}" >/dev/null; then
+        if xdotool search --class conkeror | grep -- "${line}" >/dev/null; then
             xdotool windowfocus --sync "${line}"
             # TODO: very arbitrary delay, perhaps wait for something to return
             sleep 0.1
@@ -1185,7 +1185,7 @@ master-boss-key () {
     done
     # turn off youtube
     xdotool search --name youtube | while IFS= read -r line; do
-        if xdotool search --class conkeror | grep "${line}" >/dev/null; then
+        if xdotool search --class conkeror | grep -- "${line}" >/dev/null; then
             xdotool windowfocus --sync "${line}";
             sleep 0.05
             conkeror-batch -f youtube-pause
@@ -1277,7 +1277,7 @@ select-disk-uuid-usb () {
     local USBARRAY=()
     if [[ -n "$1" ]]; then
         if [[ -e /dev/disk/by-uuid/"$1" ]]; then
-            if grep -qs $(readlink -f /dev/disk/by-uuid/"$1") /proc/mounts; then
+            if grep -qs -- $(readlink -f /dev/disk/by-uuid/"$1") /proc/mounts; then
                 echo "0) $1 (default, mounted)" >&2
             else
                 echo "0) $1 (default, not mounted)" >&2
@@ -1383,7 +1383,7 @@ vcs-grep-conflicted () {
     # find git conflicted markers in current directory tree
     # TODO: proper return values?
     # TODO: avoid running /home or above... takes way too long!
-    find . -not -path "*.git*" -type f -exec grep -nH --color "^<<<<<<< \|^>>>>>>> \|^=======$\|^####### " {} \;
+    find . -not -path "*.git*" -type f -exec grep -nH --color -- "^<<<<<<< \|^>>>>>>> \|^=======$\|^####### " {} \;
 }
 
 # TODO: broken, rfigure out if I can remove
@@ -1399,7 +1399,7 @@ mdstat-status () {
         if [[ "$i" =~ ^m.* ]]; then
             printf "$i"
         else
-            local SELECTED=$(echo "$i" | grep --color=never -Eo "\[[A-Za-z]*\]$")
+            local SELECTED=$(echo "$i" | grep --color=never -Eo -- "\[[A-Za-z]*\]$")
             if [[ -n "$SELECTED" ]]; then
                 echo " $SELECTED"
             fi
@@ -1791,7 +1791,7 @@ srvg () {
     if [[ -z "$1" ]]; then
         service --status-all
     else
-        service --status-all | grep "$1"
+        service --status-all | grep -- "$1"
     fi
 }
 
@@ -1842,6 +1842,7 @@ build-install-software () {
     [[ ! -d "${HOME}"/cic-external-vcs/zathura-ps-external ]]           && git clone https://git.pwmt.org/pwmt/zathura-ps.git          zathura-ps-external
     # now build, copied from build-install-software, and should be synced up
     h2 "pip";
+    # TODO: upgrade pip automatically?
     curl https://bootstrap.pypa.io/get-pip.py | sudo python;
     h2 "wayback downloader"
     sudo gem install wayback_machine_downloader
@@ -2184,7 +2185,7 @@ inhibit-powersave () {
 }
 
 grep-functions () {
-    declare -F | grep "$1"
+    declare -F | grep -- "$1"
 }
 
 rsync-remove-source () {
@@ -2256,7 +2257,7 @@ youtube-normalize-volume () {
     # TODO: if no window here
     local CURRENTWINDOW=$(xdotool getwindowfocus)
     xdotool search --name youtube | while IFS= read -r line; do
-        if xdotool search --class conkeror | grep "${line}" >/dev/null; then
+        if xdotool search --class conkeror | grep -- "${line}" >/dev/null; then
             xdotool windowfocus --sync "${line}";
             xdotool windowactivate --sync "${line}"
             # TODO: very arbitrary delay, perhaps wait for something to return
@@ -2518,7 +2519,7 @@ screen-list-all-session-commands () {
         h2 "Screen session pid: $SCREEN_SESSION_PID"
         screen -ls "$SCREEN_SESSION_PID"
         # TODO: will all screens have bash base
-        SCREEN_CHILD=$(ps -el | grep $(ps -el | grep "$SCREEN_SESSION_PID" | grep bash | awk '{print $4}') | grep -v bash | awk '{print $4}')
+        SCREEN_CHILD=$(ps -el | grep -- $(ps -el | grep "$SCREEN_SESSION_PID" | grep bash | awk '{print $4}') | grep -v bash | awk '{print $4}')
         if [[ -n "$SCREEN_CHILD" ]]; then
             echo $(ps u -p "$SCREEN_CHILD") | fold -w 160
         else
@@ -2597,7 +2598,7 @@ WGETERRORCODES="301 Moved Permanently\|404 Not Found\|406 Not Acceptable\|503 Se
 wget-check-log-unknown-codes () {
     # TODO: find things that are not these, so I can start catologuing good errors
     # TODO: see if I can identify fatal errors
-    grep -Hn "awaiting response" "$1" | grep -v "$WGETOKCODES"  | grep -v "$WGETERRORCODES"
+    grep -Hn -- "awaiting response" "$1" | grep -v -- "$WGETOKCODES"  | grep -v -- "$WGETERRORCODES"
     # TODO: more informative return code?
     return 0
 }
@@ -2606,7 +2607,7 @@ wget-check-log () {
     # TODO: find things that are not these, so I can start catologuing good errors
     # TODO: can I search in a grep function
     h1 "Error codes"
-    grep --color=always -Hn -B 2 -A 4 "$WGETERRORCODES" "$1"
+    grep --color=always -Hn -B 2 -A 4 -- "$WGETERRORCODES" "$1"
     h1 "Unknown codes"
     wget-check-log-unknown-codes "$1"
 }
@@ -2634,7 +2635,7 @@ tar-ls () {
 
 ls-grep () {
     # a simple function for simple searches of a directory
-    ls --color=always -1 | grep --color=always -i "$1"
+    ls --color=always -1 | grep --color=always -i -- "$1"
 
 }
 alias grep-ls="ls-grep"

@@ -1,7 +1,7 @@
 #!/bin/bash
 # does not do anything if xpdf is not open
 if [[ -n "$1" ]]; then
-    if ps -elf | grep "xpdf.*$2" | grep -v "xpdf-local-reload.sh" | grep -v grep >/dev/null; then
+    if ps -elf | grep -- "xpdf.*$2" | grep -v "xpdf-local-reload.sh" | grep -v grep >/dev/null; then
         # put in background to make sure these finish
         xpdf -remote "$2" -exec closeOutline &
         sleep 0.1
