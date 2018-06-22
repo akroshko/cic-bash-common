@@ -2,12 +2,12 @@
 # bash_functions_stdlib is a set of bash functions for non-specific
 # functionality.
 #
-# Copyright (C) 2015-2016, Andrew Kroshko, all rights reserved.
+# Copyright (C) 2015-2018, Andrew Kroshko, all rights reserved.
 #
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Fri Mar 27, 2015
-# Version: 20180516
+# Version: 20180622
 # URL: https://github.com/akroshko/bash-stdlib
 #
 # This program is free software: you can redistribute it and/or modify
@@ -752,7 +752,7 @@ vcs-push-github () {
         return 1
     fi
     if ! git -c color.ui=always checkout public; then
-        yell "Checkout unsuccessful!"
+        yell "Checkout of public unsuccessful!"
         return 1
     fi
     # test the connection before doing any funny business
@@ -1849,7 +1849,7 @@ build-install-software () {
     [[ ! -d "${HOME}"/cic-external-vcs/girara-external ]]               && git clone https://git.pwmt.org/pwmt/girara.git              girara-external
     [[ ! -d "${HOME}"/cic-external-vcs/PCSX-Reloaded-external ]]        && git clone https://github.com/SonofUgly/PCSX-Reloaded        PCSX-Reloaded-external
     [[ ! -d "${HOME}"/cic-external-vcs/ppsspp-source-external ]]        && git clone https://github.com/hrydgard/ppsspp                ppsspp-source-external
-    [[ ! -d "${HOME}"/cic-external-vcs/desmume/ ]]                      && git clone https://github.com/TASVideos/desmume/             desmume-external
+    [[ ! -d "${HOME}"/cic-external-vcs/desmume-external/ ]]             && git clone https://github.com/TASVideos/desmume/             desmume-external
     [[ ! -d "${HOME}"/cic-external-vcs/zathura-external ]]              && git clone https://git.pwmt.org/pwmt/zathura.git             zathura-external
     [[ ! -d "${HOME}"/cic-external-vcs/zathura-cb-external ]]           && git clone https://git.pwmt.org/pwmt/zathura-cb.git          zathura-cb-external
     [[ ! -d "${HOME}"/cic-external-vcs/zathura-djvu-external ]]         && git clone https://git.pwmt.org/pwmt/zathura-djvu.git        zathura-djvu-external
@@ -1886,10 +1886,15 @@ build-install-software-zathura () {
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
     # 0.2.7 release, last version my zathura will work with
-    git checkout fe7e9194e2005a263e77c132afb3b3ef13b2aefe
-    make clean;
-    make;
-    sudo make install;
+    # git checkout fe7e9194e2005a263e77c132afb3b3ef13b2aefe
+    # make clean;
+    # make;
+    # sudo make install;
+    meson build
+    cd build
+    ninja
+    sudo ninja install
+    cd ..
     # TODO: back to develop
     git checkout develop
     popd > /dev/null;
@@ -1902,15 +1907,21 @@ build-install-software-zathura () {
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
     #       last version supporting girara 0.2.7
-    git checkout cd8931cb14a89a3558d6bbbc3f9bfbe972d713dd
-    make clean;
-    make;
-    sudo make install;
+    # git checkout cd8931cb14a89a3558d6bbbc3f9bfbe972d713dd
+    # make clean;
+    # make;
+    # sudo make install;
+    meson build
+    cd build
+    ninja
+    sudo ninja install
+    cd ..
     git checkout develop
     popd > /dev/null;
     h2 "zathura-poppler";
     # XXXX: a nasty hack
-    sudo cp /usr/lib/pkgconfig/girara-gtk3.pc /usr/lib/pkgconfig/girara-gtk.pc
+    # TODO: do I still need this
+    # sudo cp /usr/lib/pkgconfig/girara-gtk3.pc /usr/lib/pkgconfig/girara-gtk.pc
     pushd . > /dev/null;
     cd zathura-pdf-poppler-external;
     if [[ "$HOSTNAME" == "akroshko-main" ]]; then
@@ -1918,10 +1929,15 @@ build-install-software-zathura () {
     fi
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
-    git checkout ced9b3cfb0d7440a6a049f200a2f419ce09abe1e
-    make clean;
-    make;
-    sudo make install;
+    # git checkout ced9b3cfb0d7440a6a049f200a2f419ce09abe1e
+    # make clean;
+    # make;
+    # sudo make install;
+    meson build
+    cd build
+    ninja
+    sudo ninja install
+    cd ..
     git checkout develop
     popd > /dev/null;
     h2 "zathura-djvu";
@@ -1932,10 +1948,15 @@ build-install-software-zathura () {
     fi
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
-    git checkout e4a9ec93e2a4ff68255a38ff327179241fb69ebe
-    make clean;
-    make;
-    sudo make install;
+    # git checkout e4a9ec93e2a4ff68255a38ff327179241fb69ebe
+    # make clean;
+    # make;
+    # sudo make install;
+    meson build
+    cd build
+    ninja
+    sudo ninja install
+    cd ..
     git checkout develop
     popd > /dev/null;
     h2 "zathura-cb";
@@ -1946,10 +1967,15 @@ build-install-software-zathura () {
     fi
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
-    git checkout 21fa0f4d8da39ed9be449400d2147b876b739f56
-    make clean;
-    make;
-    sudo make install;
+    # git checkout 21fa0f4d8da39ed9be449400d2147b876b739f56
+    meson build
+    cd build
+    ninja
+    sudo ninja install
+    cd ..
+    # make clean;
+    # make;
+    # sudo make install;
     git checkout develop
     popd >/dev/null
     h2 "zathura-ps";
@@ -1960,10 +1986,12 @@ build-install-software-zathura () {
     fi
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
-    git checkout 91a22c4d44eabfca37f0c4488c4b2d18cab3ddb
-    make clean;
-    make;
-    sudo make install;
+    # git checkout 91a22c4d44eabfca37f0c4488c4b2d18cab3ddb
+    meson build
+    cd build
+    ninja
+    sudo ninja install
+    cd ..
     git checkout develop
     popd >/dev/null
 }
@@ -2732,4 +2760,32 @@ geotiff-info () {
 
 check-git-repo () {
     [[ -d .git ]] || git rev-parse --git-dir >/dev/null 2>&1
+}
+
+ag-reinstall-all () {
+    if dangerous-function-ask; then
+        sudo dpkg --get-selections > ${HOME}/list.log
+        for i in $(cat list.log); do sudo apt-get install --reinstall "$i"; done
+    fi
+}
+
+ag-reinstall-dependent () {
+    if [[ -n "$1" ]]; then
+        if dangerous-function-ask; then
+            # https://askubuntu.com/questions/275719/reinstall-package-and-its-installed-dependencies
+            sudo apt-cache depends "$1" | grep '[ |]Depends: [^<]' | cut -d: -f2 | tr -d ' ' | xargs sudo apt-get --reinstall install -y
+        fi
+    fi
+}
+
+check-permissions-rw () {
+    # find files I do not own
+    h3 "Files not owned or in my group"
+    find . ! -user "${USER}"
+    h3 "Directories I do not have sufficient privileges for"
+    # TODO: exclude .git
+    find . -type d -user "${USER}" ! -perm -700
+    h3 "Files I do not have sufficient privileges for"
+    # TODO: exclude .git
+    find . -user "${USER}" ! -perm -600
 }
