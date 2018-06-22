@@ -756,7 +756,8 @@ vcs-push-github () {
         return 1
     fi
     # test the connection before doing any funny business
-    git -c color.ui=always merge --squash -X theirs master --stat
+    # TODO: is this safe?
+    git -c color.ui=always merge --squash -X theirs master --stat --allow-unrelated-histories
     local COMMITCORRECT=n
     while [[ "$COMMITCORRECT" != "y" ]]; do
         while read -r -t 0;do read -r; done;
