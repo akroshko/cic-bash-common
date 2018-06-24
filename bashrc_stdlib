@@ -227,6 +227,7 @@ alias ifconfig='/sbin/ifconfig'
 alias less='less --ignore-case --LONG-PROMPT --RAW-CONTROL-CHARS +Gg'
 alias less-raw='less --ignore-case --LONG-PROMPT --raw-control-chars --max-forw-scroll=999999 +Gg'
 alias ls='ls -hF --color'
+alias lspci-full='lspci -knnn'
 alias lsa='ls -la'
 # TODO: using for soemthing else for now
 # alias lsl='ls -l'
