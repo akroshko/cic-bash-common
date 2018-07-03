@@ -118,9 +118,7 @@ export EDITOR="launch-emacsclient -nw"
 # >&2 echo $(tty)
 # >&2 echo $TERM
 # XXXX: without this, can cause problems when "not a tty" and $TERM=dumb
-if [[ -z "$DISPLAY" && $(tty) != *"not a tty"* && $(tty) == *tty* ]]; then
-    setterm -blank 0 -powersave off
-fi
+[[ -z "$DISPLAY" && $(tty) != *"not a tty"* && $(tty) == *tty* ]] && setterm -blank 0 -powersave off
 
 case "$TERM" in
     "dumb")
@@ -135,11 +133,8 @@ case "$TERM" in
 \[${Yellow}\][\!] \`exitstatus=\$?;if [[ exitstatus -eq 0 ]];then echo \[\033[32m\]\${exitstatus}\[\e[0m\];else echo \[\033[31m\]\${exitstatus}\[\e[0m\]; fi\` \[${Cyan}\]\t \[${Green}\]\u \[${BGreen}\]\$\[${Color_Off}\] "
             # TODO: originally was "linux" to help with sage -python, but interfered with htop
             #       seems fine with rxvt-256color because this is in both sage and debian
-            if [[ $TERM == rxvt-unicode-256color ]]; then
-                # export TERM=xterm-256color
-                # TODO: hoping this is compatible
-                export TERM=rxvt-256color
-            fi
+            # export TERM=xterm-256color
+            [[ $TERM == rxvt-unicode-256color ]] && export TERM=rxvt-256color
         fi
         ;;
     *)

@@ -31,9 +31,7 @@ main () {
             THEMD5SUM=$(md5sum "$1" | awk '{print $1}')
             echo "Using hash for filename root: $THEMD5SUM"
             # TODO: save space on space-constrained devices
-            if [[ "$PWD" =~ ^/tmp/ ]];  then
-               rm "$PWD"/*.pdf
-            fi
+            [[ "$PWD" =~ ^/tmp/ ]] && rm "$PWD"/*.pdf
         }
         feh-display-montage "$2" "$THEMD5SUM"
         popd >/dev/null

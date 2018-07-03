@@ -3,12 +3,10 @@
 # TODO: think --keep-zoom-vp is what I want
 shopt -s nullglob
 
-if [[ -z "$1" ]]; then
-    exit 1 # FULLPATH="$(pwd)"
+[[ -z "$1" ]] && exit 1
+# FULLPATH="$(pwd)"
 # else
-
-#     DNAME=$(dirname "$FULLPATH")
-fi
+# DNAME=$(dirname "$FULLPATH")
 FULLPATH=$(readlink -f "$1")
 
 # TODO: want --keep-zoom-vp, but does not work that well

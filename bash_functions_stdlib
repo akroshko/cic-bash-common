@@ -778,6 +778,11 @@ vcs-push-github () {
     git checkout master
 }
 
+vcs-conflicts () {
+    # TODO: expand at some point
+    git diff --name-only --diff-filter=U
+}
+
 alias dkpg-purge-all='master-dpkg-purge-all'
 master-dpkg-purge-all () {
     # purge all files related to uninstalled packages
@@ -1042,7 +1047,7 @@ fix-permissive-permissions-recursive () {
 add-line-if-not-exist () {
     local THEFILE="$1"
     local NEWLINE="$2"
-    grep -q -F -- "$NEWLINE" "$THEFILE" || echo "$NEWLINE" >> "$THEFILE"
+    grep -q -F -- "${NEWLINE}" "${THEFILE}" || echo "$NEWLINE" >> "$THEFILE"
 }
 
 kill-blank-lines () {
@@ -1208,9 +1213,7 @@ master-boss-key () {
         fi
     done
     # restore focus, but make sure its not browser window
-    if [[ ! "${CURRENTWINDOWNAME,,}" =~ conkeror && ! "${CURRENTWINDOWNAME,,}" =~ firefox ]]; then
-        xdotool windowactivate --sync ${CURRENTWINDOW}
-    fi
+    [[ ! "${CURRENTWINDOWNAME,,}" =~ conkeror && ! "${CURRENTWINDOWNAME,,}" =~ firefox ]] && xdotool windowactivate --sync ${CURRENTWINDOW}
 }
 
 master-unboss-key () {
@@ -1665,7 +1668,7 @@ fetch-build-sage () {
         local SAGEVERSIONMD5="93bdd128991e9144c4b137d3d6655065"
         local SAGEMIRROR="http://www.cecm.sfu.ca/sage/src/"
         # TODO: put this somewhere else
-        local SAGELOCATION=/home/akroshko/cic-small/distfiles-current
+        local SAGELOCATION=${HOME}/cic-small/distfiles-current
     fi
     if [[ -d /opt/sage-"$SAGEVERSION" && $@ != *"--finalize"* ]]; then
         if /opt/sage-"$SAGEVERSION"/sage --version; then
@@ -1675,7 +1678,7 @@ fetch-build-sage () {
         fi
         return 1
     fi
-    sudo true
+    sudo true || return 1
     if [[ $@ != *"--finalize"* ]]; then
         sudo apt-get update
         sudo apt-get install gnutls-bin gnutls-doc libssl1.0.0 libssl-dev libssl-doc libcurl4-gnutls-dev libgnutls28-dev
@@ -1838,7 +1841,7 @@ build-install-software () {
     cd "${HOME}"/cic-external-vcs
     # assumes I'm in directory with appropriate subdirectories
     # TODO: compile against downloaded poppler
-    sudo true
+    sudo true || return 1
     # at least for now, download and build a few select pieces of software
     # TODO: evantually make this the only one
     [[ ! -d "${HOME}"/cic-external-vcs ]] && mkdir -p "${HOME}"/cic-external-vcs
@@ -1863,12 +1866,12 @@ build-install-software () {
     h2 "wayback downloader"
     sudo gem install wayback_machine_downloader
     build-install-software-feh
-    build-install-software-mgba
-    build-install-software-pcsx-reloaded
+    # build-install-software-mgba
+    # build-install-software-pcsx-reloaded
     # TODO: dummy for now
-    build-install-software-ppsspp
+    # build-install-software-ppsspp
     # TODO: dummy for now
-    build-install-software-desmume
+    # build-install-software-desmume
     build-install-software-xpdf
     build-install-software-zathura
     popd >/dev/null
@@ -1878,11 +1881,11 @@ build-install-software-zathura () {
     # TODO: use some better versions than these giant hashes....
     #       have checks to make sure branches don't hang around
     h2 "girara";
+    [[ ! -d "girara-external" ]] && yell "Directory girara-external not found!" && return 1
+    sudo true || return 1
     pushd . > /dev/null;
     cd girara-external;
-    if [[ "$HOSTNAME" == "akroshko-main" ]]; then
-       git pull
-    fi
+    check-host-main && git pull
     # TODO: this needs to be checked, check if branch develop already exists
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
@@ -1900,11 +1903,10 @@ build-install-software-zathura () {
     git checkout develop
     popd > /dev/null;
     h2 "zathura";
+    [[ ! -d "zathura-external" ]] && yell "Directory zathura-external not found!" && return 1
     pushd . > /dev/null;
     cd zathura-external;
-    if [[ "$HOSTNAME" == "akroshko-main" ]]; then
-        git pull
-    fi
+    check-host-main && git pull
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
     #       last version supporting girara 0.2.7
@@ -1924,10 +1926,9 @@ build-install-software-zathura () {
     # TODO: do I still need this
     # sudo cp /usr/lib/pkgconfig/girara-gtk3.pc /usr/lib/pkgconfig/girara-gtk.pc
     pushd . > /dev/null;
+    [[ ! -d "zathura-pdf-poppler-external" ]] && yell "Directory zathura-pdf-poppler-external not found!" && return 1
     cd zathura-pdf-poppler-external;
-    if [[ "$HOSTNAME" == "akroshko-main" ]]; then
-        git pull
-    fi
+    check-host-main && git pull
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
     # git checkout ced9b3cfb0d7440a6a049f200a2f419ce09abe1e
@@ -1942,11 +1943,10 @@ build-install-software-zathura () {
     git checkout develop
     popd > /dev/null;
     h2 "zathura-djvu";
+    [[ ! -d "zathura-djvu-external" ]] && yell "Directory zathura-djvu-external not found!" && return 1
     pushd . > /dev/null;
     cd zathura-djvu-external;
-    if [[ "$HOSTNAME" == "akroshko-main" ]]; then
-        git pull
-    fi
+    check-host-main && git pull
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
     # git checkout e4a9ec93e2a4ff68255a38ff327179241fb69ebe
@@ -1961,11 +1961,10 @@ build-install-software-zathura () {
     git checkout develop
     popd > /dev/null;
     h2 "zathura-cb";
+    [[ ! -d "zathura-cb-external" ]] && yell "Directory zathura-cb-external not found!" && return 1
     pushd . > /dev/null;
     cd zathura-cb-external;
-    if [[ "$HOSTNAME" == "akroshko-main" ]]; then
-        git pull
-    fi
+    check-host-main && git pull
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
     # git checkout 21fa0f4d8da39ed9be449400d2147b876b739f56
@@ -1980,11 +1979,10 @@ build-install-software-zathura () {
     git checkout develop
     popd >/dev/null
     h2 "zathura-ps";
+    [[ ! -d "zathura-ps-external" ]] && yell "Directory zathura-ps-external not found!" && return 1
     pushd . > /dev/null;
     cd zathura-ps-external;
-    if [[ "$HOSTNAME" == "akroshko-main" ]]; then
-        git pull
-    fi
+    check-host-main && git pull
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
     # git checkout 91a22c4d44eabfca37f0c4488c4b2d18cab3ddb
@@ -1999,8 +1997,10 @@ build-install-software-zathura () {
 
 build-install-software-xpdf () {
     # do xpdf, but not on all machines
-    if [[ "${HOSTNAME}" =~ main || "${HOSTNAME}" =~ laptop ]];then
+    if check-host-main || check-host-laptop;then
         h2 "xpdf"
+        [[ ! -d "xpdf-3.04-external" ]] && yell "Directory xpdf-3.04-external not found!" && return 1
+        sudo true || return 1
         pushd . >/dev/null
         cd xpdf-3.04-external
         # these work on debian 8.x
@@ -2017,6 +2017,8 @@ build-install-software-xpdf () {
 
 build-install-software-mupdf () {
     h2 "mupdf"
+    [[ ! -d "mupdf-external" ]] && yell "Directory mupdf-external not found!" && return 1
+    sudo true || return 1
     pushd . >/dev/null
     cd mupdf-external
     git submodule update --init
@@ -2028,12 +2030,12 @@ build-install-software-mupdf () {
 # TODO: will do with more, but for now I build feh on its own a lot
 build-install-software-feh () {
     h2 "feh"
+    [[ ! -d "feh-external" ]] && yell "Directory feh-external not found!" && return 1
+    sudo true || return 1
     # must be in proper directory
     pushd . >/dev/null
     cd feh-external
-    if [[ "$HOSTNAME" == "akroshko-main" ]]; then
-        git pull
-    fi
+    check-host-main && git pull
     make clean
     make exif=1 help=1 xinerama=0
     sudo make install
@@ -2042,11 +2044,11 @@ build-install-software-feh () {
 
 build-install-software-mgba () {
     h2 "mgba"
+    [[ ! -d "mgba-external" ]] && yell "Directory mgba-external not found!" && return 1
+    sudo true || return 1
     pushd . > /dev/null;
     cd mgba-external
-    if [[ "$HOSTNAME" == "akroshko-main" ]]; then
-        git pull
-    fi
+    check-host-main && git pull
     mkdir -p build
     cd build
     make clean
@@ -2060,11 +2062,11 @@ build-install-software-pcsx-reloaded () {
     # PCSX-Reloaded
     # TODO: check out as well
     h2 "PCSX-Reloaded"
+    [[ ! -d "PCSX-Reloaded-external" ]] && yell "Directory PCSX-Reloaded-external not found!" && return 1
+    sudo true || return 1
     pushd . > /dev/null;
     cd PCSX-Reloaded-external
-    if [[ "$HOSTNAME" == "akroshko-main" ]]; then
-        git pull
-    fi
+    check-host-main && git pull
     make clean
     bash ./autogen.sh
     # TODO: broken on my machines
@@ -2077,21 +2079,56 @@ build-install-software-pcsx-reloaded () {
 
 build-install-software-ppsspp () {
     h2 "ppsspp (empty)"
+    [[ ! -d "ppsspp-source-external" ]] && yell "Directory ppsspp-source-external not found!" && return 1
+    sudo true || return 1
     pushd . > /dev/null;
     cd ppsspp-source-external
-    if [[ "$HOSTNAME" == "akroshko-main" ]]; then
-        git pull
-    fi
+    check-host-main && git pull
     popd >/dev/null
 }
 
 build-install-software-desmume () {
-    h2 "desmume (empty)"
-    pushd . > /dev/null;
+    h2 "desmume"
+    [[ ! -d "desmume-external" ]] && yell "Directory desmume-external not found!" && return 1
+    sudo true || return 1
+    pushd . >/dev/null;
     cd desmume-external
-    if [[ "$HOSTNAME" == "akroshko-main" ]]; then
-        git pull
-    fi
+    check-host-main && git pull
+    cd src/frontend/posix
+    ./autogen.sh
+    ./configure
+    make
+    popd >/dev/null
+}
+
+build-install-software-mgba () {
+    h2 "mgba"
+    [[ ! -d "mgba-external" ]] && yell "Directory mgba-external not found!" && return 1
+    sudo true || return 1
+    pushd . > /dev/null;
+    cd mgba-external
+    check-host-main && git pull
+    # TODO: rm -rf build
+    mkdir build
+    cd build
+    cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/local ..
+    make
+    sudo make install
+    popd >/dev/null
+}
+
+build-install-software-zsnes () {
+    # TODO: broken
+    h2 "zsnes"
+    [[ ! -d "zsnes-external" ]] && yell "Directory zsnes-external not found!" && return 1
+    sudo true || return 1
+    pushd . > /dev/null;
+    cd zsnes-external
+    check-host-main && git pull
+    cd src
+    ./configure
+    make
+    sudo make -install
     popd >/dev/null
 }
 
@@ -2100,11 +2137,11 @@ build-install-software-dockapps () {
     # need proper version of dockapps and wmgeneral built
     # https://unix.stackexchange.com/questions/67781/use-shared-libraries-in-usr-local-lib
     h2 "libdockapps"
+    [[ ! -d "dockapps-external" ]] && yell "Directory dockapps-external not found!" && return 1
+    sudo true || return 1
     pushd . >/dev/null
     cd dockapps-external
-    if [[ "$HOSTNAME" == "akroshko-main" ]]; then
-        git pull
-    fi
+    check-host-main && git pull
     cd libdockapp
     make clean
     ./configure
@@ -2121,9 +2158,7 @@ build-install-software-dockapps () {
     h2 "wmtimer"
     pushd . >/dev/null
     cd wmtimer-external
-    if [[ "$HOSTNAME" == "akroshko-main" ]]; then
-        git pull
-    fi
+    check-host-main && git pull
     cd wmtimer
     make clean
     make
@@ -2729,17 +2764,17 @@ grep-ri () {
     grep --color=always -Ri "$@" . | less -R
 }
 
-less-pyg () {
+less-highlight () {
     # slight delay....
     if [[ -z "$1" ]]; then
         echo "A filename is required for less-pyg!"
     elif [[ -e "$1" ]]; then
-        pygmentize -O style=native -g -f terminal256 "$1" | less -R
+        pygmentize -O style=native -g -f terminal256 "$1" | less --ignore-case --LONG-PROMPT --RAW-CONTROL-CHARS +Gg
     else
         echo "File $1 does does not exist!"
     fi
 }
-alias lh='less-pyg'
+alias lh='less-highlight'
 
 less-sh () {
     # faster... but looks terrible by default

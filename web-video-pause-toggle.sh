@@ -10,9 +10,7 @@ xdotool search --name "twitch|youtube" | while IFS= read -r line; do
         # TODO: very arbitrary delay, perhaps wait for something to return
         sleep 0.05
         ${HOME}/bin/conkeror-batch -f web-video-pause-toggle
-        if [[ "${line}" == "${CURRENTWINDOW}" ]]; then
-            CURRENTYOUTUBE=1
-        fi
+        [[ "${line}" == "${CURRENTWINDOW}" ]] && CURRENTYOUTUBE=1
     fi
 done
 xdotool windowactivate --sync ${CURRENTWINDOW}
