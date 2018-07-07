@@ -203,6 +203,12 @@ alias du='du -h'
 alias ec='launch-emacsclient nohup'
 alias ecnw='launch-emacsclient -nw'
 alias f90=gfortran
+alias f='feh-open-browse'
+alias firefox-profile-manager="firefox --ProfileManager"
+# TODO: change these, no longer relevant
+alias fm='feh-montage --montage'
+alias fp='feh-montage --montage'
+alias ft='feh-thumbnail'
 alias gccr='gcc-compile-run'
 alias gi='grep --color -i'
 alias git-log-full='git log --decorate=full --graph --stat'
@@ -211,13 +217,8 @@ alias grep='grep --color'
 alias grep-fileonly='grep --color --files-with-matches'
 alias gf="grep-functions"
 alias hrc='harm-bashrc'
-alias f='feh-open-browse'
-alias firefox-profile-manager="firefox --ProfileManager"
-# TODO: change these, no longer relevant
-alias fm='feh-montage --montage'
-alias fp='feh-montage --montage'
-alias ft='feh-thumbnail'
 alias ifconfig='/sbin/ifconfig'
+alias ipy='ipython'
 # TODO: causes issues with ^M when viewing recorded wget output
 alias less='less --ignore-case --LONG-PROMPT --RAW-CONTROL-CHARS +Gg'
 alias less-raw='less --ignore-case --LONG-PROMPT --raw-control-chars --max-forw-scroll=999999 +Gg'
@@ -252,6 +253,8 @@ alias scw='screen -wipe'
 alias scp-fallback='scp -o "BatchMode no" -o "ChallengeResponseAuthentication yes" -o "PasswordAuthentication yes"'
 alias ssh-fallback='ssh -o "BatchMode no" -o "ChallengeResponseAuthentication yes" -o "PasswordAuthentication yes"'
 alias sftp-fallback='sftp -o "BatchMode no" -o "ChallengeResponseAuthentication yes" -o "PasswordAuthentication yes"'
+# sage
+alias sipy='sage -ipython'
 # for testing my raspberry pi
 alias ssh-pi='ssh pi@raspberrypi.local'
 alias svn-log-full='svn log -l 100 -v | less'
