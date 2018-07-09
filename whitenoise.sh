@@ -52,9 +52,9 @@ elif [[ -n "$1" && "$ALREADYRUNNING" == 1 ]]; then
 else
     # play the first one
     if [[ -z "$1" ]] ;then
-        nohup rxvt-unicode -title "White noise" -e cvlc --rc-host localhost:19000 --extraintf oldrc --intf dummy "${BACKGROUNDNOISE[0]}" & >/dev/null
+        nohup rxvt-unicode -title "White noise" -e cvlc --rc-host localhost:19000 --extraintf oldrc --intf dummy "${BACKGROUNDNOISE[0]}" &>/dev/null &
     else
-        nohup rxvt-unicode -title "White noise" -e cvlc --rc-host localhost:19000 --extraintf oldrc --intf dummy "${BACKGROUNDNOISE[1]}" & >/dev/null
+        nohup rxvt-unicode -title "White noise" -e cvlc --rc-host localhost:19000 --extraintf oldrc --intf dummy "${BACKGROUNDNOISE[1]}" &>/dev/null &
     fi
     sleep 2
     FIRSTITEM=1

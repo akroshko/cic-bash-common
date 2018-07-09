@@ -730,7 +730,7 @@ vcs-diff-public () {
             if [[ -d "$dirname/.git" ]]; then
                 pushd . >/dev/null
                 cd "$dirname"
-                if git rev-parse --verify public >/dev/null 2>&1; then
+                if git rev-parse --verify public &>/dev/null; then
                     h1 "Checking $dirname"
                     git diff master..public --stat
                 fi
@@ -746,7 +746,7 @@ vcs-push-github () {
     # TODO: update verions and commit
     # TODO: this probably only works because I use controlmaster
     #       second ssh to git@github.com does not work alone, the pipe makes it freeze
-    ssh-batch -T git@github.com >/dev/null 2>&1
+    ssh-batch -T git@github.com &>/dev/null
     if ! ssh-batch -T git@github.com 2>&1 | grep --color=never "success"; then
         yell "Error connecting to github! Aborting!"
         return 1
@@ -1104,10 +1104,10 @@ sage-notebook-browser () {
     # open just the browser for a running Sage notebook
     if false; then
         bleachbit --overwrite --clean google_chrome.*
-        chromium https://localhost:18080/ >/dev/null 2>&1 &
+        chromium https://localhost:18080/ &>/dev/null &
     else
         # TODO: shred firefox if not running
-        nohup firefox -P sagenotebook https://localhost:18080/ >/dev/null 2>&1 &
+        nohup firefox -P sagenotebook https://localhost:18080/ &>/dev/null &
     fi
 }
 
@@ -1187,34 +1187,34 @@ youtube-next () {
     xdotool windowactivate --sync ${CURRENTWINDOW}
 }
 
-master-boss-key () {
-    # get current window
-    local CURRENTWINDOW=$(xdotool getwindowfocus)
-    local CURRENTWINDOWNAME=$(xdotool getwindowname ${CURRENTWINDOW})
-    # kill volume
-    amixer set Master mute
-    # https://askubuntu.com/questions/26068/how-do-you-mute-from-the-command-line
-    # amixer -c 0 set Master playback 0% mute
-    # minimize browser windows, do they ever not have their name in title?
-    # TODO: remove from taskbar
-    # TODO: try out with windowclass too
-    xdotool search --onlyvisible --name conkeror | while IFS= read -r line; do
-        xdotool windowminimize "${line}"
-    done
-    xdotool search --onlyvisible --name firefox | while IFS= read -r line; do
-        xdotool windowminimize "${line}"
-    done
-    # turn off youtube
-    xdotool search --name youtube | while IFS= read -r line; do
-        if xdotool search --class conkeror | grep -- "${line}" >/dev/null; then
-            xdotool windowfocus --sync "${line}";
-            sleep 0.05
-            conkeror-batch -f youtube-pause
-        fi
-    done
-    # restore focus, but make sure its not browser window
-    [[ ! "${CURRENTWINDOWNAME,,}" =~ conkeror && ! "${CURRENTWINDOWNAME,,}" =~ firefox ]] && xdotool windowactivate --sync ${CURRENTWINDOW}
-}
+# master-boss-key () {
+#     # get current window
+#     local CURRENTWINDOW=$(xdotool getwindowfocus)
+#     local CURRENTWINDOWNAME=$(xdotool getwindowname ${CURRENTWINDOW})
+#     # kill volume
+#     amixer set Master mute
+#     # https://askubuntu.com/questions/26068/how-do-you-mute-from-the-command-line
+#     # amixer -c 0 set Master playback 0% mute
+#     # minimize browser windows, do they ever not have their name in title?
+#     # TODO: remove from taskbar
+#     # TODO: try out with windowclass too
+#     xdotool search --onlyvisible --name conkeror | while IFS= read -r line; do
+#         xdotool windowminimize "${line}"
+#     done
+#     xdotool search --onlyvisible --name firefox | while IFS= read -r line; do
+#         xdotool windowminimize "${line}"
+#     done
+#     # turn off youtube
+#     xdotool search --name youtube | while IFS= read -r line; do
+#         if xdotool search --class conkeror | grep -- "${line}" >/dev/null; then
+#             xdotool windowfocus --sync "${line}";
+#             sleep 0.05
+#             conkeror-batch -f youtube-pause
+#         fi
+#     done
+#     # restore focus, but make sure its not browser window
+#     [[ ! "${CURRENTWINDOWNAME,,}" =~ conkeror && ! "${CURRENTWINDOWNAME,,}" =~ firefox ]] && xdotool windowactivate --sync ${CURRENTWINDOW}
+# }
 
 master-unboss-key () {
     # kill volume
@@ -2447,7 +2447,7 @@ benchmark-compression-lz4 () {
     du -sh test.tar.lz4
     time {
         # XXXX: hope this is not optimized!
-        lz4 -d test.tar.lz4 test.tar >/dev/null 2>&1
+        lz4 -d test.tar.lz4 test.tar &>/dev/null
     }
     sleep 10
     rm test.tar
@@ -2761,7 +2761,7 @@ unzip-ls () {
 
 # TODO: are these enough patterns?
 grep-ri () {
-    grep --color=always -Ri "$@" . | less -R
+    grep --color=always -Ri "$@" . | grep -v "\\.git/" | less -R
 }
 
 less-highlight () {
@@ -2795,7 +2795,7 @@ geotiff-info () {
 }
 
 check-git-repo () {
-    [[ -d .git ]] || git rev-parse --git-dir >/dev/null 2>&1
+    [[ -d .git ]] || git rev-parse --git-dir &>/dev/null
 }
 
 ag-reinstall-all () {
