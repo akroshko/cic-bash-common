@@ -105,7 +105,7 @@ export LESS_TERMCAP_us=$'\E[1;32m'     # begin underline
 export LESS_TERMCAP_ue=$'\E[0m'        # reset underline
 # and so on
 # TODO: I have more stuff I can move here
-export PAGER="$(type -P less) --ignore-case --LONG-PROMPT"
+export PAGER="$(type -P less) --IGNORE-CASE --LONG-PROMPT"
 
 export VISUAL="launch-emacsclient -nw"
 export ALTERNATE_EDITOR="launch-emacsclient -nw"
@@ -220,8 +220,8 @@ alias hrc='harm-bashrc'
 alias ifconfig='/sbin/ifconfig'
 alias ipy='ipython'
 # TODO: causes issues with ^M when viewing recorded wget output
-alias less='less --ignore-case --LONG-PROMPT --RAW-CONTROL-CHARS +Gg'
-alias less-raw='less --ignore-case --LONG-PROMPT --raw-control-chars --max-forw-scroll=999999 +Gg'
+alias less='less --IGNORE-CASE --LONG-PROMPT --RAW-CONTROL-CHARS +Gg'
+alias less-raw='less --IGNORE-CASE --LONG-PROMPT --raw-control-chars --max-forw-scroll=999999 +Gg'
 alias ls='ls -hF --color'
 alias lspci-full='lspci -knnn'
 alias lsa='ls -la'

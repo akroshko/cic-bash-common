@@ -2769,7 +2769,7 @@ less-highlight () {
     if [[ -z "$1" ]]; then
         echo "A filename is required for less-pyg!"
     elif [[ -e "$1" ]]; then
-        pygmentize -O style=native -g -f terminal256 "$1" | less --ignore-case --LONG-PROMPT --RAW-CONTROL-CHARS +Gg
+        pygmentize -O style=native -g -f terminal256 "$1" | less --IGNORE-CASE --LONG-PROMPT --RAW-CONTROL-CHARS +Gg
     else
         echo "File $1 does does not exist!"
     fi
