@@ -787,7 +787,7 @@ alias dkpg-purge-all='master-dpkg-purge-all'
 master-dpkg-purge-all () {
     # purge all files related to uninstalled packages
     if dangerous-function-ask; then
-        dpkg -l | grep ^rc | cut -d' ' -f3|xargs sudo dpkg -P
+        dpkg -l | grep ^rc | cut -d' ' -f3|xargs sudo dpkg --purge
     fi
 }
 

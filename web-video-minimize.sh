@@ -12,7 +12,9 @@ CURRENTYOUTUBE=
 xdotool search --onlyvisible --name "twitch|youtube" | while IFS= read -r line; do
     if xdotool search --class "chromium-browser|conkeror|firefox" | grep -- "${line}" >/dev/null; then
         xdotool windowminimize "${line}"
+        sleep 0.10
     fi
+    sleep 0.05
 done
 # get rid of social media if all is used
 if [[ "$1" == "--all" ]]; then
@@ -21,6 +23,7 @@ if [[ "$1" == "--all" ]]; then
             xdotool windowminimize "${line}"
             sleep 0.10
         fi
+        sleep 0.05
     done
 fi
 
@@ -42,9 +45,11 @@ xdotool search --class "dolphin-emu|Fceux|mGBA|mpv|PCSXR|PPSSPPSDL|vlc|zsnes" | 
             xdotool windowfocus --sync "${line}" key "XF86Stop"
             sleep 0.05
         elif [[ "${THECLASS}" =~ "dolphin" ]]; then
-            # TODO: only one of about 8 window ids will be successful, unfortunately hard to tell unless trying them all
-            xdotool windowfocus --sync "${line}" key "F10"
-            sleep 0.05
+            # this could be a bit fragile
+            if xdotool search --name "FPS" | grep -- "${line}" >/dev/null; then
+                xdotool windowfocus --sync "${line}" key "F10"
+            fi
+            sleep 0.1
         elif [[ "${THECLASS}" =~ "Fceux" ]]; then
             # TODO: this may toggle caps
             xdotool windowfocus --sync "${line}" key "Pause"
@@ -71,6 +76,7 @@ xdotool search --class "dolphin-emu|Fceux|mGBA|mpv|PCSXR|PPSSPPSDL|vlc|zsnes" | 
             fi
         fi
     fi
+    sleep 0.10
     xdotool windowminimize "${line}"
     sleep 0.10
     # mute only if I try to pause or boss key mode
