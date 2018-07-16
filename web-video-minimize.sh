@@ -9,23 +9,45 @@ CURRENTYOUTUBE=
 # filtering by name probably cuts out more windows more quickly than class
 # TODO: need global regex for this
 # minimize always minimizes video sites
-xdotool search --onlyvisible --name "twitch|youtube" | while IFS= read -r line; do
-    if xdotool search --class "chromium-browser|conkeror|firefox" | grep -- "${line}" >/dev/null; then
-        xdotool windowminimize "${line}"
-        sleep 0.10
-    fi
-    sleep 0.05
-done
 # get rid of social media if all is used
-if [[ "$1" == "--all" ]]; then
-    xdotool search --onlyvisible --name "facebook|instagram|pixiv|twitter" | while IFS= read -r line; do
-        if xdotool search --class "chromium-browser|conkeror|firefox" | grep -- "${line}" >/dev/null; then
-            xdotool windowminimize "${line}"
+
+if [[ "$1" == "--all" || "$1" == "--pause" ]]; then
+    xdotool search --onlyvisible --name "game|facebook|instagram|pixiv|strava|twitter|wikia" | while IFS= read -r WINID; do
+        if xdotool search --onlyvisible --class "chromium-browser|conkeror|firefox" | grep -- "$WINID" >/dev/null; then
+            xdotool windowminimize "$WINID"
             sleep 0.10
         fi
-        sleep 0.05
     done
 fi
+# get rid of downloads and documents directory
+if [[ "$1" == "--all" || "$1" == "--pause" ]]; then
+    xdotool search --onlyvisible --name "downloads|documents" | while IFS= read -r WINID; do
+        if xdotool search --onlyvisible --class "pcmanfm" | grep -- "$WINID" >/dev/null; then
+            xdotool windowminimize "${WINID}"
+            sleep 0.10
+        fi
+    done
+fi
+
+# Dolpin has a few problems so it is seperate
+# very conservative sleeps
+xdotool search --class "dolphin-emu" | while IFS= read -r WINID; do
+    if xdotool search --name "FPS" | grep "$WINID" &>/dev/null; then
+        echo "$WINID"
+        # TODO: wmctrl seems more robust than xdotool for this but investigage more
+        # xdotool windowactivate "$WINID" windowfocus --sync "$WINID"
+        wmctrl -i -R "$WINID"
+        # xdotool windowactivate --sync "$WINID"
+        sleep 0.5
+        # dolphin seems to poll periodically for the key being depressed
+        # just a keypress even is only detected about 25% of the time
+        xdotool keydown --window "$WINID" "F10"
+        sleep 0.05
+        xdotool keyup   --window "$WINID" "F10"
+        # at least some sleep delay after inputting key seems to help
+        sleep 1
+    fi
+done
 
 # always pause playback or emulation
 xdotool search --class "dolphin-emu|Fceux|mGBA|mpv|PCSXR|PPSSPPSDL|vlc|zsnes" | while IFS= read -r line; do
@@ -38,36 +60,30 @@ xdotool search --class "dolphin-emu|Fceux|mGBA|mpv|PCSXR|PPSSPPSDL|vlc|zsnes" | 
         # TODO: make sure one day
         if [[ "${THECLASS}" =~ "mpv" ]]; then
             # TODO: figure out if I can force pause
-            xdotool windowfocus --sync "${line}" key "space"
-            sleep 0.05
+            xdotool windowactivate --sync "${line}" key "space"
+            sleep 0.5
         elif [[ "${THECLASS}" =~ "vlc" ]]; then
             # space pauses, browser stop key stops
-            xdotool windowfocus --sync "${line}" key "XF86Stop"
-            sleep 0.05
-        elif [[ "${THECLASS}" =~ "dolphin" ]]; then
-            # this could be a bit fragile
-            if xdotool search --name "FPS" | grep -- "${line}" >/dev/null; then
-                xdotool windowfocus --sync "${line}" key "F10"
-            fi
-            sleep 0.1
+            xdotool windowactivate --sync "${line}" key "XF86Stop"
+            sleep 0.5
         elif [[ "${THECLASS}" =~ "Fceux" ]]; then
             # TODO: this may toggle caps
-            xdotool windowfocus --sync "${line}" key "Pause"
-            sleep 0.05
+            xdotool windowactivate --sync "${line}" key --window  "${line}" "Pause"
+            sleep 0.5
         elif [[ "${THECLASS}" =~ "mGBA" ]]; then
             # TODO: this may toggle caps
-            xdotool windowfocus --sync "${line}" key "ctrl+p"
-            sleep 0.05
+            xdotool windowactivate --sync "${line}" key --window  "${line}" "ctrl+p"
+            sleep 0.5
         elif [[ "${THECLASS}" =~ "PCSXR" ]]; then
             # TODO: this may toggle caps
-            xdotool windowfocus --sync "${line}" key "Escape"
-            sleep 0.05
+            xdotool windowactivate --sync "${line}" key --window  "${line}" "Escape"
+            sleep 0.5
         elif [[ "${THECLASS}" =~ "PPSSPPSDL" ]]; then
-            xdotool windowfocus --sync "${line}" key "Escape"
-            sleep 0.05
+            xdotool windowactivate --sync "${line}" key --window  "${line}" "Escape"
+            sleep 0.5
         elif [[ "${THECLASS}" =~ "zsnes" ]]; then
-            xdotool windowfocus --sync "${line}" key "Escape"
-            sleep 0.05
+            xdotool windowactivate --sync "${line}" key --window  "${line}" "Escape"
+            sleep 0.5
         else
             if [[ "$1" == '--pause' || "$1" == '--all' ]]; then
                 # TODO: do I really need this
@@ -76,9 +92,9 @@ xdotool search --class "dolphin-emu|Fceux|mGBA|mpv|PCSXR|PPSSPPSDL|vlc|zsnes" | 
             fi
         fi
     fi
-    sleep 0.10
+    sleep 0.25
     xdotool windowminimize "${line}"
-    sleep 0.10
+    sleep 0.25
     # mute only if I try to pause or boss key mode
     # TODO: reenable
 done
@@ -87,9 +103,9 @@ if [[ "$1" == '--pause' || "$1" == '--all' ]];then
     # filtering by name probably cuts out more windows more quickly than class
     # turn off youtube even if not visible
     # TODO there does not seem to be a way to do two searches in one command
-    xdotool search --name "twitch|youtube" | while IFS= read -r line; do
-        if xdotool search --class "conkeror" | grep -- "${line}" >/dev/null; then
-            xdotool windowfocus --sync "${line}";
+    xdotool  search --name "twitch|youtube" | while IFS= read -r line; do
+        if xdotool search --class "conkeror"  | grep -- "$WINID" >/dev/null; then
+            xdotool windowactivate --sync "${line}";
             # TODO: very arbitrary delay, perhaps wait for something to return
             # TODO definitely want this better
             sleep 0.10
@@ -101,3 +117,11 @@ if [[ "$1" == '--pause' || "$1" == '--all' ]];then
     # XXXX only need for youtube and twitch because I focused to use pause api
     # [[ -n "$CURRENTYOUTUBE" ]] && xdotool windowactivate --sync ${CURRENTWINDOW}
 fi
+
+xdotool search --onlyvisible --name "twitch|youtube" | while IFS= read -r WINID; do
+    if xdotool search --onlyvisible --class "chromium-browser|conkeror|firefox" | grep -- "$WINID" >/dev/null; then
+        xdotool windowminimize "$WINID"
+        sleep 0.10
+    fi
+    sleep 0.05
+done

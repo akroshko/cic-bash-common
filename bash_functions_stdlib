@@ -490,6 +490,12 @@ du-sort () {
     \du --total --summarize --human-readable -- * 2>/dev/null | sort --human-numeric-sort
 }
 
+du-sort-directories () {
+    # sort by size after using du
+    # TODO: single file system?
+    \du --total --summarize --human-readable -- ./*/ 2>/dev/null | sort --human-numeric-sort
+}
+
 du-sort-dotfiles () {
     du --summarize --human-readable .[^.]* 2>/dev/null | sort --human-numeric-sort
 }
