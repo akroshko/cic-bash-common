@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ~/.bash_libenv
+source ~/.bash_library
 
 main () {
     pdftk "${PWD}"/"$1" cat "$2" output ${HOME}/current-attachment/$(date-time-stamp).pdf

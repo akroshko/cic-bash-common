@@ -6,7 +6,7 @@
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Fri Mar 27, 2015
-# Version: 20180622
+# Version: 20180719
 # URL: https://github.com/akroshko/bash-stdlib
 #
 # This program is free software: you can redistribute it and/or modify
@@ -111,6 +111,96 @@ export VISUAL="launch-emacsclient -nw"
 export ALTERNATE_EDITOR="launch-emacsclient -nw"
 export EDITOR="launch-emacsclient -nw"
 
+# type control-d 99 times to leave shell
+# aliases, generally spice up some already existing commands
+alias bash-debug='set -xv'
+alias bash-nodebug='set +xv'
+# stops things from overflowing /tmp if space is limited
+alias convert-safe='MAGICK_TEMPORARY_PATH=$HOME/tmp/imagemagick convert -limit memory 2GB -limit area 2GB -limit map 2GB'
+alias agu='sudo apt-get update && sudo apt-get dist-upgrade'
+alias agu-dry-run='sudo apt-get update && sudo apt-get dist-upgrade --dry-run'
+alias ag-autoremove='sudo apt-get autoremove'
+alias al='alias'
+# improve this
+alias ssh-controlmaster-list='ps -elf | grep controlmaster'
+alias ssh-controlmaster-kill='ssh -O exit'
+# https://stackoverflow.com/questions/352098/how-can-i-pretty-print-json-in-a-unix-shell-script
+alias cat-json='python -m json.tool'
+alias dc='aafire -driver curses -extended'
+alias df='df -h'
+alias df-all='df -aTh'
+# TODO: might break some functions, but might be other thing
+alias du='du -h'
+alias ec='launch-emacsclient nohup'
+alias ecnw='launch-emacsclient -nw'
+alias f90=gfortran
+alias f='feh-open-browse'
+alias firefox-profile-manager="firefox --ProfileManager"
+# TODO: change these, no longer relevant
+alias fm='feh-montage --montage'
+alias fp='feh-montage --montage'
+alias ft='feh-thumbnail'
+alias gccr='gcc-compile-run'
+alias gi='grep --color -i'
+alias git-log-full='git log --decorate=full --graph --stat'
+alias gpg='gpg2'
+alias grep='grep --color'
+alias grep-fileonly='grep --color --files-with-matches'
+alias gf="grep-functions"
+alias hrc='harm-bashrc'
+alias ifconfig='/sbin/ifconfig'
+alias ipy='ipython'
+# TODO: causes issues with ^M when viewing recorded wget output
+alias less='less --IGNORE-CASE --LONG-PROMPT --RAW-CONTROL-CHARS +Gg'
+alias less-raw='less --IGNORE-CASE --LONG-PROMPT --raw-control-chars --max-forw-scroll=999999 +Gg'
+alias ls='ls -hF --color'
+alias lspci-full='lspci -knnn'
+alias lsa='ls -la'
+# TODO: using for soemthing else for now
+# alias lsl='ls -l'
+alias lst='ls -ltr'
+alias killall-jobs='kill $(jobs -p)'
+alias man-find='man -k'
+alias man-scan='man -K'
+alias mupdf='mupdf-gl'
+alias mv='mv --no-clobber'
+alias na='nautilus .'
+alias netstat-pid='sudo netstat -nlpt'
+alias openbox-restart="openbox --restart"
+alias pc='cmatrix'
+alias pgtop='sudo -u postgres pg_activity -U postgres'
+alias po='popd'
+alias pu='pushd .'
+alias pdw='fortune | cowsay'
+alias phoronix-test-suite='time phoronix-test-suite'
+alias restart-openbox="openbox --restart"
+# TODO: need a fun way to complete aliases
+alias scd='screen -d'
+alias scl='screen -ls'
+alias scr='screen -dr'
+alias scs='screen-select'
+alias scw='screen -wipe'
+# fallback ssh
+alias scp-fallback='scp -o "BatchMode no" -o "ChallengeResponseAuthentication yes" -o "PasswordAuthentication yes"'
+alias ssh-fallback='ssh -o "BatchMode no" -o "ChallengeResponseAuthentication yes" -o "PasswordAuthentication yes"'
+alias sftp-fallback='sftp -o "BatchMode no" -o "ChallengeResponseAuthentication yes" -o "PasswordAuthentication yes"'
+# sage
+alias sipy='sage -ipython'
+# for testing my raspberry pi
+alias ssh-pi='ssh pi@raspberrypi.local'
+alias svn-log-full='svn log -l 100 -v | less'
+alias sagepy='sage -python'
+alias sageipy='sage -ipython'
+# TODO: silly but I can remember these things
+alias xmodmap-ls='xmodmap -pm'
+alias ls-xmodmap='xmodmap -pm'
+alias gnuplot-test='gnuplot --persist -e "test;"'
+# TODO: change this later?
+
+################################################################################
+## do terminal stuff last so show-command-in-titlebar is not eating up all my time
+## TODO: fix permanently
+
 # prevent power save on virtual consoles
 # TODO: make a bit more configurable in case I ever want powersave
 # https://unix.stackexchange.com/questions/47037/how-can-my-script-know-when-im-in-a-virtual-console-vs-an-xterm
@@ -182,86 +272,3 @@ shopt -s autocd extglob histappend
 export IGNOREEOF=3
 shopt -s expand_aliases
 force_color_prompt=yes
-# type control-d 99 times to leave shell
-# aliases, generally spice up some already existing commands
-alias bash-debug='set -xv'
-alias bash-nodebug='set +xv'
-# stops things from overflowing /tmp if space is limited
-alias convert-safe='MAGICK_TEMPORARY_PATH=$HOME/tmp/imagemagick convert -limit memory 2GB -limit area 2GB -limit map 2GB'
-alias agu='sudo apt-get update && sudo apt-get dist-upgrade'
-alias agu-dry-run='sudo apt-get update && sudo apt-get dist-upgrade --dry-run'
-alias ag-autoremove='sudo apt-get autoremove'
-alias al='alias'
-# improve this
-alias ssh-controlmaster-list='ps -elf | grep controlmaster'
-alias ssh-controlmaster-kill='ssh -O exit'
-alias dc='aafire -driver curses -extended'
-alias df='df -h'
-alias df-all='df -aTh'
-# TODO: might break some functions, but might be other thing
-alias du='du -h'
-alias ec='launch-emacsclient nohup'
-alias ecnw='launch-emacsclient -nw'
-alias f90=gfortran
-alias f='feh-open-browse'
-alias firefox-profile-manager="firefox --ProfileManager"
-# TODO: change these, no longer relevant
-alias fm='feh-montage --montage'
-alias fp='feh-montage --montage'
-alias ft='feh-thumbnail'
-alias gccr='gcc-compile-run'
-alias gi='grep --color -i'
-alias git-log-full='git log --decorate=full --graph --stat'
-alias gpg='gpg2'
-alias grep='grep --color'
-alias grep-fileonly='grep --color --files-with-matches'
-alias gf="grep-functions"
-alias hrc='harm-bashrc'
-alias ifconfig='/sbin/ifconfig'
-alias ipy='ipython'
-# TODO: causes issues with ^M when viewing recorded wget output
-alias less='less --IGNORE-CASE --LONG-PROMPT --RAW-CONTROL-CHARS +Gg'
-alias less-raw='less --IGNORE-CASE --LONG-PROMPT --raw-control-chars --max-forw-scroll=999999 +Gg'
-alias ls='ls -hF --color'
-alias lspci-full='lspci -knnn'
-alias lsa='ls -la'
-# TODO: using for soemthing else for now
-# alias lsl='ls -l'
-alias lst='ls -ltr'
-alias killall-jobs='kill $(jobs -p)'
-alias man-find='man -k'
-alias man-scan='man -K'
-alias mupdf='mupdf-gl'
-alias mv='mv --no-clobber'
-alias na='nautilus .'
-alias netstat-pid='sudo netstat -nlpt'
-alias openbox-restart="openbox --restart"
-alias pc='cmatrix'
-alias pgtop='sudo -u postgres pg_activity -U postgres'
-alias po='popd'
-alias pu='pushd .'
-alias pdw='fortune | cowsay'
-alias phoronix-test-suite='time phoronix-test-suite'
-alias restart-openbox="openbox --restart"
-# TODO: need a fun way to complete aliases
-alias scd='screen -d'
-alias scl='screen -ls'
-alias scr='screen -dr'
-alias scs='screen-select'
-alias scw='screen -wipe'
-# fallback ssh
-alias scp-fallback='scp -o "BatchMode no" -o "ChallengeResponseAuthentication yes" -o "PasswordAuthentication yes"'
-alias ssh-fallback='ssh -o "BatchMode no" -o "ChallengeResponseAuthentication yes" -o "PasswordAuthentication yes"'
-alias sftp-fallback='sftp -o "BatchMode no" -o "ChallengeResponseAuthentication yes" -o "PasswordAuthentication yes"'
-# sage
-alias sipy='sage -ipython'
-# for testing my raspberry pi
-alias ssh-pi='ssh pi@raspberrypi.local'
-alias svn-log-full='svn log -l 100 -v | less'
-alias sagepy='sage -python'
-alias sageipy='sage -ipython'
-# TODO: silly but I can remember these things
-alias xmodmap-ls='xmodmap -pm'
-alias ls-xmodmap='xmodmap -pm'
-alias gnuplot-test='gnuplot --persist -e "test;"'
-# TODO: change this later?

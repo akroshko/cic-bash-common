@@ -466,7 +466,7 @@ xclip-show-all () {
 
 # TODO: pop this up somehow with a key
 watch-xclip-show-all () {
-    watch -n 1 --color --exec bash -c "source $HOME/.bash_libenv;xclip-show-all"
+    watch -n 1 --color --exec bash -c "source $HOME/.bash_library;xclip-show-all"
 }
 
 # watch-xclip () {
@@ -653,7 +653,7 @@ vcs-check-root () {
 vcs-update-versions () {
     # TODO: add fences and safeguards
     # TODO: search recursively with find command
-    # find . -not -path "*git*" -type f -exec bash -c 'source ~/.bash_libenv;vcs-update-file-version "{}"'  \;
+    # find . -not -path "*git*" -type f -exec bash -c 'source ~/.bash_library;vcs-update-file-version "{}"'  \;
     for f in ${PWD}/*; do
         [[ -f "$f" ]] || continue
         local FILETYPE=$(file -L "$f")
@@ -1151,9 +1151,9 @@ file-mimetype () {
 
 ssh-scs () {
     # XXXX: this one autodetaches after exit from screen session
-    ssh "$@" -t "bash --rcfile ~/.bash_libenv -li -c \"screen-select\""
+    ssh "$@" -t "bash --rcfile ~/.bash_library -li -c \"screen-select\""
     # XXXX: this one stays attached after exit from screen session
-    # ssh "$@" -t "bash --rcfile ~/.bash_libenv -li -c \"screen-select;/bin/bash\""
+    # ssh "$@" -t "bash --rcfile ~/.bash_library -li -c \"screen-select;/bin/bash\""
 }
 
 # TODO: move these out
@@ -1191,47 +1191,6 @@ youtube-next () {
     # TODO: very arbitrary delay, perhaps wait for something to return
     sleep 0.5
     xdotool windowactivate --sync ${CURRENTWINDOW}
-}
-
-# master-boss-key () {
-#     # get current window
-#     local CURRENTWINDOW=$(xdotool getwindowfocus)
-#     local CURRENTWINDOWNAME=$(xdotool getwindowname ${CURRENTWINDOW})
-#     # kill volume
-#     amixer set Master mute
-#     # https://askubuntu.com/questions/26068/how-do-you-mute-from-the-command-line
-#     # amixer -c 0 set Master playback 0% mute
-#     # minimize browser windows, do they ever not have their name in title?
-#     # TODO: remove from taskbar
-#     # TODO: try out with windowclass too
-#     xdotool search --onlyvisible --name conkeror | while IFS= read -r line; do
-#         xdotool windowminimize "${line}"
-#     done
-#     xdotool search --onlyvisible --name firefox | while IFS= read -r line; do
-#         xdotool windowminimize "${line}"
-#     done
-#     # turn off youtube
-#     xdotool search --name youtube | while IFS= read -r line; do
-#         if xdotool search --class conkeror | grep -- "${line}" >/dev/null; then
-#             xdotool windowfocus --sync "${line}";
-#             sleep 0.05
-#             conkeror-batch -f youtube-pause
-#         fi
-#     done
-#     # restore focus, but make sure its not browser window
-#     [[ ! "${CURRENTWINDOWNAME,,}" =~ conkeror && ! "${CURRENTWINDOWNAME,,}" =~ firefox ]] && xdotool windowactivate --sync ${CURRENTWINDOW}
-# }
-
-master-unboss-key () {
-    # kill volume
-    amixer set Master unmute
-    # TODO: restore youtube
-    # unminimize all windows
-    # TODO: use xdotool to restore instead?
-    # TODO: at least add back to taskbar
-    # wmctrl -r conkeror  -b remove,shaded,skip_taskbar
-    # wmctrl -r firefox   -b remove,shaded,skip_taskbar
-    # wmctrl -r remove   -b remove,shaded,skip_taskbar
 }
 
 focus-emacs-window () {
@@ -1842,15 +1801,13 @@ dunst-notifications () {
 }
 
 build-install-software () {
-    # TODO: add some checks and warnings if things are not present
-    pushd . >/dev/null
-    cd "${HOME}"/cic-external-vcs
     # assumes I'm in directory with appropriate subdirectories
     # TODO: compile against downloaded poppler
     sudo true || return 1
     # at least for now, download and build a few select pieces of software
     # TODO: evantually make this the only one
     [[ ! -d "${HOME}"/cic-external-vcs ]] && mkdir -p "${HOME}"/cic-external-vcs
+    pushd . >/dev/null
     cd "${HOME}"/cic-external-vcs
     # TODO: update this as something better and potentially less destructive
     [[ ! -d "${HOME}"/cic-external-vcs/conkeror-external ]]             && git clone git://repo.or.cz/conkeror.git                     conkeror-external
@@ -1858,8 +1815,6 @@ build-install-software () {
     [[ ! -d "${HOME}"/cic-external-vcs/feh-external ]]                  && git clone https://git.finalrewind.org/feh                   feh-exteneral
     [[ ! -d "${HOME}"/cic-external-vcs/girara-external ]]               && git clone https://git.pwmt.org/pwmt/girara.git              girara-external
     [[ ! -d "${HOME}"/cic-external-vcs/PCSX-Reloaded-external ]]        && git clone https://github.com/SonofUgly/PCSX-Reloaded        PCSX-Reloaded-external
-    [[ ! -d "${HOME}"/cic-external-vcs/ppsspp-source-external ]]        && git clone https://github.com/hrydgard/ppsspp                ppsspp-source-external
-    [[ ! -d "${HOME}"/cic-external-vcs/desmume-external/ ]]             && git clone https://github.com/TASVideos/desmume/             desmume-external
     [[ ! -d "${HOME}"/cic-external-vcs/zathura-external ]]              && git clone https://git.pwmt.org/pwmt/zathura.git             zathura-external
     [[ ! -d "${HOME}"/cic-external-vcs/zathura-cb-external ]]           && git clone https://git.pwmt.org/pwmt/zathura-cb.git          zathura-cb-external
     [[ ! -d "${HOME}"/cic-external-vcs/zathura-djvu-external ]]         && git clone https://git.pwmt.org/pwmt/zathura-djvu.git        zathura-djvu-external
@@ -1872,6 +1827,7 @@ build-install-software () {
     h2 "wayback downloader"
     sudo gem install wayback_machine_downloader
     build-install-software-feh
+    build-install-software-mupdf
     # build-install-software-mgba
     # build-install-software-pcsx-reloaded
     # TODO: dummy for now
@@ -1881,6 +1837,21 @@ build-install-software () {
     build-install-software-xpdf
     build-install-software-zathura
     popd >/dev/null
+}
+
+build-install-software-games () {
+    sudo true || return 1
+    [[ ! -d "${HOME}"/cic-external-vcs ]] && mkdir -p "${HOME}"/cic-external-vcs
+    cd "${HOME}"/cic-external-vcs
+    [[ ! -d "${HOME}"/cic-external-vcs/ppsspp-source-external ]]        && git clone https://github.com/hrydgard/ppsspp                ppsspp-source-external
+    [[ ! -d "${HOME}"/cic-external-vcs/desmume-external/ ]]             && git clone https://github.com/TASVideos/desmume/             desmume-external
+    build-install-software-pcsx-reloaded
+    build-install-software-ppsspp
+    build-install-software-mgba
+    build-install-software-zsnes
+    # TODO: add dolphin
+    # these tend to be much larger to compile and build then utilties
+    true
 }
 
 build-install-software-zathura () {
@@ -2027,7 +1998,10 @@ build-install-software-mupdf () {
     sudo true || return 1
     pushd . >/dev/null
     cd mupdf-external
+    check-host-main && git pull
     git submodule update --init
+    # seems to be necessary for this one
+    make clean
     make prefix=/usr/local
     sudo make prefix=/usr/local install
     popd >/dev/null
@@ -2830,4 +2804,8 @@ check-permissions-rw () {
     h3 "Files I do not have sufficient privileges for"
     # TODO: exclude .git
     find . -user "${USER}" ! -perm -600
+}
+
+ls-sqlite-tables () {
+    sqlite3 "$1" '.tables'
 }
