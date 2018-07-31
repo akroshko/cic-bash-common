@@ -650,6 +650,35 @@ vcs-check-root () {
     done
 }
 
+vcs-check-root-pull-all () {
+    if [[ ${PWD} == ${HOME} ]]; then
+        yell "Cannot run in home directory!!!"
+        return 1
+    fi
+    for dirname in ${PWD}/*; do
+        [[ -d "$dirname" ]] || continue
+        if [[ -d "$dirname/.git" ]]; then
+            h1 "Checking $dirname/.git"
+            pushd . >/dev/null
+            cd "$dirname"
+            git pull
+        elif [[ -d "$dirname/.hg" ]]; then
+            h1 "Pulling $dirname/.hg"
+            pushd . >/dev/null
+            cd "$dirname"
+            hg pull
+        elif [[ -d "$dirname/.svn" ]]; then
+            h1 "Updating $dirname/.svn"
+            pushd . >/dev/null
+            cd "$dirname"
+            svn update
+            popd >/dev/null
+        else
+            h1 "Not pulling $dirname"
+        fi
+    done
+}
+
 vcs-update-versions () {
     # TODO: add fences and safeguards
     # TODO: search recursively with find command
@@ -676,7 +705,7 @@ vcs-update-versions () {
             # latex
             sed -i -e "s/^% Version:.*$/% Version: $(date-stamp)/g" "$f"
             # if not copyright matches this year
-            if ! grep -- "Copyright.*2016" $f >/dev/null; then
+            if ! grep -- "Copyright.*2018" $f >/dev/null; then
                 warn "Need to update year in $f"
             fi
         fi
@@ -1629,8 +1658,8 @@ fetch-build-sage () {
     if [[ -z "$SAGEVERSION" || -z "$SAGEVERSIONMD5" ]]; then
         msg "Using default sage versions."
         # update for every new sage
-        local SAGEVERSION="8.0"
-        local SAGEVERSIONMD5="93bdd128991e9144c4b137d3d6655065"
+        local SAGEVERSION="8.2"
+        local SAGEVERSIONMD5="b6f2b3a0d304f4311cb6c07a67174ac9"
         local SAGEMIRROR="http://www.cecm.sfu.ca/sage/src/"
         # TODO: put this somewhere else
         local SAGELOCATION=${HOME}/cic-small/distfiles-current
@@ -1646,7 +1675,9 @@ fetch-build-sage () {
     sudo true || return 1
     if [[ $@ != *"--finalize"* ]]; then
         sudo apt-get update
-        sudo apt-get install gnutls-bin gnutls-doc libssl1.0.0 libssl-dev libssl-doc libcurl4-gnutls-dev libgnutls28-dev
+        # not on debian 9.0
+        # libssl1.0.0
+        sudo apt-get install gnutls-bin gnutls-doc libssl-dev libssl-doc libcurl4-gnutls-dev libgnutls28-dev tk8.6-dev
         sudo apt-get install texlive dvipng ImageMagick
         if [[ -e "${SAGELOCATION}"/sage-"$SAGEVERSION".tar.gz ]]; then
             pushd . >/dev/null
@@ -1666,7 +1697,7 @@ fetch-build-sage () {
                 # should I delete this?
                 # TODO: does the tarball already exist?
                 #       do not delete directory in this case
-                wget "$SAGEMIRROR"/sage-"${SAGEVERSION}".tar.gz .
+                wget "$SAGEMIRROR"/sage-"${SAGEVERSION}".tar.gz
                 msg "Finished downloading!"
             else
                 msg "Sagemath already downloaded!"
@@ -1749,7 +1780,7 @@ fetch-build-sage-packages () {
     ./sage -pip install --upgrade multiprocess
     # out of date pillow has been an issue for me before
     ./sage -pip install --upgrade pillow
-    ./sage -pip install --upgrade psycopg2
+    ./sage -pip install --upgrade psycopg2-binary
     ./sage -pip install --upgrade pycurl
     ./sage -pip install --upgrade pyopenssl
     # ./sage -pip install --upgrade rlipython
@@ -1819,11 +1850,12 @@ build-install-software () {
     [[ ! -d "${HOME}"/cic-external-vcs/zathura-cb-external ]]           && git clone https://git.pwmt.org/pwmt/zathura-cb.git          zathura-cb-external
     [[ ! -d "${HOME}"/cic-external-vcs/zathura-djvu-external ]]         && git clone https://git.pwmt.org/pwmt/zathura-djvu.git        zathura-djvu-external
     [[ ! -d "${HOME}"/cic-external-vcs/zathura-pdf-poppler-external ]]  && git clone https://git.pwmt.org/pwmt/zathura-pdf-poppler.git zathura-pdf-poppler-external
+    [[ ! -d "${HOME}"/cic-external-vcs/zathura-pdf-poppler-external ]]  && git clone https://git.pwmt.org/pwmt/zathura-pdf-mupdf.git   zathura-pdf-mupdf-external
     [[ ! -d "${HOME}"/cic-external-vcs/zathura-ps-external ]]           && git clone https://git.pwmt.org/pwmt/zathura-ps.git          zathura-ps-external
     # now build, copied from build-install-software, and should be synced up
     h2 "pip";
     # TODO: upgrade pip automatically?
-    curl https://bootstrap.pypa.io/get-pip.py | sudo python;
+    curl https://bootstrap.pypa.io/get-pip.py | sudo python
     h2 "wayback downloader"
     sudo gem install wayback_machine_downloader
     build-install-software-feh
@@ -1857,6 +1889,7 @@ build-install-software-games () {
 build-install-software-zathura () {
     # TODO: use some better versions than these giant hashes....
     #       have checks to make sure branches don't hang around
+    ################################################################################
     h2 "girara";
     [[ ! -d "girara-external" ]] && yell "Directory girara-external not found!" && return 1
     sudo true || return 1
@@ -1871,14 +1904,15 @@ build-install-software-zathura () {
     # make clean;
     # make;
     # sudo make install;
+    [[ -e ./build ]] && rm -rf ./build
     meson build
     cd build
     ninja
     sudo ninja install
     cd ..
-    # TODO: back to develop
-    git checkout develop
+    [[ -e ./build ]] && rm -rf ./build
     popd > /dev/null;
+    ################################################################################
     h2 "zathura";
     [[ ! -d "zathura-external" ]] && yell "Directory zathura-external not found!" && return 1
     pushd . > /dev/null;
@@ -1891,13 +1925,15 @@ build-install-software-zathura () {
     # make clean;
     # make;
     # sudo make install;
+    [[ -e ./build ]] && rm -rf ./build
     meson build
     cd build
     ninja
     sudo ninja install
     cd ..
-    git checkout develop
+    [[ -e ./build ]] && rm -rf ./build
     popd > /dev/null;
+    ################################################################################
     h2 "zathura-poppler";
     # XXXX: a nasty hack
     # TODO: do I still need this
@@ -1912,13 +1948,38 @@ build-install-software-zathura () {
     # make clean;
     # make;
     # sudo make install;
+    [[ -e ./build ]] && rm -rf ./build
     meson build
     cd build
     ninja
     sudo ninja install
     cd ..
-    git checkout develop
+    [[ -e ./build ]] && rm -rf ./build
     popd > /dev/null;
+    ################################################################################
+    h2 "zathura-mupdf";
+    # XXXX: a nasty hack
+    # TODO: do I still need this
+    # sudo cp /usr/lib/pkgconfig/girara-gtk3.pc /usr/lib/pkgconfig/girara-gtk.pc
+    pushd . > /dev/null;
+    [[ ! -d "zathura-pdf-mupdf-external" ]] && yell "Directory zathura-pdf-mupdf-external not found!" && return 1
+    cd zathura-pdf-mupdf-external;
+    check-host-main && git pull
+    git checkout --track -b develop origin/develop
+    # TODO: temporary until I upgrade debian
+    # git checkout ced9b3cfb0d7440a6a049f200a2f419ce09abe1e
+    # make clean;
+    # make;
+    # sudo make install;
+    [[ -e ./build ]] && rm -rf ./build
+    meson build
+    cd build
+    ninja
+    # sudo ninja install
+    cd ..
+    [[ -e ./build ]] && rm -rf ./build
+    popd > /dev/null;
+    ################################################################################
     h2 "zathura-djvu";
     [[ ! -d "zathura-djvu-external" ]] && yell "Directory zathura-djvu-external not found!" && return 1
     pushd . > /dev/null;
@@ -1930,13 +1991,15 @@ build-install-software-zathura () {
     # make clean;
     # make;
     # sudo make install;
+    [[ -e ./build ]] && rm -rf ./build
     meson build
     cd build
     ninja
     sudo ninja install
     cd ..
-    git checkout develop
+    [[ -e ./build ]] && rm -rf ./build
     popd > /dev/null;
+    ################################################################################
     h2 "zathura-cb";
     [[ ! -d "zathura-cb-external" ]] && yell "Directory zathura-cb-external not found!" && return 1
     pushd . > /dev/null;
@@ -1945,16 +2008,15 @@ build-install-software-zathura () {
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
     # git checkout 21fa0f4d8da39ed9be449400d2147b876b739f56
+    [[ -e ./build ]] && rm -rf ./build
     meson build
     cd build
     ninja
     sudo ninja install
     cd ..
-    # make clean;
-    # make;
-    # sudo make install;
-    git checkout develop
+    [[ -e ./build ]] && rm -rf ./build
     popd >/dev/null
+    ################################################################################
     h2 "zathura-ps";
     [[ ! -d "zathura-ps-external" ]] && yell "Directory zathura-ps-external not found!" && return 1
     pushd . > /dev/null;
@@ -1963,12 +2025,13 @@ build-install-software-zathura () {
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
     # git checkout 91a22c4d44eabfca37f0c4488c4b2d18cab3ddb
+    [[ -e ./build ]] && rm -rf ./build
     meson build
     cd build
     ninja
     sudo ninja install
     cd ..
-    git checkout develop
+    [[ -e ./build ]] && rm -rf ./build
     popd >/dev/null
 }
 
@@ -2132,8 +2195,9 @@ build-install-software-dockapps () {
     h2 "pywmdockapps"
     pushd . >/dev/null
     cd pywmdockapps-external/pywmdockapps-1.21
-    [[ -d ./build ]] && rm -rf ./build
+    [[ -d ./build ]] && sudo rm -rf ./build
     sudo python ./setup.py install
+    [[ -d ./build ]] && sudo rm -rf ./build
     popd >/dev/null
     h2 "wmtimer"
     pushd . >/dev/null
