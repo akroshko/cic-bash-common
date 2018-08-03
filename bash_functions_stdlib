@@ -2452,7 +2452,7 @@ harm-fonts () {
 benchmark-compression-gzip () {
     # benchmark gzip compression
     du -sh "$1"
-    local THETEMPFILE=$(mktemp tmp-XXXXXXXXXX --suffix=.tgz)
+    local THETEMPFILE=$(mktemp /tmp/tmp-XXXXXXXXXX --suffix=.tgz)
     time {
         tar --create --file - "$1" | gzip -9 > "$THETEMPFILE"
     }
@@ -2469,7 +2469,7 @@ benchmark-compression-gzip () {
 benchmark-compression-bzip2 () {
     # benchmark bzip2 compression
     du -sh "$1"
-    local THETEMPFILE=$(mktemp tmp-XXXXXXXXXX --suffix=.tar.bz2)
+    local THETEMPFILE=$(mktemp /tmp/tmp-XXXXXXXXXX --suffix=.tar.bz2)
     time {
         tar --create --file - "$1" | bzip2 -9 > "$THETEMPFILE"
     }
@@ -2486,7 +2486,7 @@ benchmark-compression-bzip2 () {
 benchmark-compression-lz4 () {
     # benchmark lz4 compression
     du -sh "$1"
-    local THETEMPFILE=$(mktemp tmp-XXXXXXXXXX --suffix=.tar.lz4)
+    local THETEMPFILE=$(mktemp /tmp/tmp-XXXXXXXXXX --suffix=.tar.lz4)
     time {
         tar --create --file - "$1" | lz4 -9 > "$THETEMPFILE"
     }
@@ -2503,7 +2503,7 @@ benchmark-compression-lz4 () {
 benchmark-compression-lzop () {
     # benchmark lzop compression
     du -sh "$1"
-    local THETEMPFILE=$(mktemp tmp-XXXXXXXXXX --suffix=.tar.lzop)
+    local THETEMPFILE=$(mktemp /tmp/tmp-XXXXXXXXXX --suffix=.tar.lzop)
     time {
         tar --create --file - "$1" | lzop -9 > "$THETEMPFILE"
     }
@@ -2511,18 +2511,18 @@ benchmark-compression-lzop () {
     du -sh "$THETEMPFILE"
     time {
         # XXXX: hope this is not optimized!
-        lzop -d "$THETEMPFILE" >/dev/null
+        lzop -d -c "$THETEMPFILE" >/dev/null
     }
     sleep 2
     # rm test.tar.lzop
     # rm test.tar
-    rm "${THETEMPFILE%%.*}".tar
+    # rm "${THETEMPFILE%%.*}".tar
 }
 
 benchmark-compression-rzip () {
     # benchmark rzip compression
     du -sh "$1"
-    local THETEMPFILE=$(mktemp tmp-XXXXXXXXXX --dry-run --suffix=.tar.rz)
+    local THETEMPFILE=$(mktemp /tmp/tmp-XXXXXXXXXX --dry-run --suffix=.tar.rz)
     time {
         tar --create --file - "$1" > test.tar;rzip -9 test.tar -o "$THETEMPFILE"
     }
@@ -2535,10 +2535,29 @@ benchmark-compression-rzip () {
     rm "${THETEMPFILE%%.*}".tar
 }
 
+# TODO: will not work on directories for now
+# TODO: do later
+# benchmark-compression-lrzip () {
+#     # benchmark lzip compression
+#     du -sh "$1"
+#     local THETEMPFILE=$(mktemp tmp-XXXXXXXXXX --dry-run --suffix=.tar.lrzip)
+#     time {
+#         lrzip --level 9 "$1" --outfile "$THETEMPFILE"
+#     }
+#     echo ""
+#     du -sh "$THETEMPFILE"
+#     time {
+#         # XXXX: hope this is not optimized away!
+#         lrzip -d "$THETEMPFILE" --outfile /dev/null
+#     }
+#     sleep 2
+#     rm "$THETEMPFILE"
+# }
+
 benchmark-compression-lzip () {
     # benchmark lzip compression
     du -sh "$1"
-    local THETEMPFILE=$(mktemp tmp-XXXXXXXXXX --suffix=.tar.lzip)
+    local THETEMPFILE=$(mktemp /tmp/tmp-XXXXXXXXXX --suffix=.tar.lzip)
     time {
         tar --create --file - "$1" | lzip -9 > "$THETEMPFILE"
     }
@@ -2555,7 +2574,7 @@ benchmark-compression-lzip () {
 benchmark-compression-xz () {
     # benchmark lz compression
     du -sh "$1"
-    local THETEMPFILE=$(mktemp tmp-XXXXXXXXXX --suffix=.tar.xz)
+    local THETEMPFILE=$(mktemp /tmp/tmp-XXXXXXXXXX --suffix=.tar.xz)
     time {
         tar --create --file - "$1" | xz -9 > "$THETEMPFILE"
     }
@@ -2572,7 +2591,7 @@ benchmark-compression-xz () {
 benchmark-compression-zip () {
     # benchmark lz compression
     du -sh "$1"
-    local THETEMPFILE=$(mktemp tmp-XXXXXXXXXX --dry-run --suffix=.zip)
+    local THETEMPFILE=$(mktemp /tmp/tmp-XXXXXXXXXX --dry-run --suffix=.zip)
     time {
         zip "$THETEMPFILE" "$1"
     }
