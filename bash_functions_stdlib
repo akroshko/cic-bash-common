@@ -2452,115 +2452,138 @@ harm-fonts () {
 benchmark-compression-gzip () {
     # benchmark gzip compression
     du -sh "$1"
+    local THETEMPFILE=$(mktemp tmp-XXXXXXXXXX --suffix=.tgz)
     time {
-        tar --create --file - "$1" | gzip -9 > test.tgz
+        tar --create --file - "$1" | gzip -9 > "$THETEMPFILE"
     }
     echo ""
-    du -sh "test.tgz"
+    du -sh "$THETEMPFILE"
     time {
         # XXXX: hope this is not optimized!
-        gzip -d test.tgz >/dev/null
+        gzip -d "$THETEMPFILE"  >/dev/null
     }
-    sleep 10
-    rm test.tar
+    sleep 2
+    rm "${THETEMPFILE%.*}".tar
 }
 
 benchmark-compression-bzip2 () {
     # benchmark bzip2 compression
     du -sh "$1"
+    local THETEMPFILE=$(mktemp tmp-XXXXXXXXXX --suffix=.tar.bz2)
     time {
-        tar --create --file - "$1" | bzip2 -9 > test.tar.bz2
+        tar --create --file - "$1" | bzip2 -9 > "$THETEMPFILE"
     }
     echo ""
-    du -sh "test.tar.bz2"
+    du -sh "$THETEMPFILE"
     time {
         # XXXX: hope this is not optimized!
-        bzip2 -d test.tar.bz2 >/dev/null
+        bzip2 -d "$THETEMPFILE" >/dev/null
     }
-    sleep 10
-    rm test.tar
+    sleep 2
+    rm "${THETEMPFILE%%.*}".tar
 }
 
 benchmark-compression-lz4 () {
     # benchmark lz4 compression
     du -sh "$1"
+    local THETEMPFILE=$(mktemp tmp-XXXXXXXXXX --suffix=.tar.lz4)
     time {
-        tar --create --file - "$1" | lz4 -9 > test.tar.lz4
+        tar --create --file - "$1" | lz4 -9 > "$THETEMPFILE"
     }
     echo ""
-    du -sh test.tar.lz4
+    du -sh "$THETEMPFILE"
     time {
         # XXXX: hope this is not optimized!
-        lz4 -d test.tar.lz4 test.tar &>/dev/null
+        lz4 -d "$THETEMPFILE" &>/dev/null
     }
-    sleep 10
-    rm test.tar
-    rm test.tar.lz4
+    sleep 2
+    rm "$THETEMPFILE"
 }
 
 benchmark-compression-lzop () {
     # benchmark lzop compression
     du -sh "$1"
+    local THETEMPFILE=$(mktemp tmp-XXXXXXXXXX --suffix=.tar.lzop)
     time {
-        tar --create --file - "$1" | lzop -9 > test.tar.lzop
+        tar --create --file - "$1" | lzop -9 > "$THETEMPFILE"
     }
     echo ""
-    du -sh test.tar.lzop
+    du -sh "$THETEMPFILE"
     time {
         # XXXX: hope this is not optimized!
-        lzop -d test.tar.lzop >/dev/null
+        lzop -d "$THETEMPFILE" >/dev/null
     }
-    sleep 10
-    rm test.tar.lzop
-    rm test.tar
+    sleep 2
+    # rm test.tar.lzop
+    # rm test.tar
+    rm "${THETEMPFILE%%.*}".tar
 }
 
 benchmark-compression-rzip () {
     # benchmark rzip compression
     du -sh "$1"
+    local THETEMPFILE=$(mktemp tmp-XXXXXXXXXX --dry-run --suffix=.tar.rz)
     time {
-        tar --create --file - "$1" > test.tar;rzip -9 test.tar -o test.tar.rz
+        tar --create --file - "$1" > test.tar;rzip -9 test.tar -o "$THETEMPFILE"
     }
     echo ""
-    du -sh test.tar.rz
+    du -sh "$THETEMPFILE"
     time {
-        rzip -d test.tar.rz
+        rzip -d "$THETEMPFILE"
     }
-    sleep 10
-    rm test.tar
+    sleep 2
+    rm "${THETEMPFILE%%.*}".tar
 }
 
 benchmark-compression-lzip () {
     # benchmark lzip compression
     du -sh "$1"
+    local THETEMPFILE=$(mktemp tmp-XXXXXXXXXX --suffix=.tar.lzip)
     time {
-        tar --create --file - "$1" | lzip -9 > test.tar.lzip
+        tar --create --file - "$1" | lzip -9 > "$THETEMPFILE"
     }
     echo ""
-    du -sh test.tar.lzip
+    du -sh "$THETEMPFILE"
     time {
-        # XXXX: hope this is not optimized!
-        lzip -d -c test.tar.lzip > test.tar
+        # XXXX: hope this is not optimized away!
+        lzip -d -c "$THETEMPFILE" >/dev/null
     }
-    sleep 10
-    rm test.tar.lzip
-    rm test.tar
+    sleep 2
+    rm "$THETEMPFILE"
 }
 
 benchmark-compression-xz () {
     # benchmark lz compression
     du -sh "$1"
+    local THETEMPFILE=$(mktemp tmp-XXXXXXXXXX --suffix=.tar.xz)
     time {
-        tar --create --file - "$1" | xz -9 > test.tar.xz
+        tar --create --file - "$1" | xz -9 > "$THETEMPFILE"
     }
     echo ""
-    du -sh test.tar.xz
+    du -sh "$THETEMPFILE"
     time {
         # XXXX: hope this is not optimized!
-        xz -d test.tar.xz >/dev/null
+        xz -d "$THETEMPFILE" >/dev/null
     }
-    sleep 10
-    rm test.tar
+    sleep 2
+    rm "${THETEMPFILE%%.*}".tar
+}
+
+benchmark-compression-zip () {
+    # benchmark lz compression
+    du -sh "$1"
+    local THETEMPFILE=$(mktemp tmp-XXXXXXXXXX --dry-run --suffix=.zip)
+    time {
+        zip "$THETEMPFILE" "$1"
+    }
+    echo ""
+    du -sh "$THETEMPFILE"
+    time {
+        # XXXX: hope this is not optimized!
+        unzip -p "$THETEMPFILE" >/dev/null
+    }
+    sleep 2
+    rm "$THETEMPFILE"
 }
 
 benchmark-compression-all () {
@@ -2573,12 +2596,14 @@ benchmark-compression-all () {
     benchmark-compression-lz4 "$1"
     h2 "lzop"
     benchmark-compression-lzop "$1"
-    h2 "rzip"
-    benchmark-compression-rzip "$1"
     h2 "lzip"
     benchmark-compression-lzip "$1"
+    h2 "rzip"
+    benchmark-compression-rzip "$1"
     h2 "xz"
     benchmark-compression-xz "$1"
+    h2 "zip"
+    benchmark-compression-zip "$1"
 }
 
 pdftk-cat () {
