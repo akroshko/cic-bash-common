@@ -7,7 +7,7 @@
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Fri Mar 27, 2015
-# Version: 20180622
+# Version: 20180806
 # URL: https://github.com/akroshko/bash-stdlib
 #
 # This program is free software: you can redistribute it and/or modify
@@ -662,11 +662,13 @@ vcs-check-root-pull-all () {
             pushd . >/dev/null
             cd "$dirname"
             git pull
+            popd >/dev/null
         elif [[ -d "$dirname/.hg" ]]; then
             h1 "Pulling $dirname/.hg"
             pushd . >/dev/null
             cd "$dirname"
             hg pull
+            popd >/dev/null
         elif [[ -d "$dirname/.svn" ]]; then
             h1 "Updating $dirname/.svn"
             pushd . >/dev/null
@@ -1021,7 +1023,7 @@ check-chromium () {
 }
 
 check-firefox () {
-    ps -ef | grep "firefox\|iceweasel" | grep -v grep >/dev/null
+    ps -ef | grep "firefox\|iceweasel\|palemoon" | grep -v grep >/dev/null
     return $?
 }
 
@@ -1645,154 +1647,6 @@ function ls-mime-files2 () {
     done
 }
 
-fetch-build-sage-nice () {
-    /usr/bin/nice --adjustment 20 /usr/bin/ionice -c3 fetch-build-sage
-}
-
-# TODO: reverse these...
-fetch-build-sage () {
-    # fetch and compile current version of sage
-    # usage: use --finalize to finalize the setup
-    # XXXX: need to set sage variables elsewhere
-    # TODO: check for valid installation
-    if [[ -z "$SAGEVERSION" || -z "$SAGEVERSIONMD5" ]]; then
-        msg "Using default sage versions."
-        # update for every new sage
-        local SAGEVERSION="8.2"
-        local SAGEVERSIONMD5="b6f2b3a0d304f4311cb6c07a67174ac9"
-        local SAGEMIRROR="http://www.cecm.sfu.ca/sage/src/"
-        # TODO: put this somewhere else
-        local SAGELOCATION=${HOME}/cic-small/distfiles-current
-    fi
-    if [[ -d /opt/sage-"$SAGEVERSION" && $@ != *"--finalize"* ]]; then
-        if /opt/sage-"$SAGEVERSION"/sage --version; then
-            warn "/opt/sage-$SAGEVERSION already present and appears functional."
-        else
-            yell "/opt/sage-$SAGEVERSION present but appears non-functional."
-        fi
-        return 1
-    fi
-    sudo true || return 1
-    if [[ $@ != *"--finalize"* ]]; then
-        sudo apt-get update
-        # not on debian 9.0
-        # libssl1.0.0
-        sudo apt-get install gnutls-bin gnutls-doc libssl-dev libssl-doc libcurl4-gnutls-dev libgnutls28-dev tk8.6-dev
-        sudo apt-get install texlive dvipng ImageMagick
-        if [[ -e "${SAGELOCATION}"/sage-"$SAGEVERSION".tar.gz ]]; then
-            pushd . >/dev/null
-            cd "${SAGELOCATION}"
-            msg "Already found in distfiles location!"
-        else
-            # TODO: put into ~/tmp for more universal use
-            # TODO: proper error message if md5sum is not good
-            if [[ ! -e "${HOME}"/cic-var/sage-download/sage-"${SAGEVERSION}".tar.gz || ! $(md5sum "${HOME}"/tmp/sage-download/sage-"${SAGEVERSION}".tar.gz | cut -d' ' -f1) == "${SAGEVERSIONMD5}" ]]; then
-                msg "Downloading sagemath!"
-                if [[ -e "${HOME}"/cic-var/sage-download ]]; then
-                    rm -rf "${HOME}"/cic-var/sage-download
-                fi
-                mkdir -p "${HOME}"/cic-var/sage-download
-                pushd . >/dev/null
-                cd "${HOME}"/cic-var/sage-download
-                # should I delete this?
-                # TODO: does the tarball already exist?
-                #       do not delete directory in this case
-                wget "$SAGEMIRROR"/sage-"${SAGEVERSION}".tar.gz
-                msg "Finished downloading!"
-            else
-                msg "Sagemath already downloaded!"
-                pushd . >/dev/null
-                cd "${HOME}"/cic-var/sage-download
-            fi
-        fi
-        MD5SUMCURRENT=$(md5sum sage-"$SAGEVERSION".tar.gz | cut -d' ' -f1)
-        echo "\"$MD5SUMCURRENT\" should be \"$SAGEVERSIONMD5\""
-        if [[ "$MD5SUMCURRENT" != "$SAGEVERSIONMD5" ]]; then
-            yell "md5 sum incorrect!"
-            return 1
-        fi
-        msg "md5 sum correct!"
-        msg "Unpacking!"
-        if [[ -d sage-"${SAGEVERSION}" ]]; then
-            rm -rf sage-"${SAGEVERSION}"
-        fi
-        tar xvzf sage-"${SAGEVERSION}".tar.gz
-        # check installation
-        msg "Must now move installation directory to /opt"
-        while read -r -t 0;do read -r; done;
-        read -n 1 -p "Continue with build (y/n)? " yn
-        echo ""
-        if [[ "$yn" == "y" ]]; then
-            sudo mv ./sage-"${SAGEVERSION}" /opt
-            cd /opt/sage-"${SAGEVERSION}"
-        else
-            return 1
-        fi
-        # make sure I don't overload my crappy vunerable portable computers
-        if [[ "${HOSTNAME}" =~ laptop || "$HOSTNAME" =~ netbook ]]; then
-            MAKE='make -j1' time make
-        else
-            MAKE='make -j8' time make
-        fi
-        # TODO: option to just finalize
-        while read -r -t 0;do read -r; done;
-        read -n 1 -p "Build OK and finalize setup? (y/n)? " yn2
-        echo ""
-    else
-        local yn2="y"
-        pushd . >/dev/null
-        cd /opt/sage-"${SAGEVERSION}"
-    fi
-    # TODO: make sure I can rerun this if necesssary
-    # TODO: make an upgrade, find out if this does not work, make sure it does
-    # TODO: possibly upgrade twisted
-    if [[ "$yn2" == "y" ]]; then
-        msg "Exit sage when done!"
-        ./sage
-        # build packages
-        fetch-build-sage-packages
-        # make docs
-        make doc
-        # TODO: overwrite binary, but ask first
-        if [[ -e /usr/local/bin/sage ]]; then
-            sudo rm /usr/local/bin/sage
-        fi
-        sudo ln -s /opt/sage-"${SAGEVERSION}"/sage /usr/local/bin
-    else
-        echo "Not finalizing!  Can be done later with --finalize"
-        return 1
-    fi
-    # try running sage
-    msg "Exit sage when done!"
-    ./sage
-    msg "Installation done!"
-    popd >/dev/null
-}
-
-fetch-build-sage-packages () {
-    # be in sage directory, the ./sage is safety for this
-    # http://doc.sagemath.org/html/en/reference/misc/sage/misc/package.html
-    ./sage -i openssl
-    ./sage -pip install --upgrade pip
-    ./sage -pip install --upgrade service_identity
-    ./sage -pip install --upgrade dill
-    ./sage -pip install --upgrade lxml
-    ./sage -pip install --upgrade multiprocess
-    # out of date pillow has been an issue for me before
-    ./sage -pip install --upgrade pillow
-    ./sage -pip install --upgrade psycopg2-binary
-    ./sage -pip install --upgrade pycurl
-    ./sage -pip install --upgrade pyopenssl
-    # ./sage -pip install --upgrade rlipython
-    ./sage -pip install --upgrade readline
-    # install sage mode
-    # TODO: remove, does not seem to exist, try melpa
-    # ./sage -i sage_mode
-    # TODO: I can replace most of my keys now
-    # echo "Setting up rlipython!"
-    # ./sage -ipython -c "import rlipython;rlipython.install()"
-}
-
 caps-toggle () {
     # toggle caps just in case
     xdotool key Caps_Lock
@@ -1856,6 +1710,8 @@ build-install-software () {
     h2 "pip";
     # TODO: upgrade pip automatically?
     curl https://bootstrap.pypa.io/get-pip.py | sudo python
+    sudo apt-get install --reinstall python3-pip
+    sudo pip3 install meson
     h2 "wayback downloader"
     sudo gem install wayback_machine_downloader
     build-install-software-feh
@@ -1875,8 +1731,8 @@ build-install-software-games () {
     sudo true || return 1
     [[ ! -d "${HOME}"/cic-external-vcs ]] && mkdir -p "${HOME}"/cic-external-vcs
     cd "${HOME}"/cic-external-vcs
-    [[ ! -d "${HOME}"/cic-external-vcs/ppsspp-source-external ]]        && git clone https://github.com/hrydgard/ppsspp                ppsspp-source-external
-    [[ ! -d "${HOME}"/cic-external-vcs/desmume-external/ ]]             && git clone https://github.com/TASVideos/desmume/             desmume-external
+    [[ ! -d "${HOME}"/cic-external-vcs/ppsspp-source-external ]] && git clone https://github.com/hrydgard/ppsspp    ppsspp-source-external
+    [[ ! -d "${HOME}"/cic-external-vcs/desmume-external/ ]]      && git clone https://github.com/TASVideos/desmume/ desmume-external
     build-install-software-pcsx-reloaded
     build-install-software-ppsspp
     build-install-software-mgba
@@ -2176,6 +2032,7 @@ build-install-software-zsnes () {
 }
 
 build-install-software-dockapps () {
+    pushd . >/dev/null
     cd "$HOME"/cic-external-vcs/
     # need proper version of dockapps and wmgeneral built
     # https://unix.stackexchange.com/questions/67781/use-shared-libraries-in-usr-local-lib
@@ -2255,6 +2112,7 @@ build-install-software-dockapps () {
     make clean
     SYSTEM="-L/usr/local/lib" make
     sudo make install
+    popd >/dev/null
     popd >/dev/null
 }
 
@@ -2400,7 +2258,7 @@ find-iname () {
 }
 
 xset-query () {
-    xset q
+    xset -q
 }
 
 grep-gz-files () {

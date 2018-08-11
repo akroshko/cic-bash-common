@@ -116,12 +116,14 @@ if [[ "$1" == '--pause' || "$1" == '--all' ]];then
     # TODO there does not seem to be a way to do two searches in one command
     xdotool  search --name "twitch|youtube" | while IFS= read -r WINID; do
         if xdotool search --class "conkeror"  | grep -- "$WINID" >/dev/null; then
-            xdotool windowactivate --sync "${line}";
+            xdotool windowactivate --sync "${WINID}"
             # TODO: very arbitrary delay, perhaps wait for something to return
             # TODO definitely want this better
-            sleep 0.5
+            # TODO: should not be necessary because of --sync
+            sleep 1.0
+            # TODO: can I wait for this to return
             ${HOME}/bin/conkeror-batch -f web-video-pause
-            sleep 0.5
+            sleep 1.0
             echo "$WINID" > $HOME/.web-video-last.txt
             echo $(xprop WM_CLASS -id "${WINID}") >> $HOME/.web-video-last.txt
         fi
