@@ -349,17 +349,21 @@ need_new_symlink () {
 
 # TODO: do something if there is a directory
 cp_if_different () {
+    local FOUNDDIFFERENT=1
     # is destination a directory
     if [[ -d "$2" ]]; then
-        THEBASENAME=$(basename "$1")
+        local THEBASENAME=$(basename "$1")
         if ! cmp --silent "$1" "$2"/"$THEBASENAME"; then
             command cp "$1" "$2"
+            FOUNDDIFFERENT=0
         fi
     else
         if [[ ! -e "$2" ]] || ! cmp --silent "$1" "$2"; then
             command cp "$1" "$2"
+            FOUNDDIFFERENT=0
         fi
     fi
+    return $FOUNDDIFFERENT
 }
 
 match_string_array () {
