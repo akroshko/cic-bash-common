@@ -3,6 +3,10 @@
 
 echo "" > $HOME/.web-video-last.txt
 
+# XXXX: sleep 0.10 is generally to just ensure that nothing happens too rapid fire
+# XXXX: sleep 0.25 generally ensures window recieves key
+# XXXX: sleep 1.0 is to make sure conkeror reacts
+
 # filtering by name probably cuts out more windows more quickly than class
 # TODO: need global regex for this
 # minimize always minimizes video sites and get rid of social media first
@@ -33,7 +37,7 @@ xdotool search --class "dolphin-emu" | while IFS= read -r WINID; do
         # xdotool windowactivate "$WINID" windowfocus --sync "$WINID"
         wmctrl -i -R "$WINID"
         # xdotool windowactivate --sync "$WINID"
-        sleep 0.5
+        sleep 0.25
         # dolphin seems to poll periodically for the key being depressed
         # just a keypress even is only detected about 25% of the time
         xdotool keydown --window "$WINID" "F10"
@@ -58,41 +62,41 @@ xdotool search --class "dolphin-emu|Fceux|mGBA|mpv|PCSXR|PPSSPPSDL|vlc|zsnes" | 
         if [[ "${THECLASS}" =~ "mpv" ]]; then
             # TODO: figure out if I can force pause
             xdotool windowactivate --sync "${WINID}" key "space"
-            sleep 0.5
+            sleep 0.25
             echo "$WINID" > $HOME/.web-video-last.txt
             echo $(xprop WM_CLASS -id "$WINID") >> $HOME/.web-video-last.txt
         elif [[ "${THECLASS}" =~ "vlc" ]]; then
             # space pauses, browser stop key stops
             xdotool windowactivate --sync "${WINID}" key "XF86Stop"
-            sleep 0.5
+            sleep 0.25
             echo "$WINID" > $HOME/.web-video-last.txt
             echo $(xprop WM_CLASS -id "$WINID") >> $HOME/.web-video-last.txt
         elif [[ "${THECLASS}" =~ "Fceux" ]]; then
             # TODO: this may toggle caps
             xdotool windowactivate --sync "${WINID}" key --window  "${WINID}" "Pause"
-            sleep 0.5
+            sleep 0.25
             echo "$WINID" > $HOME/.web-video-last.txt
             echo $(xprop WM_CLASS -id "$WINID") >> $HOME/.web-video-last.txt
         elif [[ "${THECLASS}" =~ "mGBA" ]]; then
             # TODO: this may toggle caps
             xdotool windowactivate --sync "${WINID}" key --window  "${WINID}" "ctrl+p"
-            sleep 0.5
+            sleep 0.25
             echo "$WINID" > $HOME/.web-video-last.txt
             echo $(xprop WM_CLASS -id "$WINID") >> $HOME/.web-video-last.txt
         elif [[ "${THECLASS}" =~ "PCSXR" ]]; then
             # TODO: this may toggle caps
             xdotool windowactivate --sync "${WINID}" key --window  "${WINID}" "Escape"
-            sleep 0.5
+            sleep 0.25
             echo "$WINID" > $HOME/.web-video-last.txt
             echo $(xprop WM_CLASS -id "$WINID") >> $HOME/.web-video-last.txt
         elif [[ "${THECLASS}" =~ "PPSSPPSDL" ]]; then
             xdotool windowactivate --sync "${WINID}" key --window  "${WINID}" "Escape"
-            sleep 0.5
+            sleep 0.25
             echo "$WINID" > $HOME/.web-video-last.txt
             echo $(xprop WM_CLASS -id "$WINID") >> $HOME/.web-video-last.txt
         elif [[ "${THECLASS}" =~ "zsnes" ]]; then
             xdotool windowactivate --sync "${WINID}" key --window  "${WINID}" "Escape"
-            sleep 0.5
+            sleep 0.25
             echo "$WINID" > $HOME/.web-video-last.txt
             echo $(xprop WM_CLASS -id "$WINID") >> $HOME/.web-video-last.txt
         else
@@ -120,7 +124,7 @@ if [[ "$1" == '--pause' || "$1" == '--all' ]];then
             # TODO: very arbitrary delay, perhaps wait for something to return
             # TODO definitely want this better
             # TODO: should not be necessary because of --sync
-            sleep 1.0
+            sleep 0.25
             # TODO: can I wait for this to return
             ${HOME}/bin/conkeror-batch -f web-video-pause
             sleep 1.0
