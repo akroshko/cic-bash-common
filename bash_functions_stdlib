@@ -1148,7 +1148,7 @@ sage-notebook-browser () {
         chromium https://localhost:18080/ &>/dev/null &
     else
         # TODO: shred firefox if not running
-        nohup firefox -P sagenotebook https://localhost:18080/ &>/dev/null &
+        (nohup firefox -P sagenotebook https://localhost:18080/ &>/dev/null &)
     fi
 }
 

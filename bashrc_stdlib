@@ -122,8 +122,9 @@ alias agu-dry-run='sudo apt-get update && sudo apt-get dist-upgrade --dry-run'
 alias ag-autoremove='sudo apt-get autoremove'
 alias al='alias'
 # improve this
-alias ssh-controlmaster-list='ps -elf | grep controlmaster'
+alias ssh-controlmaster-list='ps -elf | grep controlmaster | grep -v grep'
 alias ssh-controlmaster-kill='ssh -O exit'
+alias ssh-kill-controlmaster='ssh -O exit'
 # https://stackoverflow.com/questions/352098/how-can-i-pretty-print-json-in-a-unix-shell-script
 alias cat-json='python -m json.tool'
 alias dc='aafire -driver curses -extended'

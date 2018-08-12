@@ -1,2 +1,2 @@
 #!/bin/bash
-nohup rxvt-unicode -e bash -i -c "source ~/.profile" &
+(nohup rxvt-unicode -e bash -i -c "source ~/.profile" &)

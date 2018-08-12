@@ -113,6 +113,7 @@ case $firstarg in
     nohup )
         shift
         # TODO: should nohup use exec?
+        # TODO: things highlighted red, if I try to put this in a subshell, is this a real error?
         nohup $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" --create-frame "$@" &>/dev/null &
         ;;
     sameframe )
