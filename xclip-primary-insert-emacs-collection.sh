@@ -27,6 +27,6 @@
 main () {
     # TODO: is xclip really the best?
     local BASE64CONVERT=$(xclip -l 1 -o -selection primary | base64)
-    ${HOME}/bin/launch-emacsclient noframe --eval "(cic:insert-collection \"${BASE64CONVERT}\" t)"
+    "${HOME}/bin/launch-emacsclient" noframe --eval "(cic:insert-collection \"${BASE64CONVERT}\" t)"
 }
 main

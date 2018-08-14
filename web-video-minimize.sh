@@ -126,7 +126,7 @@ if [[ "$1" == '--pause' || "$1" == '--all' ]];then
             # TODO: should not be necessary because of --sync
             sleep 0.25
             # TODO: can I wait for this to return
-            ${HOME}/bin/conkeror-batch -f web-video-pause
+            "${HOME}/bin/conkeror-batch" -f web-video-pause
             sleep 1.0
             echo "$WINID" > $HOME/.web-video-last.txt
             echo $(xprop WM_CLASS -id "${WINID}") >> $HOME/.web-video-last.txt

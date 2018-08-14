@@ -83,8 +83,8 @@ home-trash () {
     # delete by moving to a trash file that can be periodically
     # checked
     local TRASHFILE="$1"
-    mkdir -p ${HOME}/tmp/trash
-    \mv --backup=t -- "$TRASHFILE" ${HOME}/tmp/trash
+    mkdir -p "${HOME}/tmp/trash"
+    \mv --backup=t -- "$TRASHFILE" "${HOME}/tmp/trash"
 }
 
 date-time-stamp () {
@@ -103,7 +103,7 @@ date-stamp () {
 
 # move this to function ASAP
 memory-log () {
-    while true; do { cat /proc/meminfo | sed -n 2p ; date ; } | tr "\n" " " ; echo ""; sleep 30; done >> ${HOME}/memory-$(date +%Y%m%d%H%M%S).log
+    while true; do { cat /proc/meminfo | sed -n 2p ; date ; } | tr "\n" " " ; echo ""; sleep 30; done >> "${HOME}/memory-$(date +%Y%m%d%H%M%S).log"
 }
 
 ag-show () {
@@ -547,12 +547,12 @@ fgi () {
 
 harm-bash () {
     fix-gpg-ssh-permissions
-    source ${HOME}/.bash_profile
+    source "${HOME}/.bash_profile"
 }
 
 harm-bashrc () {
     fix-gpg-ssh-permissions
-    source ${HOME}/.bashrc
+    source "${HOME}/.bashrc"
 }
 
 harm-xresources () {
@@ -560,7 +560,7 @@ harm-xresources () {
     # otherwise it is done in bash-profile....
     if [[ -f "${HOME}/.Xresources" ]]; then
         msg "Loading Xresources!!!"
-        xrdb ${HOME}/.Xresources
+        xrdb "${HOME}/.Xresources"
     fi
 }
 
@@ -592,9 +592,9 @@ fix-gpg-ssh-permissions () {
     # TODO: start adding things that might be necessary
     # TODO: start adding this to the front of critical operations
     # fix the permissions on the standard gpg and ssh directory
-    fix-crypt-permissions "${HOME}"/.gnupg
-    fix-crypt-permissions "${HOME}"/.ssh
-    fix-crypt-permissions "${HOME}"/.msmtprc
+    fix-crypt-permissions "${HOME}/.gnupg"
+    fix-crypt-permissions "${HOME}/.ssh"
+    fix-crypt-permissions "${HOME}/.msmtprc"
 }
 
 backlight-percentage () {
@@ -1640,7 +1640,7 @@ function ls-mime-files () {
 function ls-mime-files2 () {
     # see https://unix.stackexchange.com/questions/36380/how-to-properly-and-easy-configure-xdg-open-without-any-enviroment
     # XXXX: changed variable from dd, bad name for bash variable
-    for thedir in /usr/share/applications "${HOME}"/.local/share/applications; do
+    for thedir in /usr/share/applications ${HOME}/.local/share/applications; do
         h2 "$thedir"
         for thefile in $(ls $thedir 2>/dev/null | grep "\\.desktop$"); do
             h3 "$thefile"
@@ -1686,7 +1686,7 @@ flatten-current-directory () {
 
 dunst-notifications () {
     printf "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
-    grep "summary: \|body: " "${HOME}"/tmp/dunst-current.log | grep -v \'\' | sed -e 's/^[ \t]*//' | sed -e 's/body: /    /' | sed -e 's/summary: //'
+    grep "summary: \|body: " "${HOME}/tmp/dunst-current.log" | grep -v \'\' | sed -e 's/^[ \t]*//' | sed -e 's/body: /    /' | sed -e 's/summary: //'
 }
 
 build-install-software () {
@@ -1695,21 +1695,21 @@ build-install-software () {
     sudo true || return 1
     # at least for now, download and build a few select pieces of software
     # TODO: evantually make this the only one
-    [[ ! -d "${HOME}"/cic-external-vcs ]] && mkdir -p "${HOME}"/cic-external-vcs
+    [[ ! -d "${HOME}/cic-external-vcs" ]] && mkdir -p "${HOME}/cic-external-vcs"
     pushd . >/dev/null
-    cd "${HOME}"/cic-external-vcs
+    cd "${HOME}/cic-external-vcs"
     # TODO: update this as something better and potentially less destructive
-    [[ ! -d "${HOME}"/cic-external-vcs/conkeror-external ]]             && git clone git://repo.or.cz/conkeror.git                     conkeror-external
-    [[ ! -d "${HOME}"/cic-external-vcs/urxvt-perls-external ]]          && git clone https://github.com/akroshko/urxvt-perls.git       urxvt-perls-external
-    [[ ! -d "${HOME}"/cic-external-vcs/feh-external ]]                  && git clone https://git.finalrewind.org/feh                   feh-exteneral
-    [[ ! -d "${HOME}"/cic-external-vcs/girara-external ]]               && git clone https://git.pwmt.org/pwmt/girara.git              girara-external
-    [[ ! -d "${HOME}"/cic-external-vcs/PCSX-Reloaded-external ]]        && git clone https://github.com/SonofUgly/PCSX-Reloaded        PCSX-Reloaded-external
-    [[ ! -d "${HOME}"/cic-external-vcs/zathura-external ]]              && git clone https://git.pwmt.org/pwmt/zathura.git             zathura-external
-    [[ ! -d "${HOME}"/cic-external-vcs/zathura-cb-external ]]           && git clone https://git.pwmt.org/pwmt/zathura-cb.git          zathura-cb-external
-    [[ ! -d "${HOME}"/cic-external-vcs/zathura-djvu-external ]]         && git clone https://git.pwmt.org/pwmt/zathura-djvu.git        zathura-djvu-external
-    [[ ! -d "${HOME}"/cic-external-vcs/zathura-pdf-poppler-external ]]  && git clone https://git.pwmt.org/pwmt/zathura-pdf-poppler.git zathura-pdf-poppler-external
-    [[ ! -d "${HOME}"/cic-external-vcs/zathura-pdf-poppler-external ]]  && git clone https://git.pwmt.org/pwmt/zathura-pdf-mupdf.git   zathura-pdf-mupdf-external
-    [[ ! -d "${HOME}"/cic-external-vcs/zathura-ps-external ]]           && git clone https://git.pwmt.org/pwmt/zathura-ps.git          zathura-ps-external
+    [[ ! -d "${HOME}/cic-external-vcs/conkeror-external" ]]             && git clone git://repo.or.cz/conkeror.git                     conkeror-external
+    [[ ! -d "${HOME}/cic-external-vcs/urxvt-perls-external" ]]          && git clone https://github.com/akroshko/urxvt-perls.git       urxvt-perls-external
+    [[ ! -d "${HOME}/cic-external-vcs/feh-external" ]]                  && git clone https://git.finalrewind.org/feh                   feh-exteneral
+    [[ ! -d "${HOME}/cic-external-vcs/girara-external" ]]               && git clone https://git.pwmt.org/pwmt/girara.git              girara-external
+    [[ ! -d "${HOME}/cic-external-vcs/PCSX-Reloaded-external" ]]        && git clone https://github.com/SonofUgly/PCSX-Reloaded        PCSX-Reloaded-external
+    [[ ! -d "${HOME}/cic-external-vcs/zathura-external" ]]              && git clone https://git.pwmt.org/pwmt/zathura.git             zathura-external
+    [[ ! -d "${HOME}/cic-external-vcs/zathura-cb-external" ]]           && git clone https://git.pwmt.org/pwmt/zathura-cb.git          zathura-cb-external
+    [[ ! -d "${HOME}/cic-external-vcs/zathura-djvu-external" ]]         && git clone https://git.pwmt.org/pwmt/zathura-djvu.git        zathura-djvu-external
+    [[ ! -d "${HOME}/cic-external-vcs/zathura-pdf-poppler-external" ]]  && git clone https://git.pwmt.org/pwmt/zathura-pdf-poppler.git zathura-pdf-poppler-external
+    [[ ! -d "${HOME}/cic-external-vcs/zathura-pdf-poppler-external" ]]  && git clone https://git.pwmt.org/pwmt/zathura-pdf-mupdf.git   zathura-pdf-mupdf-external
+    [[ ! -d "${HOME}/cic-external-vcs/zathura-ps-external" ]]           && git clone https://git.pwmt.org/pwmt/zathura-ps.git          zathura-ps-external
     # now build, copied from build-install-software, and should be synced up
     h2 "pip";
     # TODO: upgrade pip automatically?
@@ -1733,10 +1733,10 @@ build-install-software () {
 
 build-install-software-games () {
     sudo true || return 1
-    [[ ! -d "${HOME}"/cic-external-vcs ]] && mkdir -p "${HOME}"/cic-external-vcs
-    cd "${HOME}"/cic-external-vcs
-    [[ ! -d "${HOME}"/cic-external-vcs/ppsspp-source-external ]] && git clone https://github.com/hrydgard/ppsspp    ppsspp-source-external
-    [[ ! -d "${HOME}"/cic-external-vcs/desmume-external/ ]]      && git clone https://github.com/TASVideos/desmume/ desmume-external
+    [[ ! -d "${HOME}/cic-external-vcs" ]] && mkdir -p "${HOME}/cic-external-vcs"
+    cd "${HOME}/cic-external-vcs"
+    [[ ! -d "${HOME}/cic-external-vcs/ppsspp-source-external" ]] && git clone https://github.com/hrydgard/ppsspp    ppsspp-source-external
+    [[ ! -d "${HOME}/cic-external-vcs/desmume-external/" ]]      && git clone https://github.com/TASVideos/desmume/ desmume-external
     build-install-software-pcsx-reloaded
     build-install-software-ppsspp
     build-install-software-mgba
@@ -2167,6 +2167,10 @@ inhibit-powersave () {
         cpu-throttle-up
         sleep 15
     done
+}
+
+inhibit-tty-powersave () {
+    setterm -blank 0 -powersave off
 }
 
 grep-functions () {
@@ -2750,7 +2754,7 @@ check-git-repo () {
 
 ag-reinstall-all () {
     if dangerous-function-ask; then
-        sudo dpkg --get-selections > ${HOME}/list.log
+        sudo dpkg --get-selections > "${HOME}/list.log"
         for i in $(cat list.log); do sudo apt-get install --reinstall "$i"; done
     fi
 }

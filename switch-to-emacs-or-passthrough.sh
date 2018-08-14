@@ -5,9 +5,9 @@ if wmctrl -lx | awk '{print $1 " " $3}' | sed -e 's/0x0*//g' | grep -- "$(xprop 
     #      would have to change this to something else if using key other than alt+"e"
     #      emacs command alt+"e" is next frame (could be something to switch out of emacs)
     # TODO: this should be next frame
-    ${HOME}/cic-vcs/bash-stdlib/launch-emacsclient noframe --eval "(other-frame 1)"
+    "${HOME}/cic-vcs/bash-stdlib/launch-emacsclient" noframe --eval "(other-frame 1)"
     # true
 else
-    echo $(xdotool getwindowfocus) > $HOME/.emacs-switch-last.txt
+    echo $(xdotool getwindowfocus) > "${HOME}/.emacs-switch-last.txt"
     wmctrl -x -a emacs.Emacs
 fi

@@ -31,8 +31,8 @@ firstarg=$1
 # start emacs deamon if not already started
 # XXXX: avoid starting daemon if computer is configured with systemd service
 # TODO: better way to do this
-if ! [[ -e "${HOME}"/.config/systemd/user/emacs.service ]] && ! ps -ef | grep "emacs --daemon" | grep -v grep >/dev/null; then
-    emacs --daemon --no-init-file --load "$HOME"/.emacs-cic.el
+if ! [[ -e "${HOME}/.config/systemd/user/emacs.service" ]] && ! ps -ef | grep "emacs --daemon" | grep -v grep >/dev/null; then
+    emacs --daemon --no-init-file --load "${HOME}/.emacs-cic.el"
     sleep 15
 fi
 # get emacsclient command based on nice value
