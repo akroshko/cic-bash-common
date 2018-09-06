@@ -197,7 +197,8 @@ alias sageipy='sage -ipython'
 alias xmodmap-ls='xmodmap -pm'
 alias ls-xmodmap='xmodmap -pm'
 alias gnuplot-test='gnuplot --persist -e "test;"'
-# TODO: change this later?
+alias wine-desktop='wine explorer /desktop=1280x1024'
+alias wine-desktop-wide='wine explorer /desktop=1600x900'
 
 ################################################################################
 ## do terminal stuff last so show-command-in-titlebar is not eating up all my time

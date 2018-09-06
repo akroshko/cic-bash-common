@@ -1,7 +1,9 @@
 #!/bin/bash
 # global function to minimize with the option to pausing running videos or other media
 
-echo "" > $HOME/.web-video-last.txt
+# TODO: put in tmp directory?
+# TODO: make sure null operations do not overwrite last
+echo "" > /tmp/cic-web-video-last.txt
 
 # XXXX: sleep 0.10 is generally to just ensure that nothing happens too rapid fire
 # XXXX: sleep 0.25 generally ensures window recieves key
@@ -45,8 +47,8 @@ xdotool search --class "dolphin-emu" | while IFS= read -r WINID; do
         xdotool keyup   --window "$WINID" "F10"
         # at least some sleep delay after inputting key seems to help
         sleep 1
-        echo "$WINID" > $HOME/.web-video-last.txt
-        echo $(xprop WM_CLASS -id "$WINID") >> $HOME/.web-video-last.txt
+        echo "$WINID" > /tmp/cic-web-video-last.txt
+        echo $(xprop WM_CLASS -id "$WINID") >> /tmp/cic-web-video-last.txt
     fi
 done
 
@@ -63,42 +65,42 @@ xdotool search --class "dolphin-emu|Fceux|mGBA|mpv|PCSXR|PPSSPPSDL|vlc|zsnes" | 
             # TODO: figure out if I can force pause
             xdotool windowactivate --sync "${WINID}" key "space"
             sleep 0.25
-            echo "$WINID" > $HOME/.web-video-last.txt
-            echo $(xprop WM_CLASS -id "$WINID") >> $HOME/.web-video-last.txt
+            echo "$WINID" > /tmp/cic-web-video-last.txt
+            echo $(xprop WM_CLASS -id "$WINID") >> /tmp/cic-web-video-last.txt
         elif [[ "${THECLASS}" =~ "vlc" ]]; then
             # space pauses, browser stop key stops
             xdotool windowactivate --sync "${WINID}" key "XF86Stop"
             sleep 0.25
-            echo "$WINID" > $HOME/.web-video-last.txt
-            echo $(xprop WM_CLASS -id "$WINID") >> $HOME/.web-video-last.txt
+            echo "$WINID" > /tmp/cic-web-video-last.txt
+            echo $(xprop WM_CLASS -id "$WINID") >> /tmp/cic-web-video-last.txt
         elif [[ "${THECLASS}" =~ "Fceux" ]]; then
             # TODO: this may toggle caps
             xdotool windowactivate --sync "${WINID}" key --window  "${WINID}" "Pause"
             sleep 0.25
-            echo "$WINID" > $HOME/.web-video-last.txt
-            echo $(xprop WM_CLASS -id "$WINID") >> $HOME/.web-video-last.txt
+            echo "$WINID" > /tmp/cic-web-video-last.txt
+            echo $(xprop WM_CLASS -id "$WINID") >> /tmp/cic-web-video-last.txt
         elif [[ "${THECLASS}" =~ "mGBA" ]]; then
             # TODO: this may toggle caps
             xdotool windowactivate --sync "${WINID}" key --window  "${WINID}" "ctrl+p"
             sleep 0.25
-            echo "$WINID" > $HOME/.web-video-last.txt
-            echo $(xprop WM_CLASS -id "$WINID") >> $HOME/.web-video-last.txt
+            echo "$WINID" > /tmp/cic-web-video-last.txt
+            echo $(xprop WM_CLASS -id "$WINID") >> /tmp/cic-web-video-last.txt
         elif [[ "${THECLASS}" =~ "PCSXR" ]]; then
             # TODO: this may toggle caps
             xdotool windowactivate --sync "${WINID}" key --window  "${WINID}" "Escape"
             sleep 0.25
-            echo "$WINID" > $HOME/.web-video-last.txt
-            echo $(xprop WM_CLASS -id "$WINID") >> $HOME/.web-video-last.txt
+            echo "$WINID" > /tmp/cic-web-video-last.txt
+            echo $(xprop WM_CLASS -id "$WINID") >> /tmp/cic-web-video-last.txt
         elif [[ "${THECLASS}" =~ "PPSSPPSDL" ]]; then
             xdotool windowactivate --sync "${WINID}" key --window  "${WINID}" "Escape"
             sleep 0.25
-            echo "$WINID" > $HOME/.web-video-last.txt
-            echo $(xprop WM_CLASS -id "$WINID") >> $HOME/.web-video-last.txt
+            echo "$WINID" > /tmp/cic-web-video-last.txt
+            echo $(xprop WM_CLASS -id "$WINID") >> /tmp/cic-web-video-last.txt
         elif [[ "${THECLASS}" =~ "zsnes" ]]; then
             xdotool windowactivate --sync "${WINID}" key --window  "${WINID}" "Escape"
             sleep 0.25
-            echo "$WINID" > $HOME/.web-video-last.txt
-            echo $(xprop WM_CLASS -id "$WINID") >> $HOME/.web-video-last.txt
+            echo "$WINID" > /tmp/cic-web-video-last.txt
+            echo $(xprop WM_CLASS -id "$WINID") >> /tmp/cic-web-video-last.txt
         else
             if [[ "$1" == '--pause' || "$1" == '--all' ]]; then
                 # TODO: do I really need this
@@ -128,8 +130,8 @@ if [[ "$1" == '--pause' || "$1" == '--all' ]];then
             # TODO: can I wait for this to return
             "${HOME}/bin/conkeror-batch" -f web-video-pause
             sleep 1.0
-            echo "$WINID" > $HOME/.web-video-last.txt
-            echo $(xprop WM_CLASS -id "${WINID}") >> $HOME/.web-video-last.txt
+            echo "$WINID" > /tmp/cic-web-video-last.txt
+            echo $(xprop WM_CLASS -id "${WINID}") >> /tmp/cic-web-video-last.txt
         fi
     done
 fi
@@ -137,7 +139,7 @@ fi
 xdotool search --onlyvisible --name "twitch|youtube" | while IFS= read -r WINID; do
     if xdotool search --onlyvisible --class "chromium-browser|conkeror|firefox" | grep -- "$WINID" >/dev/null; then
         sleep 0.10
-        xdotool windowminimize "$WINID"
+        xdotool windowminimize "${WINID}"
         sleep 0.10
     fi
 done

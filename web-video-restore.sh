@@ -1,8 +1,10 @@
 #!/bin/bash
 
-if [[ -e $HOME/.web-video-last.txt ]]; then
-    WINID=$(sed -n '1p' $HOME/.web-video-last.txt)
-    WINCLASS=$(sed -n '2p' $HOME/.web-video-last.txt)
+# overwrite if window no longer exists
+
+if [[ -e /tmp/cic-web-video-last.txt ]]; then
+    WINID=$(sed -n '1p' /tmp/cic-web-video-last.txt)
+    WINCLASS=$(sed -n '2p' /tmp/cic-web-video-last.txt)
     # does winid exist and what is its class
     WINID_EXIST=$(xdotool search --name "" | grep -i "$WINID")
     WINCLASS_EXIST=$(xprop WM_CLASS -id "$WINID_EXIST")

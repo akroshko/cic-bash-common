@@ -126,9 +126,7 @@ ag-install () {
     apt-get install --dry-run "$@"
     echo "Do install for real?"
     # install a debian package
-    read -n 1 -p "Install? (y/n)? " yn
-    echo ""
-    if [[ "$yn" == 'y' ]]; then
+    if ask_yn "Install?";  then
         sudo apt-get install "$@"
     else
         msg "Aborting!"
@@ -306,7 +304,7 @@ nmap-lan-complete-super () {
 
 netstat-connections () {
     # check current networking connections
-    netstat -untap
+    netstat --udp --tcp --all --numeric --programs
 }
 
 netstat-connections-super () {
@@ -824,8 +822,7 @@ vcs-conflicts () {
     git diff --name-only --diff-filter=U
 }
 
-alias dkpg-purge-all='master-dpkg-purge-all'
-master-dpkg-purge-all () {
+ag-purge-all () {
     # purge all files related to uninstalled packages
     if dangerous-function-ask; then
         dpkg -l | grep ^rc | cut -d' ' -f3|xargs sudo dpkg --purge
@@ -1377,10 +1374,7 @@ select-disk-uuid-info () {
 }
 
 dangerous-function-ask () {
-    while read -r -t 0;do read -r; done;
-    read -n 1 -p "Dangerous function! Continue (y/n)? " YN
-    echo ""
-    if [[ "$YN" == "y" ]]; then
+    if ask_yn "Dangerous function! Continue"; then
         true
     else
         false
@@ -1388,10 +1382,7 @@ dangerous-function-ask () {
 }
 
 continue-ask () {
-    while read -r -t 0;do read -r; done;
-    read -n 1 -p "Continue (y/n)? " YN
-    echo ""
-    if [[ "$YN" == "y" ]]; then
+    if ask_yn "Continue"; then
         true
     else
         false
@@ -2782,4 +2773,25 @@ check-permissions-rw () {
 
 ls-sqlite-tables () {
     sqlite3 "$1" '.tables'
+}
+
+cat-all () {
+    for F in ./*; do
+        h1 "$F"
+        cat "$F"
+    done
+}
+
+ask_yn () {
+    local YN=
+    while [[ "$YN" != 'y' && "$YN" != 'n' ]]; do
+        while read -r -t 0;do read -r; done;
+        read -n 1 -p "$1 (y/n)? " YN
+        echo ""
+    done
+    if [[ "$YN" == 'y' ]]; then
+        return 0
+    elif [[ "$YN" == 'n' ]]; then
+        return 1
+    fi
 }
