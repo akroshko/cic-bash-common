@@ -1,6 +1,6 @@
 #!/bin/bash
 if [[ -n "$1" ]]; then
-    if ps -elf | grep -- "xpdf.*$2" | grep -v "xpdf-local.sh" | grep -v grep >/dev/null; then
+    if ps -elf | grep -- "[x]pdf.*$2" | grep -v "[x]pdf-local.sh" >/dev/null; then
         ALREADYFIXED=1
         # put in background to make sure these finish
         xpdf -remote "$2" -exec closeOutline &

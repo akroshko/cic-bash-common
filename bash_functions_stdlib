@@ -7,7 +7,7 @@
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Fri Mar 27, 2015
-# Version: 20180806
+# Version: 20180918
 # URL: https://github.com/akroshko/bash-stdlib
 #
 # This program is free software: you can redistribute it and/or modify
@@ -83,8 +83,8 @@ home-trash () {
     # delete by moving to a trash file that can be periodically
     # checked
     local TRASHFILE="$1"
-    mkdir -p "${HOME}/tmp/trash"
-    \mv --backup=t -- "$TRASHFILE" "${HOME}/tmp/trash"
+    mkdir -p "$HOME/tmp/trash"
+    \mv --backup=t -- "$TRASHFILE" "$HOME/tmp/trash"
 }
 
 date-time-stamp () {
@@ -103,7 +103,7 @@ date-stamp () {
 
 # move this to function ASAP
 memory-log () {
-    while true; do { cat /proc/meminfo | sed -n 2p ; date ; } | tr "\n" " " ; echo ""; sleep 30; done >> "${HOME}/memory-$(date +%Y%m%d%H%M%S).log"
+    while true; do { cat /proc/meminfo | sed -n 2p ; date ; } | tr "\n" " " ; echo ""; sleep 30; done >> "$HOME/memory-$(date +%Y%m%d%H%M%S).log"
 }
 
 ag-show () {
@@ -545,20 +545,20 @@ fgi () {
 
 harm-bash () {
     fix-gpg-ssh-permissions
-    source "${HOME}/.bash_profile"
+    source "$HOME/.bash_profile"
 }
 
 harm-bashrc () {
     fix-gpg-ssh-permissions
-    source "${HOME}/.bashrc"
+    source "$HOME/.bashrc"
 }
 
 harm-xresources () {
     # reload x-resources for development purposes
     # otherwise it is done in bash-profile....
-    if [[ -f "${HOME}/.Xresources" ]]; then
+    if [[ -f "$HOME/.Xresources" ]]; then
         msg "Loading Xresources!!!"
-        xrdb "${HOME}/.Xresources"
+        xrdb "$HOME/.Xresources"
     fi
 }
 
@@ -590,9 +590,9 @@ fix-gpg-ssh-permissions () {
     # TODO: start adding things that might be necessary
     # TODO: start adding this to the front of critical operations
     # fix the permissions on the standard gpg and ssh directory
-    fix-crypt-permissions "${HOME}/.gnupg"
-    fix-crypt-permissions "${HOME}/.ssh"
-    fix-crypt-permissions "${HOME}/.msmtprc"
+    fix-crypt-permissions "$HOME/.gnupg"
+    fix-crypt-permissions "$HOME/.ssh"
+    fix-crypt-permissions "$HOME/.msmtprc"
 }
 
 backlight-percentage () {
@@ -605,7 +605,7 @@ vcs-check-root () {
     # from https://stackoverflow.com/questions/3258243/git-check-if-pull-needed
     # stop it from running home because that's dumb
     # TODO: other directories
-    if [[ ${PWD} == ${HOME} ]]; then
+    if [[ ${PWD} == $HOME ]]; then
         yell "Cannot run in home directory!!!"
         return 1
     fi
@@ -653,7 +653,7 @@ vcs-check-root () {
 }
 
 vcs-check-root-pull-all () {
-    if [[ ${PWD} == ${HOME} ]]; then
+    if [[ ${PWD} == $HOME ]]; then
         yell "Cannot run in home directory!!!"
         return 1
     fi
@@ -915,7 +915,7 @@ ag-list-packages-only () {
 
 # the three-fingered claw, see https://stackoverflow.com/questions/1378274/in-a-bash-script-how-can-i-exit-the-entire-script-if-a-certain-condition-occurs
 yell () {
-    local NEWCOM=$(echo "$0" | sed -r 's|'"${HOME}"'|~|g')
+    local NEWCOM=$(sed -r 's|'"$HOME"'|~|g' <<< "$0")
     echo -e "${BRed}$NEWCOM${Red}: $*${Color_Off}" >&2
 }
 
@@ -929,12 +929,12 @@ try () {
 
 warn () {
     # XXXX: not good because it starts up a new command, but avoids escaping slashes
-    local NEWCOM=$(echo "$0" | sed -r 's|'"${HOME}"'|~|g')
+    local NEWCOM=$(sed -r 's|'"$HOME"'|~|g' <<< "$0")
     echo -e "${BYellow}$NEWCOM${Yellow}: $*${Color_Off}" >&2
 }
 
 msg () {
-    local NEWCOM=$(echo "$0" | sed -r 's|'"${HOME}"'|~|g')
+    local NEWCOM=$(sed -r 's|'"$HOME"'|~|g' <<< "$0")
     echo -e "${BGreen}$NEWCOM${Green}: $*${Color_Off}" >&2
 }
 
@@ -1014,17 +1014,17 @@ vcs-init-full () {
 }
 
 check-emacs-daemon () {
-    ps -ef | grep -- "emacs --daemon" | grep -v grep >/dev/null
+    ps -ef | grep -- '[e]macs --daemon' >/dev/null
     return $?
 }
 
 check-chromium () {
-    ps -ef | grep "/usr/lib/chromium/chromium" | grep -v grep >/dev/null
+    ps -ef | grep '/usr/lib/chromium/[c]hromium' >/dev/null
     return $?
 }
 
 check-firefox () {
-    ps -ef | grep "firefox\|iceweasel\|palemoon" | grep -v grep >/dev/null
+    ps -ef | grep '[f]irefox\|[i]ceweasel\|[p]alemoon' >/dev/null
     return $?
 }
 
@@ -1123,7 +1123,7 @@ sage-notebook () {
         local NBPATH="${JUPYTER_NOTEBOOK_ROOT}/sage-notebooks-${HOSTNAME}.sagenb"
         mkdir -p "${NBPATH}"
         # XXXX: grep to avoid just sage-notebook from scripts that might run this
-        if ps -ef | grep "src/bin/sage-notebook" | grep -v grep >/dev/null; then
+        if ps -ef | grep '[s]rc/bin/sage-notebook' >/dev/null; then
             sage-notebook-browser
             return 255
         else
@@ -1159,7 +1159,7 @@ sage-jupyter-notebook () {
         local NBPATH="${JUPYTER_NOTEBOOK_ROOT}/sage-jupyter-projects"
         mkdir -p "${NBPATH}"
         # TODO: subsitute for --deep-reload --automagic --secure --pprint depricated options
-        if ps -ef | grep -- "--notebook=jupyter" | grep -v grep >/dev/null; then
+        if ps -ef | grep -- '--[n]otebook=jupyter' >/dev/null; then
             sage-jupyter-notebook-browser
         else
             sage --notebook=jupyter --notebook-dir="${NBPATH}" --browser="firefox -P default" --port=18888
@@ -1631,7 +1631,7 @@ function ls-mime-files () {
 function ls-mime-files2 () {
     # see https://unix.stackexchange.com/questions/36380/how-to-properly-and-easy-configure-xdg-open-without-any-enviroment
     # XXXX: changed variable from dd, bad name for bash variable
-    for thedir in /usr/share/applications ${HOME}/.local/share/applications; do
+    for thedir in /usr/share/applications $HOME/.local/share/applications; do
         h2 "$thedir"
         for thefile in $(ls $thedir 2>/dev/null | grep "\\.desktop$"); do
             h3 "$thefile"
@@ -1677,7 +1677,7 @@ flatten-current-directory () {
 
 dunst-notifications () {
     printf "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
-    grep "summary: \|body: " "${HOME}/tmp/dunst-current.log" | grep -v \'\' | sed -e 's/^[ \t]*//' | sed -e 's/body: /    /' | sed -e 's/summary: //'
+    grep "summary: \|body: " "$HOME/tmp/dunst-current.log" | grep -v \'\' | sed -e 's/^[ \t]*//' | sed -e 's/body: /    /' | sed -e 's/summary: //'
 }
 
 build-install-software () {
@@ -1686,21 +1686,21 @@ build-install-software () {
     sudo true || return 1
     # at least for now, download and build a few select pieces of software
     # TODO: evantually make this the only one
-    [[ ! -d "${HOME}/cic-external-vcs" ]] && mkdir -p "${HOME}/cic-external-vcs"
+    [[ ! -d "$HOME/cic-external-vcs" ]] && mkdir -p "$HOME/cic-external-vcs"
     pushd . >/dev/null
-    cd "${HOME}/cic-external-vcs"
+    cd "$HOME/cic-external-vcs"
     # TODO: update this as something better and potentially less destructive
-    [[ ! -d "${HOME}/cic-external-vcs/conkeror-external" ]]             && git clone git://repo.or.cz/conkeror.git                     conkeror-external
-    [[ ! -d "${HOME}/cic-external-vcs/urxvt-perls-external" ]]          && git clone https://github.com/akroshko/urxvt-perls.git       urxvt-perls-external
-    [[ ! -d "${HOME}/cic-external-vcs/feh-external" ]]                  && git clone https://git.finalrewind.org/feh                   feh-exteneral
-    [[ ! -d "${HOME}/cic-external-vcs/girara-external" ]]               && git clone https://git.pwmt.org/pwmt/girara.git              girara-external
-    [[ ! -d "${HOME}/cic-external-vcs/PCSX-Reloaded-external" ]]        && git clone https://github.com/SonofUgly/PCSX-Reloaded        PCSX-Reloaded-external
-    [[ ! -d "${HOME}/cic-external-vcs/zathura-external" ]]              && git clone https://git.pwmt.org/pwmt/zathura.git             zathura-external
-    [[ ! -d "${HOME}/cic-external-vcs/zathura-cb-external" ]]           && git clone https://git.pwmt.org/pwmt/zathura-cb.git          zathura-cb-external
-    [[ ! -d "${HOME}/cic-external-vcs/zathura-djvu-external" ]]         && git clone https://git.pwmt.org/pwmt/zathura-djvu.git        zathura-djvu-external
-    [[ ! -d "${HOME}/cic-external-vcs/zathura-pdf-poppler-external" ]]  && git clone https://git.pwmt.org/pwmt/zathura-pdf-poppler.git zathura-pdf-poppler-external
-    [[ ! -d "${HOME}/cic-external-vcs/zathura-pdf-poppler-external" ]]  && git clone https://git.pwmt.org/pwmt/zathura-pdf-mupdf.git   zathura-pdf-mupdf-external
-    [[ ! -d "${HOME}/cic-external-vcs/zathura-ps-external" ]]           && git clone https://git.pwmt.org/pwmt/zathura-ps.git          zathura-ps-external
+    [[ ! -d "$HOME/cic-external-vcs/conkeror-external" ]]             && git clone git://repo.or.cz/conkeror.git                     conkeror-external
+    [[ ! -d "$HOME/cic-external-vcs/urxvt-perls-external" ]]          && git clone https://github.com/akroshko/urxvt-perls.git       urxvt-perls-external
+    [[ ! -d "$HOME/cic-external-vcs/feh-external" ]]                  && git clone https://git.finalrewind.org/feh                   feh-exteneral
+    [[ ! -d "$HOME/cic-external-vcs/girara-external" ]]               && git clone https://git.pwmt.org/pwmt/girara.git              girara-external
+    [[ ! -d "$HOME/cic-external-vcs/PCSX-Reloaded-external" ]]        && git clone https://github.com/SonofUgly/PCSX-Reloaded        PCSX-Reloaded-external
+    [[ ! -d "$HOME/cic-external-vcs/zathura-external" ]]              && git clone https://git.pwmt.org/pwmt/zathura.git             zathura-external
+    [[ ! -d "$HOME/cic-external-vcs/zathura-cb-external" ]]           && git clone https://git.pwmt.org/pwmt/zathura-cb.git          zathura-cb-external
+    [[ ! -d "$HOME/cic-external-vcs/zathura-djvu-external" ]]         && git clone https://git.pwmt.org/pwmt/zathura-djvu.git        zathura-djvu-external
+    [[ ! -d "$HOME/cic-external-vcs/zathura-pdf-poppler-external" ]]  && git clone https://git.pwmt.org/pwmt/zathura-pdf-poppler.git zathura-pdf-poppler-external
+    [[ ! -d "$HOME/cic-external-vcs/zathura-pdf-poppler-external" ]]  && git clone https://git.pwmt.org/pwmt/zathura-pdf-mupdf.git   zathura-pdf-mupdf-external
+    [[ ! -d "$HOME/cic-external-vcs/zathura-ps-external" ]]           && git clone https://git.pwmt.org/pwmt/zathura-ps.git          zathura-ps-external
     # now build, copied from build-install-software, and should be synced up
     h2 "pip";
     # TODO: upgrade pip automatically?
@@ -1724,10 +1724,10 @@ build-install-software () {
 
 build-install-software-games () {
     sudo true || return 1
-    [[ ! -d "${HOME}/cic-external-vcs" ]] && mkdir -p "${HOME}/cic-external-vcs"
-    cd "${HOME}/cic-external-vcs"
-    [[ ! -d "${HOME}/cic-external-vcs/ppsspp-source-external" ]] && git clone https://github.com/hrydgard/ppsspp    ppsspp-source-external
-    [[ ! -d "${HOME}/cic-external-vcs/desmume-external/" ]]      && git clone https://github.com/TASVideos/desmume/ desmume-external
+    [[ ! -d "$HOME/cic-external-vcs" ]] && mkdir -p "$HOME/cic-external-vcs"
+    cd "$HOME/cic-external-vcs"
+    [[ ! -d "$HOME/cic-external-vcs/ppsspp-source-external" ]] && git clone https://github.com/hrydgard/ppsspp    ppsspp-source-external
+    [[ ! -d "$HOME/cic-external-vcs/desmume-external/" ]]      && git clone https://github.com/TASVideos/desmume/ desmume-external
     build-install-software-pcsx-reloaded
     build-install-software-ppsspp
     build-install-software-mgba
@@ -2280,7 +2280,7 @@ gpg-batch () {
 
 android-screenshot-all () {
     pushd . >/dev/null
-    cd "${HOME}"
+    cd "$HOME"
     # TODO: better name...
     local FNAME=android-screen-$(date-time-stamp).png
     adb shell screencap -p /sdcard/"$FNAME"
@@ -2292,7 +2292,7 @@ android-screenshot-all () {
 android-record-all () {
     # TODO: specify time limit better
     pushd . >/dev/null
-    cd "${HOME}"
+    cd "$HOME"
     local FNAME=android-screenrecord-$(date-time-stamp).mp4
     adb shell screenrecord --verbose --time-limit 180 /sdcard/"$FNAME"
     adb pull /sdcard/"$FNAME"
@@ -2745,7 +2745,7 @@ check-git-repo () {
 
 ag-reinstall-all () {
     if dangerous-function-ask; then
-        sudo dpkg --get-selections > "${HOME}/list.log"
+        sudo dpkg --get-selections > "$HOME/list.log"
         for i in $(cat list.log); do sudo apt-get install --reinstall "$i"; done
     fi
 }

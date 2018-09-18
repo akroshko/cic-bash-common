@@ -6,7 +6,7 @@
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Fri Mar 27, 2015
-# Version: 20180719
+# Version: 20180918
 # URL: https://github.com/akroshko/bash-stdlib
 #
 # This program is free software: you can redistribute it and/or modify
@@ -173,6 +173,7 @@ alias pc='cmatrix'
 alias pgtop='sudo -u postgres pg_activity -U postgres'
 alias po='popd'
 alias pu='pushd .'
+alias psql-postgres='sudo -u postgres psql'
 alias pdw='fortune | cowsay'
 alias phoronix-test-suite='time phoronix-test-suite'
 alias restart-openbox="openbox --restart"
@@ -240,11 +241,11 @@ esac
 if [[ "$TERM" =~ linux|xterm*|rxvt* ]];then
     # export PROMPT_COMMAND='history -a; history -n;echo -ne "\033]0;${USER}@${HOSTNAME}:${PWD}\007"'
     # XXXX: username is unnecessary for my purposes
-    SHORTPWD=$(echo "$PWD" | sed -r 's|'"${HOME}"'|~|g')
+    SHORTPWD=$(sed -r 's|'"$HOME"'|~|g' <<< "$PWD")
     export PROMPT_COMMAND='history -a; history -n;echo -ne "\033]0;${HOSTNAME}:${SHORTPWD}\007"'
     # see http://askubuntu.com/questions/126737/make-gnome-terminal-show-the-command-running-as-title
     show_command_in_title_bar() {
-        export SHORTPWD=$(echo "$PWD" | sed -r 's|'"${HOME}"'|~|g')
+        export SHORTPWD=$(sed -r 's|'"$HOME"'|~|g' <<< "$PWD")
         case "$BASH_COMMAND" in
             *"\033]0"*)
                 # The command is trying to set the title bar as well;

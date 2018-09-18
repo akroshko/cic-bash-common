@@ -7,7 +7,7 @@
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Sun Sep 20, 2015
-# Version: 20180811
+# Version: 20180918
 # URL: https://github.com/akroshko/bash-stdlib
 #
 # This program is free software: you can redistribute it and/or modify
@@ -31,8 +31,8 @@ firstarg=$1
 # start emacs deamon if not already started
 # XXXX: avoid starting daemon if computer is configured with systemd service
 # TODO: better way to do this
-if ! [[ -e "${HOME}/.config/systemd/user/emacs.service" ]] && ! ps -ef | grep "emacs --daemon" | grep -v grep >/dev/null; then
-    emacs --daemon --no-init-file --load "${HOME}/.emacs-cic.el"
+if ! [[ -e "$HOME/.config/systemd/user/emacs.service" ]] && ! ps -ef | grep '[e]macs --daemon' >/dev/null; then
+    emacs --daemon --no-init-file --load "$HOME/.emacs-cic.el"
     sleep 15
 fi
 # get emacsclient command based on nice value
@@ -49,7 +49,7 @@ case $firstarg in
         shift
         # check if the server is running, if not start the server
         # TODO: change name...
-        if ! ps -ef | grep "emacs --daemon" | grep -v grep >/dev/null; then
+        if ! ps -ef | grep '[e]macs --daemon' >/dev/null; then
             $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" --create-frame --eval "(make-frame '((name . \"capture\") (top . 40) (left . 40) (width . 200) (height . 60)))" --eval "(select-frame-by-name \"capture\")" "$@"
         else
             # TODO: why does this seem to be creating a frame anyways?
@@ -60,7 +60,7 @@ case $firstarg in
     maximized )
         shift
         # check if the server is running, if not start the server
-        if ! ps -ef | grep "emacs --daemon" | grep -v grep >/dev/null; then
+        if ! ps -ef | grep '[e]macs --daemon' >/dev/null; then
             exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" --create-frame --eval "(make-frame '((name . \"*maximized*\") (top . 40) (left . 40) (width . 200) (height . 60) (user-position . t)))" --eval "(select-frame-by-name \"*maximized*\")" "$@"
         else
             # TODO: why does this seem to be creating a frame anyways?
@@ -74,7 +74,7 @@ case $firstarg in
     transient )
         shift
         # check if the server is running, if not start the server
-        if ! ps -ef | grep "emacs --daemon" | grep -v grep >/dev/null; then
+        if ! ps -ef | grep '[e]macs --daemon' >/dev/null; then
             exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" --create-frame --eval "(make-frame '((name . \"*transient*\") (top . 40) (left . 40)   (width . 120) (height . 60) (user-position . t) (user-size . t)))" --eval "(select-frame-by-name \"*transient*\")" "$@"
         else
             # TODO: why does this seem to be creating a frame anyways?
@@ -84,7 +84,7 @@ case $firstarg in
     # no frame,
     noframe )
         shift
-        if ! ps -ef | grep "emacs --daemon" | grep -v grep >/dev/null; then
+        if ! ps -ef | grep '[e]macs --daemon' >/dev/null; then
             $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" -c "$@"
         else
             emacsclient --no-wait --eval "(if (> (length (frame-list)) 1) 't)" | grep t
@@ -98,7 +98,7 @@ case $firstarg in
         ;;
     protocol )
         shift
-        if ! ps -ef | grep "emacs --daemon" | grep -v grep >/dev/null; then
+        if ! ps -ef | grep '[e]macs --daemon' >/dev/null; then
             $EMACSCLIENT --create-frame --no-wait --alternate-editor="launch-emacsclient-fail.sh" -c "$@"
         else
             emacsclient --no-wait --eval "(if (> (length (frame-list)) 1) 't)" | grep t

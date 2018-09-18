@@ -7,7 +7,7 @@
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Sat Jan 30, 2015
-# Version: 20180516
+# Version: 20180918
 # URL: https://github.com/akroshko/bash-stdlib
 #
 # This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,7 @@
 
 # set up sage if it is installed locally: http://www.sagemath.org/
 SAGEINSTALLATION=
-for f in "${HOME}"/sage-*; do
+for f in "$HOME"/sage-*; do
     [[ -d "$f" ]] || continue
     SAGEINSTALLATION="$f"
 done

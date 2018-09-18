@@ -29,7 +29,7 @@ if [[ -e /tmp/cic-web-video-last.txt ]]; then
             if xdotool search --name "twitch|youtube" | grep -- "${WINID}" >/dev/null; then
                 # TODO: very arbitrary delay, perhaps wait for something to return
                 sleep 0.5
-                "${HOME}/bin/conkeror-batch" -f web-video-play
+                "$HOME/bin/conkeror-batch" -f web-video-play
                 sleep 0.5
             fi
         fi

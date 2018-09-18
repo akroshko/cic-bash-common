@@ -8,7 +8,7 @@
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Tue Oct 17, 2017
-# Version: 20180622
+# Version: 20180918
 # URL: https://github.com/akroshko/bash-stdlib
 #
 # This program is free software: you can redistribute it and/or modify
@@ -27,6 +27,6 @@
 main () {
     # TODO: is xclip really the best?
     local BASE64CONVERT=$(xclip -l 1 -o -selection primary | base64)
-    "${HOME}/bin/launch-emacsclient" noframe --eval "(cic:insert-collection \"${BASE64CONVERT}\" t)"
+    "$HOME/bin/launch-emacsclient" noframe --eval "(cic:insert-collection \"${BASE64CONVERT}\" t)"
 }
 main
