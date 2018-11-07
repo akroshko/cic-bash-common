@@ -366,7 +366,7 @@ build-install-software-dolphin-emu () {
 }
 
 build-install-software-zsnes () {
-    # TODO: broken
+    # TODO: broken, just use debian package
     h2 "zsnes"
     [[ ! -d "zsnes-external" ]] && yell "Directory zsnes-external not found!" && return 1
     sudo true || return 1

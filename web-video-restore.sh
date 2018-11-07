@@ -16,15 +16,15 @@ if [[ -e /tmp/cic-web-video-last.txt ]]; then
         echo "Restoring"
         xdotool windowactivate --sync "${WINID}"
         sleep 0.5
-        if echo "$WINCLASS_EXIST" | grep -i dolphin &>/dev/null && echo "$WINCLASS_EXIST" | grep -i dolphin &>/dev/null; then
+        if grep -i dolphin <<< "$WINCLASS_EXIST" &>/dev/null && grep -i dolphin <<< "$WINCLASS_EXIST" &>/dev/null; then
             echo "Dolphin"
             xdotool keydown --window "$WINID" "F10"
             sleep 0.05
             xdotool keyup   --window "$WINID" "F10"
-        elif echo "$WINCLASS_EXIST" grep -i mpv &>/dev/null && echo "$WINCLASS_EXIST" | grep -i mpv &>/dev/null; then
+        elif grep -i mpv <<< "$WINCLASS_EXIST" &>/dev/null && grep -i mpv <<< "$WINCLASS_EXIST" &>/dev/null; then
             echo "MPV"
             xdotool windowactivate --sync "${WINID}" key "space"
-        elif echo "$WINCLASS_EXIST" grep -i conkeror &>/dev/null && echo "$WINCLASS_EXIST" | grep -i conkeror &>/dev/null; then
+        elif grep -i conkeror <<< "$WINCLASS_EXIST" &>/dev/null && grep -i conkeror <<< "$WINCLASS_EXIST" &>/dev/null; then
             echo "Conkeror"
             if xdotool search --name "twitch|youtube" | grep -- "${WINID}" >/dev/null; then
                 # TODO: very arbitrary delay, perhaps wait for something to return

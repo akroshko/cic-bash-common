@@ -49,8 +49,8 @@ feh-display-montage () {
     local MAXWIDTH="5120"
     local MAXWIDTH=$(feh -l *.png | awk '{ print $3 }' | tail -n +2 | sort --numeric | tail -n 1)
     local MAXHEIGHT=$(feh -l *.png | awk '{ print $4 }' | tail -n +2 | sort --numeric | tail -n 1)
-    local WIDTHRATIO=$(echo "$MAXHEIGHT/$MAXWIDTH" | bc -l)
-    local THUMBHEIGHT=$(printf %.0f $(echo "$WIDTHRATIO*$THUMBWIDTH" | bc -l))
+    local WIDTHRATIO=$(bc -l <<< "$MAXHEIGHT/$MAXWIDTH")
+    local THUMBHEIGHT=$(printf %.0f $(bc -l <<< "$WIDTHRATIO*$THUMBWIDTH"))
     local NIMAGES=$(ls -1 *.png | wc -l)
     echo "Maximum height: $MAXHEIGHT"
     echo "Maximum width: $MAXWIDTH"

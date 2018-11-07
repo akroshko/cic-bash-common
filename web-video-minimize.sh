@@ -141,5 +141,8 @@ xdotool search --onlyvisible --name "twitch|youtube" | while IFS= read -r WINID;
         sleep 0.10
         xdotool windowminimize "${WINID}"
         sleep 0.10
+        # TODO: probably no need for sleep here
+        echo "$WINID" > /tmp/cic-web-video-last.txt
+        echo $(xprop WM_CLASS -id "${WINID}") >> /tmp/cic-web-video-last.txt
     fi
 done

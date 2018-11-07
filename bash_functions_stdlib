@@ -494,6 +494,12 @@ du-sort () {
     \du --total --summarize --human-readable -- * 2>/dev/null | sort --human-numeric-sort
 }
 
+du-sort-symlinks () {
+    # sort by size after using du
+    \du --total --summarize --human-readable --dereference -- * 2>/dev/null | sort --human-numeric-sort
+}
+
+
 du-sort-directories () {
     # sort by size after using du
     # TODO: single file system?
@@ -628,7 +634,7 @@ vcs-check-root () {
             h2 "pull needed?"
             # TODO: indicate no pull needed
             local STATUS=$(git -c color.ui=always status -uno)
-            if echo "$STATUS" | grep "up-to-date" >/dev/null; then
+            if grep "up-to-date" <<< "$STATUS" >/dev/null; then
                 msg "Seems up to date!"
             else
                 yell "Not up to date!"
@@ -975,38 +981,38 @@ msg () {
 
 h1 () {
     if [[ -z "$*" ]]; then
-        local OUTSTR=$(echo "================================================================================" | cut -c 1-80)
+        local OUTSTR=$(cut -c 1-80 <<< "================================================================================")
     else
-        local OUTSTR=$(echo "==== $* ================================================================================" | cut -c 1-80)
+        local OUTSTR=$(cut -c 1-80 <<< "==== $* ================================================================================")
     fi
     echo -e "${BWhite}${On_Blue}$OUTSTR${Color_Off}" >&2
 }
 
 h1-end () {
     if [[ -z "$*" ]]; then
-        local OUTSTR=$(echo "" | cut -c 1-80)
+        local OUTSTR=$(cut -c 1-80 <<< "")
     else
-        local OUTSTR=$(echo "$*" | cut -c 1-80)
+        local OUTSTR=$(cut -c 1-80 <<< "$*")
     fi
     echo -e "${BWhite}${On_Blue}<<<<${Color_Off} ${BWhite}$OUTSTR${Color_Off}" >&2
 }
 
 h1-script () {
-    local OUTSTR=$(echo "==== Running $(basename $0) ================================================================================" | cut -c 1-80)
+    local OUTSTR=$(cut -c 1-80 <<< "==== Running $(basename $0) ================================================================================")
     echo -e "${BWhite}${On_Blue}$OUTSTR${Color_Off}" >&2
 }
 
 h1-script-end () {
-    local OUTSTR=$(echo "Finishing $(basename $0)" | cut -c 1-80)
+    local OUTSTR=$(cut -c 1-80 <<< "Finishing $(basename $0)")
     echo -e "${BWhite}${On_Blue}<<<<${Color_Off} ${BWhite}$OUTSTR${Color_Off}" >&2
 }
 
 h2 () {
    if [[ -z "$*" ]]
     then
-        local OUTSTR=$(echo "----------------------------------------" | cut -c 1-60)
+        local OUTSTR=$(cut -c 1-60 <<< "----------------------------------------")
     else
-        local OUTSTR=$(echo "---- $* ----------------------------------------" | cut -c 1-60)
+        local OUTSTR=$(cut -c 1-60 <<< "---- $* ----------------------------------------")
    fi
    # TODO: probably want different color than cyan
    echo -e "${BWhite}${On_Cyan}$OUTSTR${Color_Off}" >&2
@@ -1444,7 +1450,7 @@ mdstat-status () {
         if [[ "$i" =~ ^m.* ]]; then
             printf "$i"
         else
-            local SELECTED=$(echo "$i" | grep --color=never -Eo -- "\[[A-Za-z]*\]$")
+            local SELECTED=$(grep --color=never -Eo -- "\[[A-Za-z]*\]$" <<< "$i")
             if [[ -n "$SELECTED" ]]; then
                 echo " $SELECTED"
             fi
@@ -1743,8 +1749,8 @@ show-all-x-displays () {
 phoronix-describe-all-tests () {
     (IFS=$'\n'
      for testline in $(\phoronix-test-suite list-available-tests | tail -n +5 | head -n -2); do
-         h2 $(echo "$testline" | awk '{ print $1 }')
-         \phoronix-test-suite info $(echo "$testline" | awk '{ print $1 }')
+         h2 $(awk '{ print $1 }' <<< "$testline")
+         \phoronix-test-suite info $(awk '{ print $1 }' <<< "$testline")
      done)
 }
 
@@ -1915,7 +1921,7 @@ benchmark-compression-gzip () {
     du -sh "$1"
     local THETEMPFILE=$(mktemp /tmp/tmp-XXXXXXXXXX --suffix=.tgz)
     time {
-        tar --create --file - "$1" | gzip -9 > "$THETEMPFILE"
+        tar --create --file - "$1" | gzip -1 > "$THETEMPFILE"
     }
     echo ""
     du -sh "$THETEMPFILE"
@@ -1932,7 +1938,7 @@ benchmark-compression-bzip2 () {
     du -sh "$1"
     local THETEMPFILE=$(mktemp /tmp/tmp-XXXXXXXXXX --suffix=.tar.bz2)
     time {
-        tar --create --file - "$1" | bzip2 -9 > "$THETEMPFILE"
+        tar --create --file - "$1" | bzip2 -1 > "$THETEMPFILE"
     }
     echo ""
     du -sh "$THETEMPFILE"
@@ -1949,7 +1955,7 @@ benchmark-compression-lz4 () {
     du -sh "$1"
     local THETEMPFILE=$(mktemp /tmp/tmp-XXXXXXXXXX --suffix=.tar.lz4)
     time {
-        tar --create --file - "$1" | lz4 -9 > "$THETEMPFILE"
+        tar --create --file - "$1" | lz4 -1 > "$THETEMPFILE"
     }
     echo ""
     du -sh "$THETEMPFILE"
@@ -1966,7 +1972,7 @@ benchmark-compression-lzop () {
     du -sh "$1"
     local THETEMPFILE=$(mktemp /tmp/tmp-XXXXXXXXXX --suffix=.tar.lzop)
     time {
-        tar --create --file - "$1" | lzop -9 > "$THETEMPFILE"
+        tar --create --file - "$1" | lzop -6 > "$THETEMPFILE"
     }
     echo ""
     du -sh "$THETEMPFILE"
@@ -1985,7 +1991,8 @@ benchmark-compression-rzip () {
     du -sh "$1"
     local THETEMPFILE=$(mktemp /tmp/tmp-XXXXXXXXXX --dry-run --suffix=.tar.rz)
     time {
-        tar --create --file - "$1" > test.tar;rzip -9 test.tar -o "$THETEMPFILE"
+        tar --create --file - "$1" > test.tar
+        rzip -3 test.tar -o "$THETEMPFILE"
     }
     echo ""
     du -sh "$THETEMPFILE"
