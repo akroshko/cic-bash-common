@@ -382,7 +382,7 @@ build-install-software-zsnes () {
 
 build-install-software-dockapps () {
     pushd . >/dev/null
-    cd "$HOME"/cic-external-vcs/
+    cd "$HOME/cic-external-vcs/"
     # need proper version of dockapps and wmgeneral built
     # https://unix.stackexchange.com/questions/67781/use-shared-libraries-in-usr-local-lib
     h2 "libdockapps"

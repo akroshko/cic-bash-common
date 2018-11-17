@@ -28,33 +28,33 @@ dictionary () {
     local CLIPBOARD="$(xclip -o selection primary)"
     local CLIPBOARD=$(python -c "import urllib, sys; print urllib.quote_plus(sys.argv[1].strip())" "$CLIPBOARD")
     # TODO: https broken when testing
-    "$HOME"/bin/conkeror "http://www.dictionary.com/browse/$CLIPBOARD?s=t"
+    "$HOME/bin/conkeror" "http://www.dictionary.com/browse/$CLIPBOARD?s=t"
 }
 
 google () {
     local CLIPBOARD="$(xclip -o selection primary)"
     local CLIPBOARD=$(python -c "import urllib, sys; print urllib.quote_plus(sys.argv[1].strip())" "$CLIPBOARD")
-    "$HOME"/bin/conkeror "https://google.ca/search?q=$CLIPBOARD"
+    "$HOME/bin/conkeror" "https://google.ca/search?q=$CLIPBOARD"
 }
 
 scholar () {
     local CLIPBOARD="$(xclip -o selection primary)"
     local CLIPBOARD=$(python -c "import urllib, sys; print urllib.quote_plus(sys.argv[1].strip())" "$CLIPBOARD")
-    "$HOME"/bin/conkeror "https://scholar.google.ca/scholar?q=$CLIPBOARD"
+    "$HOME/bin/conkeror" "https://scholar.google.ca/scholar?q=$CLIPBOARD"
 }
 
 thesaurus () {
     local CLIPBOARD="$(xclip -o selection primary)"
     local CLIPBOARD=$(python -c "import urllib, sys; print urllib.quote_plus(sys.argv[1].strip())" "$CLIPBOARD")
     # TODO: https broken when testing
-    "$HOME"/bin/conkeror "http://www.thesaurus.com/browse/$CLIPBOARD?s=t"
+    "$HOME/bin/conkeror" "http://www.thesaurus.com/browse/$CLIPBOARD?s=t"
 
 }
 
 wikipedia () {
     local CLIPBOARD="$(xclip -o selection primary)"
     local CLIPBOARD=$(python -c "import urllib, sys; print urllib.quote_plus(sys.argv[1].strip())" "$CLIPBOARD")
-    "$HOME"/bin/conkeror "https://en.wikipedia.org/w/index.php?search=$CLIPBOARD"
+    "$HOME/bin/conkeror" "https://en.wikipedia.org/w/index.php?search=$CLIPBOARD"
 }
 
 $@

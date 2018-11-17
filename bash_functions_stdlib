@@ -775,12 +775,13 @@ mount-disk-uuid () {
     local UUID="$1"
     # allow full UUID path to be given
     if [[ "$UUID" == /dev/disk/by-uuid/* ]]; then
-        local UUIDDEVICE="$(readlink -f ${UUID})"
+        local UUIDDEVICE=$(readlink -f "${UUID}")
     else
-        local UUIDDEVICE="$(readlink -f /dev/disk/by-uuid/${UUID})"
+        local UUIDDEVICE=$(readlink -f "/dev/disk/by-uuid/${UUID}")
     fi
-    if grep -qs -- "$UUIDDEVICE" /etc/mtab; then
-        echo -e $(grep -- ^"${UUIDDEVICE}[[:space:]]\+" /etc/mtab | cut -d ' ' -f 2)
+    # TODO: do this better
+    if findmnt -nr -o target -S "$UUIDDEVICE" >/dev/null; then
+        findmnt -nr -o target -S "$UUIDDEVICE"
         return 0
     else
         # TODO: for now I have gnome mount for me but would like to change this
@@ -798,6 +799,42 @@ device-disk-uuid () {
     local UUID="$1"
     local UUIDDEVICE="$(readlink -f /dev/disk/by-uuid/${UUID})"
     echo ${UUIDDEVICE}
+}
+
+get-mount-point-check-usb () {
+    if [[ -e "/dev/disk/by-uuid/$1" ]]; then
+        # argument is a uuid
+        local THEDEVICE="/dev/disk/by-uuid/$1"
+        local THEMOUNTPOINT=$(findmnt -nr -o target -S "$THEDEVICE")
+    elif [[ "$1" == /dev/* ]];then
+        # argument is a device
+        local THEDEVICE="$1"
+        local THEMOUNTPOINT=$(findmnt -nr -o target -S "$THEDEVICE")
+    elif mountpoint -q "$1"; then
+         # argument already a mount point
+         # TODO: use r
+         local THEDEVICE=$(findmnt -nr -o source --target "$1")
+         local THEMOUNTPOINT="$1"
+    else
+        # invalid argument
+        return 1
+    fi
+    local LSBLK=$(\lsblk --list --output +tran)
+    local LSBLKUSB=$(\lsblk --list --output +tran | grep usb)
+    local USBFOUND=
+    while read -r USBLINE; do
+        local USBDEV=$(awk '{ print $1 }' <<< "$USBLINE")
+        # TODO: better string comparison
+        if grep --color=never "$USBDEV" <<< "$THEDEVICE" >/dev/null;then
+            local USBFOUND=1
+        fi
+    done <<< "$LSBLKUSB"
+    if [[ "$USBFOUND" == 1 ]];then
+        echo "$THEMOUNTPOINT"
+    else
+        # argument not usb
+        return 1
+    fi
 }
 
 vcs-diff-public () {
@@ -1328,16 +1365,19 @@ smartctl-disks-errors () {
 select-disk-uuid-usb () {
     # select a usb disk by UUID or alternately any other mounted drive
     # XXXX: doesn't work with more than 9 drives, but could be fixed
-    # TODO: are usb always in UUID?
-    #       "$1" gives default
-    # create array
+    # TODO: will I always want to do this with usb? do I want option to select non-usb like FUSE?
     local USBARRAY=()
     if [[ -n "$1" ]]; then
         if [[ -e /dev/disk/by-uuid/"$1" ]]; then
-            if grep -qs -- $(readlink -f /dev/disk/by-uuid/"$1") /proc/mounts; then
-                echo "0) $1 (default, mounted)" >&2
+            if findmnt -nr -o target /dev/disk/by-uuid/"$1" >/dev/null; then
+                MOUNTPOINT=$(findmnt -nr -o target /dev/disk/by-uuid/"$1")
+                DEVICE=$(readlink -f /dev/disk/by-uuid/"$1")
+                LABEL=$(lsblk --output label /dev/disk/by-uuid/"$1" | tail -n 1)
+                printf "0) %-10s %-40s %-25s (default, mounted on $MOUNTPOINT)\n" "$DEVICE" "$1" "$LABEL" >&2
             else
-                echo "0) $1 (default, not mounted)" >&2
+                DEVICE=$(readlink -f /dev/disk/by-uuid/"$1")
+                LABEL=$(lsblk --output label /dev/disk/by-uuid/"$1" | tail -n 1)
+                printf "0) %-10s %-40s %-25s (default, not mounted)\n" "$DEVICE" "$1" "$LABEL" >&2
             fi
         else
             echo "0) $1 (default, not found)" >&2
@@ -1346,47 +1386,31 @@ select-disk-uuid-usb () {
     local count=1
     for d in /dev/disk/by-uuid/*; do
         [[ "$d" == "/dev/disk/by-uuid/$1" ]] && continue
-        if /sbin/udevadm info --query=all --name=$(readlink -f $d) | grep ID_BUS >/dev/null; then
-            printf "$count) %-55s  %s\n" "$d" "$(df -H $d | grep -v ^Filesystem)"
+        if /sbin/udevadm info --query=all --name=$(readlink -f $d) | grep 'ID_BUS=usb' >/dev/null; then
+            if findmnt -nr -o target "$d" >/dev/null; then
+                MOUNTPOINT=$(findmnt -nr -o target "$d")
+                LABEL=$(lsblk --output label "$d" | tail -n 1)
+                printf "$count) %-10s %-40s %-25s (mounted on $MOUNTPOINT)\n" "$(readlink -f $d)" "$(basename $d)" "$LABEL" >&2
+            else
+                LABEL=$(lsblk --output label "$d" | tail -n 1)
+                printf "$count) %-10s %-40s %-25s (not mounted)\n" "$(readlink -f $d)" "$(basename $d)" "$LABEL" >&2
+            fi
             local count=$(( $count + 1 ))
             USBARRAY+=("$d")
         fi
     done
-    echo "$count) Non-USB drive" >&2
+    # echo "$count) Non-USB drive" >&2
     echo "-) Cancel" >&2
     while read -r -t 0;do read -r; done;
     read -n 1 -p "Enter the USB drive: " USBSELECT >&2
     echo "" >&2
+    if [[ $USBSELECT == "0" ]]; then
+        echo /dev/disk/by-uuid/"$1"
+        return 0
+    fi
     if [[ $USBSELECT == "-" ]]; then
         echo "Canceled!" >&2
         return 1
-    fi
-    # TODO: remove home and root mount once I test more, these will almost never be the right answer
-    local count=1
-    if [[ $USBSELECT == "0" && -n "$1" ]]; then
-        echo "/dev/disk/by-uuid/$1"
-        return 0
-    elif [[ $USBSELECT == "$count" ]]; then
-        echo "Non-USB alternate!" >&2
-        IFS=$(echo -en "\n\b")
-        local ALTERNATEARRAY=()
-        local count=1
-
-        for a in $(df | grep -v "udev\|tmpfs\|^Filesystem"); do
-            echo "$count) $a" >&2
-            ALTERNATEARRAY+=("$a")
-            local count=$(( $count + 1 ))
-        done
-        while read -r -t 0;do read -r; done;
-        read -n 1 -p "Enter an alternate drive: " ALTERNATESELECT >&2
-        echo "" >&2
-        if [[ $ALTERNATESELECT == "0" || ! $ALTERNATESELECT =~ ^[0-9]+$ ]] || (( $ALTERNATESELECT >= $count )); then
-            return 1
-        fi
-        local ALTERNATESELECT=$(( $ALTERNATESELECT - 1 ))
-        # XXXX: get first column because we use df for this
-        echo ${ALTERNATEARRAY[$ALTERNATESELECT]} | cut -d' ' -f1
-        return 0
     fi
     if ! [[ $USBSELECT =~ ^[0-9]$ ]] || (( $USBSELECT >= $count )); then
         return 1
@@ -1584,7 +1608,7 @@ wget-current-canmatrix () {
         true
         send-returncode-mail "Canmatrix- starting!"
     fi
-    if grep -qs /mnt-secondary /proc/self/mounts >/dev/null; then
+    if mountpoint -q /mnt-secondary; then
         {
             time {
                 pushd . >/dev/null
@@ -1725,22 +1749,6 @@ ag-list-explicitly-installed () {
     aptitude search '~i !~M'
 }
 
-amixer-volumes () {
-    echo $(amixer get Master | grep Front.*Playback | tr "\\n" " " | sed -e 's/Front//g' -e 's/Playback//g' -e 's/\s[0-9]\+//g' -e 's/  */ /g')
-}
-
-notify-amixer-mute () {
-    if amixer get Master | grep "\[on\]"; then
-        notify-send "Unmuted" -t 200
-    else
-        notify-send "Muted" -t 200
-    fi
-}
-
-notify-amixer-volumes () {
-    notify-send "$(amixer-volumes)" -t 200
-}
-
 show-all-x-displays () {
     # https://unix.stackexchange.com/questions/17255/is-there-a-command-to-list-all-open-displays-on-a-machine
     cd /tmp/.X11-unix && for x in X*; do echo ":${x#X}"; done
@@ -1828,8 +1836,28 @@ vcs-reset () {
     fi
 }
 
-trim-mp3-to-30min () {
+trim-mp3-to-30min-skip-first-30s () {
     ffmpeg -i "$1" -codec copy -ss 00:00:30 -t 00:30:00 "$2"
+}
+
+trim-mp3-to-30min () {
+    ffmpeg -i "$1" -codec copy -ss 00:00:00 -t 00:30:00 "$2"
+}
+
+trim-mp3-to-1hr-skip-first-30s () {
+    ffmpeg -i "$1" -codec copy -ss 00:00:30 -t 01:00:00 "$2"
+}
+
+trim-mp3-to-1hr () {
+    ffmpeg -i "$1" -codec copy -ss 00:00:00 -t 01:00:00 "$2"
+}
+
+trim-mp3-to-2hr-skip-first-30s () {
+    ffmpeg -i "$1" -codec copy -ss 00:00:30 -t 02:00:00 "$2"
+}
+
+trim-mp3-to-2hr () {
+    ffmpeg -i "$1" -codec copy -ss 00:00:00 -t 02:00:00 "$2"
 }
 
 normalize-volume () {
@@ -1918,8 +1946,9 @@ harm-fonts () {
 
 benchmark-compression-gzip () {
     # benchmark gzip compression
+    mkdir -p "$HOME/tmp"
     du -sh "$1"
-    local THETEMPFILE=$(mktemp /tmp/tmp-XXXXXXXXXX --suffix=.tgz)
+    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-XXXXXXXXXX" --suffix=.tgz)
     time {
         tar --create --file - "$1" | gzip -1 > "$THETEMPFILE"
     }
@@ -1927,7 +1956,7 @@ benchmark-compression-gzip () {
     du -sh "$THETEMPFILE"
     time {
         # XXXX: hope this is not optimized!
-        gzip -d "$THETEMPFILE"  >/dev/null
+        gzip -d "$THETEMPFILE" >/dev/null
     }
     sleep 2
     rm "${THETEMPFILE%.*}".tar
@@ -1935,8 +1964,9 @@ benchmark-compression-gzip () {
 
 benchmark-compression-bzip2 () {
     # benchmark bzip2 compression
+    mkdir -p "$HOME/tmp"
     du -sh "$1"
-    local THETEMPFILE=$(mktemp /tmp/tmp-XXXXXXXXXX --suffix=.tar.bz2)
+    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-XXXXXXXXXX" --suffix=.tar.bz2)
     time {
         tar --create --file - "$1" | bzip2 -1 > "$THETEMPFILE"
     }
@@ -1952,8 +1982,9 @@ benchmark-compression-bzip2 () {
 
 benchmark-compression-lz4 () {
     # benchmark lz4 compression
+    mkdir -p "$HOME/tmp"
     du -sh "$1"
-    local THETEMPFILE=$(mktemp /tmp/tmp-XXXXXXXXXX --suffix=.tar.lz4)
+    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-XXXXXXXXXX" --suffix=.tar.lz4)
     time {
         tar --create --file - "$1" | lz4 -1 > "$THETEMPFILE"
     }
@@ -1969,8 +2000,9 @@ benchmark-compression-lz4 () {
 
 benchmark-compression-lzop () {
     # benchmark lzop compression
+    mkdir -p "$HOME/tmp"
     du -sh "$1"
-    local THETEMPFILE=$(mktemp /tmp/tmp-XXXXXXXXXX --suffix=.tar.lzop)
+    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-XXXXXXXXXX" --suffix=.tar.lzop)
     time {
         tar --create --file - "$1" | lzop -6 > "$THETEMPFILE"
     }
@@ -1988,8 +2020,9 @@ benchmark-compression-lzop () {
 
 benchmark-compression-rzip () {
     # benchmark rzip compression
+    mkdir -p "$HOME/tmp"
     du -sh "$1"
-    local THETEMPFILE=$(mktemp /tmp/tmp-XXXXXXXXXX --dry-run --suffix=.tar.rz)
+    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-XXXXXXXXXX" --dry-run --suffix=.tar.rz)
     time {
         tar --create --file - "$1" > test.tar
         rzip -3 test.tar -o "$THETEMPFILE"
@@ -2024,8 +2057,9 @@ benchmark-compression-rzip () {
 
 benchmark-compression-lzip () {
     # benchmark lzip compression
+    mkdir -p "$HOME/tmp"
     du -sh "$1"
-    local THETEMPFILE=$(mktemp /tmp/tmp-XXXXXXXXXX --suffix=.tar.lzip)
+    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-XXXXXXXXXX" --suffix=.tar.lzip)
     time {
         tar --create --file - "$1" | lzip -9 > "$THETEMPFILE"
     }
@@ -2041,8 +2075,9 @@ benchmark-compression-lzip () {
 
 benchmark-compression-xz () {
     # benchmark lz compression
+    mkdir -p "$HOME/tmp"
     du -sh "$1"
-    local THETEMPFILE=$(mktemp /tmp/tmp-XXXXXXXXXX --suffix=.tar.xz)
+    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-XXXXXXXXXX" --suffix=.tar.xz)
     time {
         tar --create --file - "$1" | xz -9 > "$THETEMPFILE"
     }
@@ -2058,8 +2093,9 @@ benchmark-compression-xz () {
 
 benchmark-compression-zip () {
     # benchmark lz compression
+    mkdir -p "$HOME/tmp"
     du -sh "$1"
-    local THETEMPFILE=$(mktemp /tmp/tmp-XXXXXXXXXX --dry-run --suffix=.zip)
+    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-XXXXXXXXXX" --dry-run --suffix=.zip)
     time {
         zip "$THETEMPFILE" "$1"
     }
@@ -2405,4 +2441,115 @@ ask_yn () {
     elif [[ "$YN" == 'n' ]]; then
         return 1
     fi
+}
+
+convert-size-to-bytes () {
+    # convert a size with units (K,M,G) to bytes
+    # use 1000 for kB MB GB
+    # TODO: deal with trailing B
+    # TODO: expand to terabyte and petabyte
+    echo "$1" | sed 's/G/ * 1000 M/;s/M/ * 1000 K/;s/K/ * 1000/; s/$/ +\\/; $a0' | bc
+}
+
+convert-size-to-bytes-1024 () {
+    # convert a size with units (K,M,G) to bytes
+    # use 1024 for kiB MiB GiB
+    # TODO: expand to terabyte and petabyte
+    # TODO: deal with trailing B
+    echo "$1" | sed 's/G/ * 1024 M/;s/M/ * 1024 K/;s/K/ * 1024/; s/$/ +\\/; $a0' | bc
+}
+
+tar-bzip2-remove () {
+    # this tars then bzips a directory and then removes the original directory
+    # TODO: dangerous, I have some checks but needs more
+    # XXXX: it uses $HOME/tmp as temp directory because that has often more space than /tmp on my machines
+    # make sure there are no errors except sockets
+    # make sure source exists and destination does not
+    echo "----------------------------------------"
+    if [[ -n "$3" ]]; then
+        echo "Too many arguments!"
+    fi
+    echo "Dangerous function! Sleeping for 10s!"
+    sleep 10
+    mkdir -p "$HOME/tmp"
+    if [[ ! -d "$1" ]]; then
+        echo "Directory $1 must exist!"
+        return 1
+    fi
+    if [[ -e "$2" ]]; then
+        echo "Destination $2 must not exist!"
+        return 1
+    fi
+    local INFULLPATH=$(readlink -f "$1")
+    local OUTFULLPATH=$(readlink -f "$2")
+    # TODO: quit if readlink fails?
+    local INSIZE=$(du -sh "$1")
+    if [[ "$OUTFULLPATH" == "$INFULLPATH"/ ]]; then
+        echo "$OUTFULLPATH must not be contained in $INFULLPATH!"
+        return 1
+    fi
+    if [[ "$INFULLPATH" != "$HOME"/?*/?* ]];then
+        echo "$INFULLPATH must be contained in a top level directory of $HOME!"
+        return 1
+    fi
+    if [[ "$OUTFULLPATH" != "$HOME"/?*/?* ]];then
+        echo "$OUTFULLPATH must be contained in a top level directory of $HOME!"
+        return 1
+    fi
+    # check if successful, need temp files
+    # https://stackoverflow.com/questions/1550933/catching-error-codes-in-a-shell-pipe
+    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-XXXXXXXXXX" --suffix=.tar)
+    echo "Tarring $1 to $THETEMPFILE..."
+    time {
+        tar --create --file - "$1" > "$THETEMPFILE"
+    }
+    if [[ $? != 0 ]]; then
+        echo "Error creating $1 while creating $THETEMPFILE!"
+        [[ -e "$THETEMPFILE" ]] && rm "$THETEMPFILE"
+        return 1
+    fi
+    echo "Compressing $THETEMPFILE to $2..."
+    time {
+        bzip2 --stdout -1 "$THETEMPFILE" > "$2"
+    }
+    if [[ $? != 0 ]];then
+        echo "Error during compression!"
+        [[ -e "$THETEMPFILE" ]] && rm "$THETEMPFILE"
+        return 1
+    fi
+    [[ -e "$THETEMPFILE" ]] && rm "$THETEMPFILE"
+    local OUTSIZE=$(du -sh "$2")
+    echo "Size reduced from $INSIZE to $OUTSIZE."
+    echo "Creating $2 from $1 successful!"
+    echo "Deleting $1 in 10s!"
+    sleep 10
+    rm -rf "$1"
+}
+
+# https://unix.stackexchange.com/questions/17255/is-there-a-command-to-list-all-open-displays-on-a-machine
+x11-all-displays () {
+    pushd . >/dev/null
+    cd /tmp/.X11-unix
+    for x in X*; do
+        echo ":${x#X}";
+        # TODO: do a bit better with multiple ones later
+        popd >/dev/null
+        return
+    done
+    popd >/dev/null
+}
+
+ssh-check-host () {
+    if [[ -z "$1" ]];then
+        return 1
+    fi
+    nc -z "$1" 22 >/dev/null
+}
+
+ssh-check-host-verbose () {
+    if [[ -z "$1" ]];then
+        warn "Must specify host!"
+        return 1
+    fi
+    nc -z -v "$1" 22
 }
