@@ -1948,7 +1948,7 @@ benchmark-compression-gzip () {
     # benchmark gzip compression
     mkdir -p "$HOME/tmp"
     du -sh "$1"
-    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-XXXXXXXXXX" --suffix=.tgz)
+    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX" --suffix=.tgz)
     time {
         tar --create --file - "$1" | gzip -1 > "$THETEMPFILE"
     }
@@ -1959,14 +1959,15 @@ benchmark-compression-gzip () {
         gzip -d "$THETEMPFILE" >/dev/null
     }
     sleep 2
-    rm "${THETEMPFILE%.*}".tar
+    [[ -f "${THETEMPFILE%%.*}".tar ]] && rm "${THETEMPFILE%%.*}".tar
+    [[ -f "$THETEMPFILE" ]] && rm "$THETEMPFILE"
 }
 
 benchmark-compression-bzip2 () {
     # benchmark bzip2 compression
     mkdir -p "$HOME/tmp"
     du -sh "$1"
-    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-XXXXXXXXXX" --suffix=.tar.bz2)
+    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX" --suffix=.tar.bz2)
     time {
         tar --create --file - "$1" | bzip2 -1 > "$THETEMPFILE"
     }
@@ -1977,14 +1978,15 @@ benchmark-compression-bzip2 () {
         bzip2 -d "$THETEMPFILE" >/dev/null
     }
     sleep 2
-    rm "${THETEMPFILE%%.*}".tar
+    [[ -f "${THETEMPFILE%%.*}".tar ]] && rm "${THETEMPFILE%%.*}".tar
+    [[ -f "$THETEMPFILE" ]] && rm "$THETEMPFILE"
 }
 
 benchmark-compression-lz4 () {
     # benchmark lz4 compression
     mkdir -p "$HOME/tmp"
     du -sh "$1"
-    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-XXXXXXXXXX" --suffix=.tar.lz4)
+    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX" --suffix=.tar.lz4)
     time {
         tar --create --file - "$1" | lz4 -1 > "$THETEMPFILE"
     }
@@ -1995,14 +1997,14 @@ benchmark-compression-lz4 () {
         lz4 -d "$THETEMPFILE" &>/dev/null
     }
     sleep 2
-    rm "$THETEMPFILE"
+    [[ -f "$THETEMPFILE" ]] && rm "$THETEMPFILE"
 }
 
 benchmark-compression-lzop () {
     # benchmark lzop compression
     mkdir -p "$HOME/tmp"
     du -sh "$1"
-    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-XXXXXXXXXX" --suffix=.tar.lzop)
+    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX" --suffix=.tar.lzop)
     time {
         tar --create --file - "$1" | lzop -6 > "$THETEMPFILE"
     }
@@ -2013,16 +2015,32 @@ benchmark-compression-lzop () {
         lzop -d -c "$THETEMPFILE" >/dev/null
     }
     sleep 2
-    # rm test.tar.lzop
-    # rm test.tar
-    # rm "${THETEMPFILE%%.*}".tar
+    [[ -f "$THETEMPFILE" ]] && rm "$THETEMPFILE"
+}
+
+benchmark-compression-lzop-here () {
+    # benchmark lzop compression
+    du -sh "$1"
+    # TODO: share with above
+    local THETEMPFILE=$(mktemp "./tmp-benchmark-compression-XXXXXXXXXX" --suffix=.tar.lzop)
+    time {
+        tar --create --file - "$1" | lzop -6 > "$THETEMPFILE"
+    }
+    echo ""
+    du -sh "$THETEMPFILE"
+    time {
+        # XXXX: hope this is not optimized!
+        lzop -d -c "$THETEMPFILE" >/dev/null
+    }
+    sleep 2
+    [[ -f "$THETEMPFILE" ]] && rm "$THETEMPFILE"
 }
 
 benchmark-compression-rzip () {
     # benchmark rzip compression
     mkdir -p "$HOME/tmp"
     du -sh "$1"
-    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-XXXXXXXXXX" --dry-run --suffix=.tar.rz)
+    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX" --dry-run --suffix=.tar.rz)
     time {
         tar --create --file - "$1" > test.tar
         rzip -3 test.tar -o "$THETEMPFILE"
@@ -2033,7 +2051,8 @@ benchmark-compression-rzip () {
         rzip -d "$THETEMPFILE"
     }
     sleep 2
-    rm "${THETEMPFILE%%.*}".tar
+    [[ -f "${THETEMPFILE%%.*}".tar ]] && rm "${THETEMPFILE%%.*}".tar
+    [[ -f "$THETEMPFILE" ]] && rm "$THETEMPFILE"
 }
 
 # TODO: will not work on directories for now
@@ -2041,7 +2060,7 @@ benchmark-compression-rzip () {
 # benchmark-compression-lrzip () {
 #     # benchmark lzip compression
 #     du -sh "$1"
-#     local THETEMPFILE=$(mktemp tmp-XXXXXXXXXX --dry-run --suffix=.tar.lrzip)
+#     local THETEMPFILE=$(mktemp tmp-benchmark-compression-XXXXXXXXXX --dry-run --suffix=.tar.lrzip)
 #     time {
 #         lrzip --level 9 "$1" --outfile "$THETEMPFILE"
 #     }
@@ -2059,7 +2078,7 @@ benchmark-compression-lzip () {
     # benchmark lzip compression
     mkdir -p "$HOME/tmp"
     du -sh "$1"
-    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-XXXXXXXXXX" --suffix=.tar.lzip)
+    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX" --suffix=.tar.lzip)
     time {
         tar --create --file - "$1" | lzip -9 > "$THETEMPFILE"
     }
@@ -2070,14 +2089,14 @@ benchmark-compression-lzip () {
         lzip -d -c "$THETEMPFILE" >/dev/null
     }
     sleep 2
-    rm "$THETEMPFILE"
+    [[ -f "$THETEMPFILE" ]] && rm "$THETEMPFILE"
 }
 
 benchmark-compression-xz () {
     # benchmark lz compression
     mkdir -p "$HOME/tmp"
     du -sh "$1"
-    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-XXXXXXXXXX" --suffix=.tar.xz)
+    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX" --suffix=.tar.xz)
     time {
         tar --create --file - "$1" | xz -9 > "$THETEMPFILE"
     }
@@ -2088,14 +2107,15 @@ benchmark-compression-xz () {
         xz -d "$THETEMPFILE" >/dev/null
     }
     sleep 2
-    rm "${THETEMPFILE%%.*}".tar
+    [[ -f "${THETEMPFILE%%.*}".tar ]] && rm "${THETEMPFILE%%.*}".tar
+    [[ -f "$THETEMPFILE" ]] && rm "$THETEMPFILE"
 }
 
 benchmark-compression-zip () {
     # benchmark lz compression
     mkdir -p "$HOME/tmp"
     du -sh "$1"
-    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-XXXXXXXXXX" --dry-run --suffix=.zip)
+    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX" --dry-run --suffix=.zip)
     time {
         zip "$THETEMPFILE" "$1"
     }
@@ -2106,7 +2126,7 @@ benchmark-compression-zip () {
         unzip -p "$THETEMPFILE" >/dev/null
     }
     sleep 2
-    rm "$THETEMPFILE"
+    [[ -f "$THETEMPFILE" ]] && rm "$THETEMPFILE"
 }
 
 benchmark-compression-all () {
@@ -2498,7 +2518,7 @@ tar-bzip2-remove () {
     fi
     # check if successful, need temp files
     # https://stackoverflow.com/questions/1550933/catching-error-codes-in-a-shell-pipe
-    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-XXXXXXXXXX" --suffix=.tar)
+    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-bzip-remove-XXXXXXXXXX" --suffix=.tar)
     echo "Tarring $1 to $THETEMPFILE..."
     time {
         tar --create --file - "$1" > "$THETEMPFILE"

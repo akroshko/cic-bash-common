@@ -25,12 +25,14 @@ main () {
     else
         echo "No next window ID!"
     fi
-    # are we actually on an rxvt window
+    # are we actually on a the selected window class id
     if wmctrl -lx | awk '{print $1 " " $3}' | sed -e 's/0x0*//g' | grep -- "$CURRENTWINDOWID.*$WINDOWCLASS"; then
         # am I on the current line
         wmctrl -i -a "$NEXT_WINDOW_ID"
     else
-        # switch to whateer wmctrl wants
+        # only save if we are not on the desired window class
+        "$HOME/bin/x11_save_focused_window.sh"
+        # switch to whatever wmctrl wants
         wmctrl -x -a "$WINDOWCLASS"
     fi
 }

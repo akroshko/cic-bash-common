@@ -99,13 +99,13 @@ build-install-software-zathura () {
     # make clean;
     # make;
     # sudo make install;
-    [[ -e ./build ]] && rm -rf ./build
+    [[ -d ./build ]] && rm -rf ./build
     meson build
     cd build
     ninja
     sudo ninja install
     cd ..
-    [[ -e ./build ]] && rm -rf ./build
+    [[ -d ./build ]] && rm -rf ./build
     popd > /dev/null;
     ################################################################################
     h2 "zathura";
@@ -120,13 +120,13 @@ build-install-software-zathura () {
     # make clean;
     # make;
     # sudo make install;
-    [[ -e ./build ]] && rm -rf ./build
+    [[ -d ./build ]] && rm -rf ./build
     meson build
     cd build
     ninja
     sudo ninja install
     cd ..
-    [[ -e ./build ]] && rm -rf ./build
+    [[ -d ./build ]] && rm -rf ./build
     popd > /dev/null;
     ################################################################################
     h2 "zathura-poppler";
@@ -143,13 +143,13 @@ build-install-software-zathura () {
     # make clean;
     # make;
     # sudo make install;
-    [[ -e ./build ]] && rm -rf ./build
+    [[ -d ./build ]] && rm -rf ./build
     meson build
     cd build
     ninja
     sudo ninja install
     cd ..
-    [[ -e ./build ]] && rm -rf ./build
+    [[ -d ./build ]] && rm -rf ./build
     popd > /dev/null;
     ################################################################################
     h2 "zathura-mupdf";
@@ -166,13 +166,13 @@ build-install-software-zathura () {
     # make clean;
     # make;
     # sudo make install;
-    [[ -e ./build ]] && rm -rf ./build
+    [[ -d ./build ]] && rm -rf ./build
     meson build
     cd build
     ninja
     # sudo ninja install
     cd ..
-    [[ -e ./build ]] && rm -rf ./build
+    [[ -d ./build ]] && rm -rf ./build
     popd > /dev/null;
     ################################################################################
     h2 "zathura-djvu";
@@ -186,13 +186,13 @@ build-install-software-zathura () {
     # make clean;
     # make;
     # sudo make install;
-    [[ -e ./build ]] && rm -rf ./build
+    [[ -d ./build ]] && rm -rf ./build
     meson build
     cd build
     ninja
     sudo ninja install
     cd ..
-    [[ -e ./build ]] && rm -rf ./build
+    [[ -d ./build ]] && rm -rf ./build
     popd > /dev/null;
     ################################################################################
     h2 "zathura-cb";
@@ -203,13 +203,13 @@ build-install-software-zathura () {
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
     # git checkout 21fa0f4d8da39ed9be449400d2147b876b739f56
-    [[ -e ./build ]] && rm -rf ./build
+    [[ -d ./build ]] && rm -rf ./build
     meson build
     cd build
     ninja
     sudo ninja install
     cd ..
-    [[ -e ./build ]] && rm -rf ./build
+    [[ -d ./build ]] && rm -rf ./build
     popd >/dev/null
     ################################################################################
     h2 "zathura-ps";
@@ -220,13 +220,13 @@ build-install-software-zathura () {
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
     # git checkout 91a22c4d44eabfca37f0c4488c4b2d18cab3ddb
-    [[ -e ./build ]] && rm -rf ./build
+    [[ -d ./build ]] && rm -rf ./build
     meson build
     cd build
     ninja
     sudo ninja install
     cd ..
-    [[ -e ./build ]] && rm -rf ./build
+    [[ -d ./build ]] && rm -rf ./build
     popd >/dev/null
 }
 
