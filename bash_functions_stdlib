@@ -1969,7 +1969,7 @@ benchmark-compression-bzip2 () {
     du -sh "$1"
     local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX" --suffix=.tar.bz2)
     time {
-        tar --create --file - "$1" | bzip2 -1 > "$THETEMPFILE"
+        tar --create --file - "$1" | bzip2 -9 > "$THETEMPFILE"
     }
     echo ""
     du -sh "$THETEMPFILE"
@@ -2530,7 +2530,7 @@ tar-bzip2-remove () {
     fi
     echo "Compressing $THETEMPFILE to $2..."
     time {
-        bzip2 --stdout -1 "$THETEMPFILE" > "$2"
+        bzip2 --stdout -9 "$THETEMPFILE" > "$2"
     }
     if [[ $? != 0 ]];then
         echo "Error during compression!"
