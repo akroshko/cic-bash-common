@@ -97,6 +97,11 @@ date-time-stamp-t () {
     echo $(date +%Y%m%dT%H%M%S)
 }
 
+date-time-stamp-lower-t () {
+    # return a time-stamp with date in standard format
+    echo $(date +%Y%m%dt%H%M%S)
+}
+
 date-stamp () {
     echo $(date +%Y%m%d)
 }
@@ -518,7 +523,7 @@ du-total-symlink () {
 dd-progress () {
     # TODO: spaces after | ???
     #       try on next big dd
-    # ps auxww | grep " dd " |grep -v grep |awk '{print $2}' |while read pid; do kill -USR1 $pid; done
+    # ps auxww | grep " [d]d " | awk '{print $2}' |while read pid; do kill -USR1 $pid; done
     # http://askubuntu.com/questions/215505/how-do-you-monitor-the-progress-of-dd
     sudo kill -USR1 $(pgrep ^dd)
 }
@@ -728,6 +733,7 @@ vcs-update-versions () {
     # TODO: add fences and safeguards
     # TODO: search recursively with find command
     # find . -not -path "*git*" -type f -exec bash -c 'source ~/.bash_library;vcs-update-file-version "{}"'  \;
+    local CURRENTYEAR=$(date +"%Y")
     for f in ${PWD}/*; do
         [[ -f "$f" ]] || continue
         local FILETYPE=$(file -L "$f")
@@ -736,14 +742,14 @@ vcs-update-versions () {
             # hash comment
             sed -i -e "s/^# Version:.*$/# Version: $(date-stamp)/g" "$f"
             # if not copyright matches this year
-            if grep -- "^# Copyright" $f >/dev/null && ! grep -- "^# Copyright.*2016" $f >> /dev/null; then
+            if grep -- "^# Copyright" $f >/dev/null && ! grep -- "^# Copyright.*#$CURRENTYEAR" $f >/dev/null; then
                 warn "Need to update year in $f"
             fi
         elif [[ "$FILETYPE" =~ "Lisp/Scheme program" || "$VERSIONFILE" =~ \.el$ ]]; then
             # lisp
             sed -i -e "s/^;; Version:.*$/;; Version: $(date-stamp)/g" "$f"
             # if not copyright matches this year
-            if grep -- "^;; Copyright" $f >/dev/null && ! grep -- "Copyright.*2016" $f >> /dev/null; then
+            if grep -- "^;; Copyright" $f >/dev/null && ! grep -- "Copyright.*$CURRENTYEAR" $f >/dev/null; then
                 warn "Need to update year in $f"
             fi
         elif [[ "$FILETYPE" =~ "LaTeX document" ]]; then
@@ -797,7 +803,7 @@ mount-disk-uuid () {
 device-disk-uuid () {
     # find mounted disk or ???
     local UUID="$1"
-    local UUIDDEVICE="$(readlink -f /dev/disk/by-uuid/${UUID})"
+    local UUIDDEVICE=$(readlink -f "/dev/disk/by-uuid/${UUID}")
     echo ${UUIDDEVICE}
 }
 
@@ -1467,7 +1473,7 @@ vcs-grep-conflicted () {
 # }
 
 mdstat-status () {
-    local MDSTAT="$(cat /proc/mdstat | sed -n '/^md\|^[[:space:]]*\[\|blocks/p')"
+    local MDSTAT=$(cat /proc/mdstat | sed -n '/^md\|^[[:space:]]*\[\|blocks/p')
     local FIRST=1
     IFS=$'\n'
     for i in $(echo "${MDSTAT}"); do

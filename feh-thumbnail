@@ -6,7 +6,7 @@ main () {
         if [[ -d "$1" ]];then
             local THEDIR="$1"
         else
-            local THEDIR="$(dirname $1)"
+            local THEDIR=$(dirname $1)
         fi
     fi
     if [[ "${HOSTNAME}" == "akroshko-main" ]]; then

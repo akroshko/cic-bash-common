@@ -8,7 +8,7 @@
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Tue Oct 17, 2017
-# Version: 20180918
+# Version: 20181209
 # URL: https://github.com/akroshko/bash-stdlib
 #
 # This program is free software: you can redistribute it and/or modify
@@ -24,9 +24,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see http://www.gnu.org/licenses/.
 
+source "$HOME/.bash_library"
+
 main () {
-    # TODO: is xclip really the best?
-    local BASE64CONVERT=$(xclip -l 1 -o -selection primary | base64)
-    "$HOME/bin/launch-emacsclient" noframe --eval "(cic:insert-collection \"${BASE64CONVERT}\" t)"
+    # TODO: clipboard instead...
+    if wmctrl -lx | awk '{print $1 " " $3}' | sed -e 's/0x0*//g' | grep -- "$(xprop -root | grep ^_NET_ACTIVE_WINDOW | awk '{print $5}' | sed -e 's/,//' -e 's/0x0*//g').*zathura.Zathura"; then
+        local CAPTUREDPRIMARY=$(xclip -l 1 -o -selection clipboard)
+    else
+        local CAPTUREDPRIMARY=$(xclip -l 1 -o -selection primary)
+    fi
+    local BASE64CONVERT=$(base64 <<< "$CAPTUREDPRIMARY")
+    # first t grabs from primary, second t is nograb
+    "$HOME/bin/launch-emacsclient" noframe --eval "(cic:insert-collection \"${BASE64CONVERT}\")"
+    notify-send "Added to collection!!!\n\n$CAPTUREDPRIMARY" -t 5000
+    log-collection "$BASE64CONVERT"
 }
 main

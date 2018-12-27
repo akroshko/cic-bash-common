@@ -4,7 +4,7 @@
 shopt -s nullglob
 
 if [[ -z "$1" ]]; then
-	FULLPATH="$(pwd)"
+	FULLPATH=$(pwd)
 else
     FULLPATH=$(readlink -f "$1")
     DNAME=$(dirname "$FULLPATH")

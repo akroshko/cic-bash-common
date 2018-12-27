@@ -88,7 +88,7 @@ build-install-software-zathura () {
     h2 "girara";
     [[ ! -d "girara-external" ]] && yell "Directory girara-external not found!" && return 1
     sudo true || return 1
-    pushd . > /dev/null;
+    pushd . >/dev/null;
     cd girara-external;
     check-host-main && git pull
     # TODO: this needs to be checked, check if branch develop already exists
@@ -106,11 +106,11 @@ build-install-software-zathura () {
     sudo ninja install
     cd ..
     [[ -d ./build ]] && rm -rf ./build
-    popd > /dev/null;
+    popd >/dev/null;
     ################################################################################
     h2 "zathura";
     [[ ! -d "zathura-external" ]] && yell "Directory zathura-external not found!" && return 1
-    pushd . > /dev/null;
+    pushd . >/dev/null;
     cd zathura-external;
     check-host-main && git pull
     git checkout --track -b develop origin/develop
@@ -127,13 +127,13 @@ build-install-software-zathura () {
     sudo ninja install
     cd ..
     [[ -d ./build ]] && rm -rf ./build
-    popd > /dev/null;
+    popd >/dev/null;
     ################################################################################
     h2 "zathura-poppler";
     # XXXX: a nasty hack
     # TODO: do I still need this
     # sudo cp /usr/lib/pkgconfig/girara-gtk3.pc /usr/lib/pkgconfig/girara-gtk.pc
-    pushd . > /dev/null;
+    pushd . >/dev/null;
     [[ ! -d "zathura-pdf-poppler-external" ]] && yell "Directory zathura-pdf-poppler-external not found!" && return 1
     cd zathura-pdf-poppler-external;
     check-host-main && git pull
@@ -150,13 +150,13 @@ build-install-software-zathura () {
     sudo ninja install
     cd ..
     [[ -d ./build ]] && rm -rf ./build
-    popd > /dev/null;
+    popd >/dev/null;
     ################################################################################
     h2 "zathura-mupdf";
     # XXXX: a nasty hack
     # TODO: do I still need this
     # sudo cp /usr/lib/pkgconfig/girara-gtk3.pc /usr/lib/pkgconfig/girara-gtk.pc
-    pushd . > /dev/null;
+    pushd . >/dev/null;
     [[ ! -d "zathura-pdf-mupdf-external" ]] && yell "Directory zathura-pdf-mupdf-external not found!" && return 1
     cd zathura-pdf-mupdf-external;
     check-host-main && git pull
@@ -173,11 +173,11 @@ build-install-software-zathura () {
     # sudo ninja install
     cd ..
     [[ -d ./build ]] && rm -rf ./build
-    popd > /dev/null;
+    popd >/dev/null;
     ################################################################################
     h2 "zathura-djvu";
     [[ ! -d "zathura-djvu-external" ]] && yell "Directory zathura-djvu-external not found!" && return 1
-    pushd . > /dev/null;
+    pushd . >/dev/null;
     cd zathura-djvu-external;
     check-host-main && git pull
     git checkout --track -b develop origin/develop
@@ -193,11 +193,11 @@ build-install-software-zathura () {
     sudo ninja install
     cd ..
     [[ -d ./build ]] && rm -rf ./build
-    popd > /dev/null;
+    popd >/dev/null;
     ################################################################################
     h2 "zathura-cb";
     [[ ! -d "zathura-cb-external" ]] && yell "Directory zathura-cb-external not found!" && return 1
-    pushd . > /dev/null;
+    pushd . >/dev/null;
     cd zathura-cb-external;
     check-host-main && git pull
     git checkout --track -b develop origin/develop
@@ -214,7 +214,7 @@ build-install-software-zathura () {
     ################################################################################
     h2 "zathura-ps";
     [[ ! -d "zathura-ps-external" ]] && yell "Directory zathura-ps-external not found!" && return 1
-    pushd . > /dev/null;
+    pushd . >/dev/null;
     cd zathura-ps-external;
     check-host-main && git pull
     git checkout --track -b develop origin/develop
@@ -323,7 +323,7 @@ build-install-software-pcsx-reloaded () {
         h2 "PCSX-Reloaded"
         [[ ! -d "PCSX-Reloaded-external" ]] && yell "Directory PCSX-Reloaded-external not found!" && return 1
         sudo true || return 1
-        pushd . > /dev/null;
+        pushd . >/dev/null;
         cd PCSX-Reloaded-external
         check-host-main && git pull
         make clean
@@ -342,7 +342,7 @@ build-install-software-ppsspp () {
         h2 "ppsspp (empty)"
         [[ ! -d "ppsspp-source-external" ]] && yell "Directory ppsspp-source-external not found!" && return 1
         sudo true || return 1
-        pushd . > /dev/null;
+        pushd . >/dev/null;
         cd ppsspp-source-external
         check-host-main && git pull
         popd >/dev/null
@@ -357,10 +357,12 @@ build-install-software-dolphin-emu () {
         # XXXX: last version that supports QT 5.7
         git checkout b94262ec33b4266fbff31c18cffcedf8c83929d2
         # TODO: delete build first?
-        mkdir -p build
-        cd build
+        local DOLPHINDIR=$(readlink -f "$PWD")
+        [[ -d "$HOME/tmp/dolphin-build" ]] && rm -r "$HOME/tmp/dolphin-build"
+        mkdir -p "$HOME/tmp/dolphin-build"
+        cd "$HOME/tmp/dolphin-build"
         # TODO: set up to /usr/local explicitly, other explicit options?
-        cmake .. -DENABLE_LTO=ON
+        cmake "$DOLPHINDIR" -DENABLE_LTO=ON
         make
     }
 }
@@ -370,7 +372,7 @@ build-install-software-zsnes () {
     h2 "zsnes"
     [[ ! -d "zsnes-external" ]] && yell "Directory zsnes-external not found!" && return 1
     sudo true || return 1
-    pushd . > /dev/null;
+    pushd . >/dev/null;
     cd zsnes-external
     check-host-main && git pull
     cd src

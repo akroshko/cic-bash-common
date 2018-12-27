@@ -6,7 +6,6 @@ if wmctrl -lx | awk '{print $1 " " $3}' | sed -e 's/0x0*//g' | grep -- "$(xprop 
     #      emacs command alt+"e" is next frame (could be something to switch out of emacs)
     # TODO: this should be next frame
     "$HOME/cic-vcs/bash-stdlib/launch-emacsclient" noframe --eval "(other-frame 1)"
-    # true
 else
     # TODO: no echo?
     echo $(xdotool getwindowfocus) > "$HOME/.emacs-switch-last.txt"
