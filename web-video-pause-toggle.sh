@@ -3,6 +3,22 @@
 # get current window
 
 main () {
+    # TODO: boilerplate
+    local LOCKFILE=/tmp/web-video-only-lock.txt
+    if [[ -e "$LOCKFILE" ]]; then
+        local LOCKFILE_CONTENTS=$(cat "$LOCKFILE")
+        if kill -0 "$LOCKFILE_CONTENTS" &>/dev/null; then
+            echo "Found $LOCKFILE pid $LOCKFILE_CONTENTS"
+            if ps -ef | grep "$LOCKFILE_CONTENTS.*"'[w]eb-video' &>/dev/null; then
+                echo "A web-video script is already running!"
+                exit 1
+            else
+                echo "Running because $LOCKFILE contents stale"
+            fi
+        fi
+    fi
+    echo $$ > "$LOCKFILE"
+
     local CURRENTWINDOW=$(xdotool getwindowfocus)
     local CURRENTYOUTUBE=
     # filtering by name probably cuts out more windows more quickly than class

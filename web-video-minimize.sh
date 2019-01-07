@@ -2,10 +2,21 @@
 # global function to minimize with the option to pausing running videos or other media
 
 main () {
-    if (( "$(ps -ef | grep '[w]eb-video' | wc -l)" > 2 )); then
-        echo "A web-video script is already running!"
-        exit 1
+    # TODO: boilerplate
+    local LOCKFILE=/tmp/web-video-only-lock.txt
+    if [[ -e "$LOCKFILE" ]]; then
+        local LOCKFILE_CONTENTS=$(cat "$LOCKFILE")
+        if kill -0 "$LOCKFILE_CONTENTS" &>/dev/null; then
+            echo "Found $LOCKFILE pid $LOCKFILE_CONTENTS"
+            if ps -ef | grep "$LOCKFILE_CONTENTS.*"'[w]eb-video' &>/dev/null; then
+                echo "A web-video script is already running!"
+                exit 1
+            else
+                echo "Running because $LOCKFILE contents stale"
+            fi
+        fi
     fi
+    echo $$ > "$LOCKFILE"
 
     # TODO: put in tmp directory?
     # TODO: make sure null operations do not overwrite last
@@ -30,7 +41,7 @@ main () {
     if [[ "$1" == "--all" || "$1" == "--pause" ]]; then
         xdotool search --onlyvisible --name "downloads|documents" | while IFS= read -r WINID; do
             if xdotool search --onlyvisible --class "pcmanfm" | grep -- "$WINID" >/dev/null; then
-                xdotool windowminimize "${WINID}"
+                xdotool windowminimize "$WINID"
                 sleep 0.10
             fi
         done
@@ -42,72 +53,86 @@ main () {
         if xdotool search --name "FPS" | grep "$WINID" &>/dev/null; then
             echo "$WINID"
             # TODO: wmctrl seems more robust than xdotool for this but investigage more
-            # xdotool windowactivate "$WINID" windowfocus --sync "$WINID"
+            # xdotool getwindowfocus "$WINID" windowfocus --sync "$WINID"
             wmctrl -i -R "$WINID"
-            # xdotool windowactivate --sync "$WINID"
+            # xdotool getwindowfocus --sync "$WINID"
             sleep 0.25
             # dolphin seems to poll periodically for the key being depressed
             # just a keypress even is only detected about 25% of the time
             xdotool keydown --delay 50 --window "$WINID" "F10" keyup --delay 50 --window "$WINID" "F10"
             # at least some sleep delay after inputting key seems to help
-            sleep 1
+            sleep 0.25
             echo "$WINID" > /tmp/cic-web-video-last.txt
             echo $(xprop WM_CLASS -id "$WINID") >> /tmp/cic-web-video-last.txt
         fi
     done
 
     # always pause playback or emulation
-    xdotool search --class "dolphin-emu|Fceux|mGBA|mpv|PCSXR|PCSX2|PPSSPPSDL|vlc|zsnes" | while IFS= read -r WINID; do
+    xdotool search --class --onlyvisible --maxdepth 2 "dolphin-emu|Fceux|mGBA|mpv|PCSXR|PCSX2|PPSSPPSDL|vlc|zsnes" | while IFS= read -r WINID; do
         # now go through rest of potential websites
         # TODO: eventually just flip them off without muting
         # TODO: eventually have restore for all of these
         if [[ "$1" == '--pause' || "$1" == '--all' ]]; then
-            THECLASS=$(xprop WM_CLASS -id "${WINID}")
+            THECLASS=$(xprop WM_CLASS -id "$WINID")
             # appears to be case insensitve
             # TODO: make sure one day
-            if [[ "${THECLASS}" =~ "mpv" ]]; then
+            if [[ "$THECLASS" =~ "mpv" ]]; then
                 # TODO: figure out if I can force pause
-                xdotool windowactivate --sync "${WINID}" key "space"
+                wmctrl -i -R "$WINID"
+                sleep 0.25
+                xdotool getwindowfocus key --window "%1" "space"
                 sleep 0.25
                 echo "$WINID" > /tmp/cic-web-video-last.txt
                 echo $(xprop WM_CLASS -id "$WINID") >> /tmp/cic-web-video-last.txt
-            elif [[ "${THECLASS}" =~ "vlc" ]]; then
-                # space pauses, browser stop key stops
-                xdotool windowactivate --sync "${WINID}" key "XF86Stop"
+            elif [[ "$THECLASS" =~ "vlc" ]]; then
+                # TODO does not seem to work in this type of mode
+                # xdotool getwindowfocus --sync "$WINID" key "XF86Stop"
+                # TODO: requires different from default config
+                wmctrl -i -R "$WINID"
+                sleep 0.25
+                xdotool getwindowfocus key --window "%1" "F10"
                 sleep 0.25
                 echo "$WINID" > /tmp/cic-web-video-last.txt
                 echo $(xprop WM_CLASS -id "$WINID") >> /tmp/cic-web-video-last.txt
-            elif [[ "${THECLASS}" =~ "Fceux" ]]; then
+            elif [[ "$THECLASS" =~ "Fceux" ]]; then
                 # TODO: this may toggle caps
-                xdotool windowactivate --sync "${WINID}" key --window  "${WINID}" "Pause"
+                wmctrl -i -R "$WINID"
+                sleep 0.25
+                xdotool getwindowfocus key --window "%1" "Pause"
                 sleep 0.25
                 echo "$WINID" > /tmp/cic-web-video-last.txt
                 echo $(xprop WM_CLASS -id "$WINID") >> /tmp/cic-web-video-last.txt
-            elif [[ "${THECLASS}" =~ "mGBA" ]]; then
+            elif [[ "$THECLASS" =~ "mGBA" ]]; then
                 # TODO: this may toggle caps
-                xdotool windowactivate --sync "${WINID}" key --window  "${WINID}" "ctrl+p"
+                xdotool getwindowfocus --sync "$WINID" key --window  "$WINID" "ctrl+p"
                 sleep 0.25
                 echo "$WINID" > /tmp/cic-web-video-last.txt
                 echo $(xprop WM_CLASS -id "$WINID") >> /tmp/cic-web-video-last.txt
-            elif [[ "${THECLASS}" =~ "PCSXR" ]]; then
+            elif [[ "$THECLASS" =~ "PCSXR" ]]; then
                 # TODO: this may toggle caps
-                xdotool windowactivate --sync "${WINID}" key --window  "${WINID}" "Escape"
+                wmctrl -i -R "$WINID"
+                sleep 0.25
+                xdotool getwindowfocus key --window "%1" "Escape"
                 sleep 0.25
                 echo "$WINID" > /tmp/cic-web-video-last.txt
                 echo $(xprop WM_CLASS -id "$WINID") >> /tmp/cic-web-video-last.txt
-            elif [[ "${THECLASS}" =~ "PCSXR" ]]; then
+            elif [[ "$THECLASS" =~ "PCSX2" ]]; then
                 # TODO: need keys for something specific
-                # xdotool windowactivate --sync "${WINID}" key --window  "${WINID}" "Escape"
+                # xdotool getwindowfocus --sync "$WINID" key --window  "$WINID" "Escape"
                 sleep 0.25
                 echo "$WINID" > /tmp/cic-web-video-last.txt
                 echo $(xprop WM_CLASS -id "$WINID") >> /tmp/cic-web-video-last.txt
-            elif [[ "${THECLASS}" =~ "PPSSPPSDL" ]]; then
-                xdotool windowactivate --sync "${WINID}" key --window  "${WINID}" "Escape"
+            elif [[ "$THECLASS" =~ "PPSSPPSDL" ]]; then
+                wmctrl -i -R "$WINID"
+                sleep 0.25
+                xdotool getwindowfocus key --window "%1" "Escape"
                 sleep 0.25
                 echo "$WINID" > /tmp/cic-web-video-last.txt
                 echo $(xprop WM_CLASS -id "$WINID") >> /tmp/cic-web-video-last.txt
-            elif [[ "${THECLASS}" =~ "zsnes" ]]; then
-                xdotool windowactivate --sync "${WINID}" key --window  "${WINID}" "Escape"
+            elif [[ "$THECLASS" =~ "zsnes" ]]; then
+                wmctrl -i -R "$WINID"
+                sleep 0.25
+                xdotool getwindowfocus key --window "%1" "Escape"
                 sleep 0.25
                 echo "$WINID" > /tmp/cic-web-video-last.txt
                 echo $(xprop WM_CLASS -id "$WINID") >> /tmp/cic-web-video-last.txt
@@ -119,8 +144,9 @@ main () {
                 fi
             fi
         fi
+        # TODO: can I fork this off
         sleep 0.25
-        xdotool windowminimize "${WINID}"
+        xdotool windowminimize "$WINID"
         sleep 0.25
         # mute only if I try to pause or boss key mode
         # TODO: reenable
@@ -132,7 +158,7 @@ main () {
         # TODO there does not seem to be a way to do two searches in one command
         xdotool  search --name "twitch|youtube" | while IFS= read -r WINID; do
             if xdotool search --class "conkeror"  | grep -- "$WINID" >/dev/null; then
-                xdotool windowactivate --sync "${WINID}"
+                xdotool getwindowfocus --sync "$WINID"
                 # TODO: very arbitrary delay, perhaps wait for something to return
                 # TODO definitely want this better
                 # TODO: should not be necessary because of --sync
@@ -141,7 +167,7 @@ main () {
                 "$HOME/bin/conkeror-batch" -f web-video-pause
                 sleep 1.0
                 echo "$WINID" > /tmp/cic-web-video-last.txt
-                echo $(xprop WM_CLASS -id "${WINID}") >> /tmp/cic-web-video-last.txt
+                echo $(xprop WM_CLASS -id "$WINID") >> /tmp/cic-web-video-last.txt
             fi
         done
     fi
@@ -149,11 +175,11 @@ main () {
     xdotool search --onlyvisible --name "twitch|youtube" | while IFS= read -r WINID; do
         if xdotool search --onlyvisible --class "chromium-browser|conkeror|firefox" | grep -- "$WINID" >/dev/null; then
             sleep 0.10
-            xdotool windowminimize "${WINID}"
+            xdotool windowminimize "$WINID"
             sleep 0.10
             # TODO: probably no need for sleep here
             echo "$WINID" > /tmp/cic-web-video-last.txt
-            echo $(xprop WM_CLASS -id "${WINID}") >> /tmp/cic-web-video-last.txt
+            echo $(xprop WM_CLASS -id "$WINID") >> /tmp/cic-web-video-last.txt
         fi
     done
 }

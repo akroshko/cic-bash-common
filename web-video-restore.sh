@@ -3,10 +3,21 @@
 # overwrite if window no longer exists
 
 main () {
-    if (( "$(ps -ef | grep '[w]eb-video' | wc -l)" > 2 )); then
-        echo "A web-video script is already running!"
-        exit 1
+    # TODO: boilerplate
+    local LOCKFILE=/tmp/web-video-only-lock.txt
+    if [[ -e "$LOCKFILE" ]]; then
+        local LOCKFILE_CONTENTS=$(cat "$LOCKFILE")
+        if kill -0 "$LOCKFILE_CONTENTS" &>/dev/null; then
+            echo "Found $LOCKFILE pid $LOCKFILE_CONTENTS"
+            if ps -ef | grep "$LOCKFILE_CONTENTS.*"'[w]eb-video' &>/dev/null; then
+                echo "A web-video script is already running!"
+                exit 1
+            else
+                echo "Running because $LOCKFILE contents stale"
+            fi
+        fi
     fi
+    echo $$ > "$LOCKFILE"
 
     if [[ -e /tmp/cic-web-video-last.txt ]]; then
         local WINID=$(sed -n '1p' /tmp/cic-web-video-last.txt)
@@ -27,7 +38,14 @@ main () {
                 xdotool keydown --delay 50 --window "$WINID" "F10" keyup --delay 50 --window "$WINID" "F10"
             elif grep -i mpv <<< "$WINCLASS_EXIST" &>/dev/null && grep -i mpv <<< "$WINCLASS_EXIST" &>/dev/null; then
                 echo "MPV"
-                xdotool windowactivate --sync "${WINID}" key "space"
+                wmctrl -i -R "$WINID"
+                sleep 0.25
+                xdotool getwindowfocus key --window "%1" key "space"
+            elif grep -i vlc <<< "$WINCLASS_EXIST" &>/dev/null && grep -i vlc <<< "$WINCLASS_EXIST" &>/dev/null; then
+                echo "vlc"
+                wmctrl -i -R "$WINID"
+                sleep 0.25
+                xdotool getwindowfocus key --window "%1" key "shift+F10"
             elif grep -i conkeror <<< "$WINCLASS_EXIST" &>/dev/null && grep -i conkeror <<< "$WINCLASS_EXIST" &>/dev/null; then
                 echo "Conkeror"
                 if xdotool search --name "twitch|youtube" | grep -- "${WINID}" >/dev/null; then

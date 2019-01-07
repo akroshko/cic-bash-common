@@ -1,10 +1,22 @@
 #!/bin/bash
 
 main () {
-    if (( "$(ps -ef | grep '[w]eb-video' | wc -l)" > 2 )); then
-        echo "A web-video script is already running!"
-        exit 1
+    # TODO: boilerplate
+    local LOCKFILE=/tmp/web-video-only-lock.txt
+    if [[ -e "$LOCKFILE" ]]; then
+        local LOCKFILE_CONTENTS=$(cat "$LOCKFILE")
+        if kill -0 "$LOCKFILE_CONTENTS" &>/dev/null; then
+            echo "Found $LOCKFILE pid $LOCKFILE_CONTENTS"
+            if ps -ef | grep "$LOCKFILE_CONTENTS.*"'[w]eb-video' &>/dev/null; then
+                echo "A web-video script is already running!"
+                exit 1
+            else
+                echo "Running because $LOCKFILE contents stale"
+            fi
+        fi
     fi
+    echo $$ > "$LOCKFILE"
+
     # find the best candidate for currently playing video
     # TODO: add more intelligence
     xdotool search --name "twitch|youtube" | while IFS= read -r WINID; do

@@ -208,7 +208,7 @@ sshnox () {
     ssh -o "ForwardX11 no" "$@"
 }
 
-alias ssh-x11='ssh-x11-lan'
+alias ssh-x11-lan='sshx-lan'
 sshx-lan () {
     ssh -X -o "Compression no" "$@"
 }
@@ -350,6 +350,11 @@ need_new_symlink () {
         # symlink exists but points to different location than we are going to
         yell "Symlink $2 exists but points to $(readlink -f "$2") instead of $1!"
     fi
+}
+
+need_new_symlink_touch () {
+    touch "$1"
+    need_new_symlink "$1" "$2"
 }
 
 # TODO: do something if there is a directory
