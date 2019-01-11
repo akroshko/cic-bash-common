@@ -24,7 +24,7 @@ main () {
             local FOCUSID=$(xdotool getwindowfocus)
             echo "$FOCUSID" > /tmp/cic-web-video-focus-last.txt
             echo $(xprop WM_CLASS -id "$FOCUSID") >> /tmp/cic-web-video-focus-last.txt
-            xdotool windowactivate --sync "${WINID}"
+            xdotool windowactivate --sync "$WINID"
             exit 0
         fi
     done
@@ -35,7 +35,7 @@ main () {
         echo $FOCUSID
         echo "$FOCUSID" > /tmp/cic-web-video-focus-last.txt
         echo $(xprop WM_CLASS -id "$FOCUSID") >> /tmp/cic-web-video-focus-last.txt
-        xdotool windowactivate --sync "${WINID}"
+        xdotool windowactivate --sync "$WINID"
         exit 0
     done
 }

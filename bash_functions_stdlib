@@ -441,19 +441,19 @@ psg () {
 
 cpu-throttle-up () {
     for (( i = 0; i < $(nproc); i++ )); do
-        sudo cpufreq-set -c "${i}" -g performance
+        sudo cpufreq-set -c "$i" -g performance
     done
 }
 
 cpu-throttle-ondemand () {
     for (( i = 0; i < $(nproc); i++ )); do
-        sudo cpufreq-set -c "${i}" -g ondemand
+        sudo cpufreq-set -c "$i" -g ondemand
     done
 }
 
 cpu-throttle-down () {
     for (( i = 0; i < $(nproc); i++ )); do
-        sudo cpufreq-set -c "${i}" -g powersave
+        sudo cpufreq-set -c "$i" -g powersave
     done
 }
 
@@ -976,7 +976,7 @@ harm-id3-alphabetical-track () {
 harm-id3-album-as-directory () {
     # use directory name for album name as all tracks
     if dangerous-function-ask; then
-        local ALBUM=$(basename "${PWD}")
+        local ALBUM=$(basename "$PWD")
         eyeD3 --to-v2.4 --album "$ALBUM" *.mp3
     fi
 }
@@ -1242,19 +1242,19 @@ sage-jupyter-notebook () {
     # open an iPython notebook and browser using the Sage platorm on port 18888
     # TODO: need to control where goes
     # XXXX: requires defining of ${PYTHON_NOTEBOOK_ROOT} before calling
-    if [[ -n "${JUPYTER_NOTEBOOK_ROOT}" ]]; then
+    if [[ -n "$JUPYTER_NOTEBOOK_ROOT" ]]; then
         bleachbit --overwrite --clean epiphany.* google_chrome.*
         # set a good directory for these
         local NBPATH="${JUPYTER_NOTEBOOK_ROOT}/sage-jupyter-projects"
-        mkdir -p "${NBPATH}"
+        mkdir -p "$NBPATH"
         # TODO: subsitute for --deep-reload --automagic --secure --pprint depricated options
         if ps -ef | grep -- '--[n]otebook=jupyter' >/dev/null; then
             sage-jupyter-notebook-browser
         else
-            sage --notebook=jupyter --notebook-dir="${NBPATH}" --browser="firefox -P default" --port=18888
+            sage --notebook=jupyter --notebook-dir="$NBPATH" --browser="firefox -P default" --port=18888
         fi
     else
-        yell '${PYTHON_NOTEBOOK_ROOT} not defined!!!'
+        yell '$PYTHON_NOTEBOOK_ROOT not defined!!!'
     fi
 }
 
@@ -1284,9 +1284,9 @@ youtube-previous () {
     # TODO: if no window here
     local CURRENTWINDOW=$(xdotool getwindowfocus)
     xdotool search --name youtube | while IFS= read -r line; do
-        if xdotool search --class conkeror | grep -- "${line}" >/dev/null; then
-            xdotool windowfocus --sync "${line}";
-            xdotool windowactivate --sync "${line}"
+        if xdotool search --class conkeror | grep -- "$line" >/dev/null; then
+            xdotool windowfocus --sync "$line"
+            xdotool windowactivate --sync "$line"
             # TODO: very arbitrary delay, perhaps wait for something to return
             sleep 0.1
             conkeror-batch -f youtube-previous
@@ -1302,8 +1302,8 @@ youtube-next () {
     # TODO: if no window here
     local CURRENTWINDOW=$(xdotool getwindowfocus)
     xdotool search --name youtube | while IFS= read -r line; do
-        if xdotool search --class conkeror | grep -- "${line}" >/dev/null; then
-            xdotool windowfocus --sync "${line}"
+        if xdotool search --class conkeror | grep -- "$line" >/dev/null; then
+            xdotool windowfocus --sync "$line"
             # TODO: very arbitrary delay, perhaps wait for something to return
             sleep 0.1
             conkeror-batch -f youtube-next
@@ -1864,6 +1864,7 @@ trim-mp3-to-1hr () {
 }
 
 trim-mp3-to-2hr-skip-first-30s () {
+    # this is a good function to trim long playing music that has an unwanted intro
     ffmpeg -i "$1" -codec copy -ss 00:00:30 -t 02:00:00 "$2"
 }
 
@@ -1886,9 +1887,9 @@ youtube-normalize-volume () {
     # TODO: if no window here
     local CURRENTWINDOW=$(xdotool getwindowfocus)
     xdotool search --name youtube | while IFS= read -r line; do
-        if xdotool search --class conkeror | grep -- "${line}" >/dev/null; then
-            xdotool windowfocus --sync "${line}";
-            xdotool windowactivate --sync "${line}"
+        if xdotool search --class conkeror | grep -- "$line" >/dev/null; then
+            xdotool windowfocus --sync "$line";
+            xdotool windowactivate --sync "$line"
             # TODO: very arbitrary delay, perhaps wait for something to return
             sleep 0.05
             conkeror-batch -f youtube-normalize-volume
@@ -2357,7 +2358,7 @@ unzip-all () {
         mkdir -p "${F}.d"
         pushd . >/dev/null
         cd "${F}.d"
-        unzip ../"${F}"
+        unzip ../"$F"
         popd >/dev/null
     done
 }
@@ -2376,8 +2377,8 @@ unzip-in-path () {
 unzip-ls () {
     # TODO: check if zip is not here
     for F in ./*.zip; do
-        h2 "${F}"
-        unzip -l "${F}"
+        h2 "$F"
+        unzip -l "$F"
     done
 }
 
@@ -2440,13 +2441,13 @@ ag-reinstall-dependent () {
 check-permissions-rw () {
     # find files I do not own
     h3 "Files not owned or in my group"
-    find . ! -user "${USER}"
+    find . ! -user "$USER"
     h3 "Directories I do not have sufficient privileges for"
     # TODO: exclude .git
-    find . -type d -user "${USER}" ! -perm -700
+    find . -type d -user "$USER" ! -perm -700
     h3 "Files I do not have sufficient privileges for"
     # TODO: exclude .git
-    find . -user "${USER}" ! -perm -600
+    find . -user "$USER" ! -perm -600
 }
 
 ls-sqlite-tables () {
