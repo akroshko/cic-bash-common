@@ -47,7 +47,7 @@ build-software () {
     [[ ! -d "$HOME/cic-external-vcs/zathura-pdf-mupdf-external" ]]    && git clone https://git.pwmt.org/pwmt/zathura-pdf-mupdf.git   zathura-pdf-mupdf-external
     [[ ! -d "$HOME/cic-external-vcs/zathura-ps-external" ]]           && git clone https://git.pwmt.org/pwmt/zathura-ps.git          zathura-ps-external
     # now build, copied from build-software, and should be synced up
-    h2 "pip";
+    h2 "pip"
     # TODO: upgrade pip automatically?
     curl https://bootstrap.pypa.io/get-pip.py | sudo python
     sudo apt-get install --reinstall python3-pip
@@ -85,20 +85,20 @@ build-software-zathura () {
     # TODO: use some better versions than these giant hashes....
     #       have checks to make sure branches don't hang around
     ################################################################################
-    h2 "girara";
+    h2 "girara"
     [[ ! -d "girara-external" ]] && yell "Directory girara-external not found!" && return 1
     sudo true || return 1
-    pushd . >/dev/null;
-    cd girara-external;
+    pushd . >/dev/null
+    cd girara-external
     check-host-main && git pull
     # TODO: this needs to be checked, check if branch develop already exists
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
     # 0.2.7 release, last version my zathura will work with
     # git checkout fe7e9194e2005a263e77c132afb3b3ef13b2aefe
-    # make clean;
-    # make;
-    # sudo make install;
+    # make clean
+    # make
+    # sudo make install
     [[ -d ./build ]] && rm -rf ./build
     meson build
     cd build
@@ -106,20 +106,20 @@ build-software-zathura () {
     sudo ninja install
     cd ..
     [[ -d ./build ]] && rm -rf ./build
-    popd >/dev/null;
+    popd >/dev/null
     ################################################################################
-    h2 "zathura";
+    h2 "zathura"
     [[ ! -d "zathura-external" ]] && yell "Directory zathura-external not found!" && return 1
-    pushd . >/dev/null;
-    cd zathura-external;
+    pushd . >/dev/null
+    cd zathura-external
     check-host-main && git pull
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
     #       last version supporting girara 0.2.7
     # git checkout cd8931cb14a89a3558d6bbbc3f9bfbe972d713dd
-    # make clean;
-    # make;
-    # sudo make install;
+    # make clean
+    # make
+    # sudo make install
     [[ -d ./build ]] && rm -rf ./build
     meson build
     cd build
@@ -127,22 +127,22 @@ build-software-zathura () {
     sudo ninja install
     cd ..
     [[ -d ./build ]] && rm -rf ./build
-    popd >/dev/null;
+    popd >/dev/null
     ################################################################################
-    h2 "zathura-poppler";
+    h2 "zathura-poppler"
     # XXXX: a nasty hack
     # TODO: do I still need this
     # sudo cp /usr/lib/pkgconfig/girara-gtk3.pc /usr/lib/pkgconfig/girara-gtk.pc
-    pushd . >/dev/null;
+    pushd . >/dev/null
     [[ ! -d "zathura-pdf-poppler-external" ]] && yell "Directory zathura-pdf-poppler-external not found!" && return 1
-    cd zathura-pdf-poppler-external;
+    cd zathura-pdf-poppler-external
     check-host-main && git pull
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
     # git checkout ced9b3cfb0d7440a6a049f200a2f419ce09abe1e
-    # make clean;
-    # make;
-    # sudo make install;
+    # make clean
+    # make
+    # sudo make install
     [[ -d ./build ]] && rm -rf ./build
     meson build
     cd build
@@ -150,22 +150,22 @@ build-software-zathura () {
     sudo ninja install
     cd ..
     [[ -d ./build ]] && rm -rf ./build
-    popd >/dev/null;
+    popd >/dev/null
     ################################################################################
-    h2 "zathura-mupdf";
+    h2 "zathura-mupdf"
     # XXXX: a nasty hack
     # TODO: do I still need this
     # sudo cp /usr/lib/pkgconfig/girara-gtk3.pc /usr/lib/pkgconfig/girara-gtk.pc
-    pushd . >/dev/null;
+    pushd . >/dev/null
     [[ ! -d "zathura-pdf-mupdf-external" ]] && yell "Directory zathura-pdf-mupdf-external not found!" && return 1
-    cd zathura-pdf-mupdf-external;
+    cd zathura-pdf-mupdf-external
     check-host-main && git pull
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
     # git checkout ced9b3cfb0d7440a6a049f200a2f419ce09abe1e
-    # make clean;
-    # make;
-    # sudo make install;
+    # make clean
+    # make
+    # sudo make install
     [[ -d ./build ]] && rm -rf ./build
     meson build
     cd build
@@ -173,19 +173,19 @@ build-software-zathura () {
     # sudo ninja install
     cd ..
     [[ -d ./build ]] && rm -rf ./build
-    popd >/dev/null;
+    popd >/dev/null
     ################################################################################
-    h2 "zathura-djvu";
+    h2 "zathura-djvu"
     [[ ! -d "zathura-djvu-external" ]] && yell "Directory zathura-djvu-external not found!" && return 1
-    pushd . >/dev/null;
-    cd zathura-djvu-external;
+    pushd . >/dev/null
+    cd zathura-djvu-external
     check-host-main && git pull
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
     # git checkout e4a9ec93e2a4ff68255a38ff327179241fb69ebe
-    # make clean;
-    # make;
-    # sudo make install;
+    # make clean
+    # make
+    # sudo make install
     [[ -d ./build ]] && rm -rf ./build
     meson build
     cd build
@@ -193,12 +193,12 @@ build-software-zathura () {
     sudo ninja install
     cd ..
     [[ -d ./build ]] && rm -rf ./build
-    popd >/dev/null;
+    popd >/dev/null
     ################################################################################
-    h2 "zathura-cb";
+    h2 "zathura-cb"
     [[ ! -d "zathura-cb-external" ]] && yell "Directory zathura-cb-external not found!" && return 1
-    pushd . >/dev/null;
-    cd zathura-cb-external;
+    pushd . >/dev/null
+    cd zathura-cb-external
     check-host-main && git pull
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
@@ -212,10 +212,10 @@ build-software-zathura () {
     [[ -d ./build ]] && rm -rf ./build
     popd >/dev/null
     ################################################################################
-    h2 "zathura-ps";
+    h2 "zathura-ps"
     [[ ! -d "zathura-ps-external" ]] && yell "Directory zathura-ps-external not found!" && return 1
-    pushd . >/dev/null;
-    cd zathura-ps-external;
+    pushd . >/dev/null
+    cd zathura-ps-external
     check-host-main && git pull
     git checkout --track -b develop origin/develop
     # TODO: temporary until I upgrade debian
@@ -287,7 +287,7 @@ build-software-desmume () {
         h2 "desmume"
         [[ ! -d "desmume-external" ]] && yell "Directory desmume-external not found!" && return 1
         sudo true || return 1
-        pushd . >/dev/null;
+        pushd . >/dev/null
         cd desmume-external
         check-host-main && git pull
         cd desmume/src/frontend/posix
@@ -303,7 +303,7 @@ build-software-mgba () {
         h2 "mgba"
         [[ ! -d "mgba-external" ]] && yell "Directory mgba-external not found!" && return 1
         sudo true || return 1
-        pushd . >/dev/null;
+        pushd . >/dev/null
         cd mgba-external
         check-host-main && git pull
         mkdir -p build
@@ -323,7 +323,7 @@ build-software-pcsx-reloaded () {
         h2 "PCSX-Reloaded"
         [[ ! -d "PCSX-Reloaded-external" ]] && yell "Directory PCSX-Reloaded-external not found!" && return 1
         sudo true || return 1
-        pushd . >/dev/null;
+        pushd . >/dev/null
         cd PCSX-Reloaded-external
         check-host-main && git pull
         make clean
@@ -342,7 +342,7 @@ build-software-ppsspp () {
         h2 "ppsspp (empty)"
         [[ ! -d "ppsspp-source-external" ]] && yell "Directory ppsspp-source-external not found!" && return 1
         sudo true || return 1
-        pushd . >/dev/null;
+        pushd . >/dev/null
         cd ppsspp-source-external
         check-host-main && git pull
         popd >/dev/null
@@ -372,7 +372,7 @@ build-software-zsnes () {
     h2 "zsnes"
     [[ ! -d "zsnes-external" ]] && yell "Directory zsnes-external not found!" && return 1
     sudo true || return 1
-    pushd . >/dev/null;
+    pushd . >/dev/null
     cd zsnes-external
     check-host-main && git pull
     cd src

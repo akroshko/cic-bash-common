@@ -24,7 +24,7 @@ main () {
     # filtering by name probably cuts out more windows more quickly than class
     xdotool search --name "twitch|youtube" | while IFS= read -r line; do
         if xdotool search --class "chromium-browser|conkeror|firefox" | grep -- "${line}" >/dev/null; then
-            xdotool windowfocus --sync "${line}";
+            xdotool windowfocus --sync "${line}"
             # TODO: very arbitrary delay, perhaps wait for something to return
             sleep 0.05
             "$HOME/bin/conkeror-batch" -f web-video-pause-toggle

@@ -58,7 +58,7 @@ verify-operation () {
     local SUREMESSAGE="$2"
     local RMARG="$3"
     while true; do
-        while read -r -t 0;do read -r; done;
+        while read -r -t 0;do read -r; done
         read -n 1 -p "$ASKMESSAGE" YN
         echo ""
         case $YN in
@@ -66,7 +66,7 @@ verify-operation () {
             [Yy]* ) (home-trash "$RMARG"); break;;
             # are you sure you don't want to delete original
             [Nn]* )
-                while read -r -t 0;do read -r; done;
+                while read -r -t 0;do read -r; done
                 read -p "$SUREMESSAGE" YNT
                 case $YNT in
                     [Yy]* ) return 0;;
@@ -888,10 +888,10 @@ vcs-push-github () {
     git -c color.ui=always merge --squash -X theirs master --stat --allow-unrelated-histories
     local COMMITCORRECT=n
     while [[ "$COMMITCORRECT" != "y" ]]; do
-        while read -r -t 0;do read -r; done;
+        while read -r -t 0;do read -r; done
         read -e -p "Enter commit message: " COMMITMESSAGE
         # TODO: add option for quit
-        while read -r -t 0;do read -r; done;
+        while read -r -t 0;do read -r; done
         read -n 1 -p "Use commit message (y/n/q)? " COMMITCORRECT
         echo ""
         if [[ "$COMMITCORRECT" == "q" ]]; then
@@ -1082,7 +1082,7 @@ git-ls () {
 
 test-all-colors () {
     # http://askubuntu.com/questions/27314/script-to-display-all-terminal-colors
-    for x in 0 1 4 5 7 8; do for i in `seq 30 37`; do for a in `seq 40 47`; do echo -ne "\e[$x;$i;$a""m\\\e[$x;$i;$a""m\e[0;37;40m "; done; echo; done; done; echo "";
+    for x in 0 1 4 5 7 8; do for i in `seq 30 37`; do for a in `seq 40 47`; do echo -ne "\e[$x;$i;$a""m\\\e[$x;$i;$a""m\e[0;37;40m "; done; echo; done; done; echo ""
 }
 
 aloopback () {
@@ -1193,7 +1193,7 @@ screen-select () {
             echo "$count) $item"
             local count=$(( $count + 1 ))
         done
-        while read -r -t 0;do read -r; done;
+        while read -r -t 0;do read -r; done
         read -n 1 -p "Enter the screen session: " SCREENSELECT
         echo ""
         screen -dr $(sed -n "${SCREENSELECT}"p <<< "${SCREENSESSIONS}")
@@ -1412,7 +1412,7 @@ select-disk-uuid-usb () {
     done
     # echo "$count) Non-USB drive" >&2
     echo "-) Cancel" >&2
-    while read -r -t 0;do read -r; done;
+    while read -r -t 0;do read -r; done
     read -n 1 -p "Enter the USB drive: " USBSELECT >&2
     echo "" >&2
     if [[ $USBSELECT == "0" ]]; then
@@ -1504,7 +1504,7 @@ repl-restartable () {
             # TODO: better return values than this?
             return 255
         fi
-        while read -r -t 0;do read -r; done;
+        while read -r -t 0;do read -r; done
         IFS= read -n 1 -s -p 'Press [Enter] to exit or [Space] to restart...' TRYAGAIN
         if [[ "${TRYAGAIN}" == " " ]]; then
             reset
@@ -1712,9 +1712,9 @@ function ls-mime-files2 () {
         for thefile in $(ls $thedir 2>/dev/null | grep "\\.desktop$"); do
             h3 "$thefile"
             for m in $(grep MimeType $thedir/$thefile | cut -d= -f2 | tr ";" " "); do
-                echo xdg-mime default $thefile $m;
-            done;
-        done;
+                echo xdg-mime default $thefile $m
+            done
+        done
     done
 }
 
@@ -1752,7 +1752,7 @@ flatten-current-directory () {
 }
 
 dunst-notifications () {
-    printf "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
+    printf "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
     grep "summary: \|body: " "$HOME/tmp/dunst-current.log" | grep -v \'\' | sed -e 's/^[ \t]*//' | sed -e 's/body: /    /' | sed -e 's/summary: //'
 }
 
@@ -1782,8 +1782,7 @@ inhibit-powersave () {
         echo "Trying..."
         xscreensaver-command -exit
         # https://bbs.archlinux.org/viewtopic.php?id=134289
-        xset -dpms
-        xset dpms 0 0 0
+        screensaver-builtin-disable
         cpu-throttle-up
         sleep 15
     done
@@ -1791,6 +1790,13 @@ inhibit-powersave () {
 
 inhibit-tty-powersave () {
     setterm -blank 0 -powersave off
+}
+
+screensaver-builtin-disable () {
+    xset s 0 0 s noblank
+    xset s off
+    xset dpms 0 0 0
+    xset -dpms
 }
 
 grep-functions () {
@@ -1888,7 +1894,7 @@ youtube-normalize-volume () {
     local CURRENTWINDOW=$(xdotool getwindowfocus)
     xdotool search --name youtube | while IFS= read -r line; do
         if xdotool search --class conkeror | grep -- "$line" >/dev/null; then
-            xdotool windowfocus --sync "$line";
+            xdotool windowfocus --sync "$line"
             xdotool windowactivate --sync "$line"
             # TODO: very arbitrary delay, perhaps wait for something to return
             sleep 0.05
@@ -2210,7 +2216,7 @@ list-x11-displays () {
     pushd . >/dev/null
     cd /tmp/.X11-unix
     for x in X*; do
-        echo ":${x#X}";
+        echo ":${x#X}"
     done
     popd >/dev/null
 }
@@ -2464,7 +2470,7 @@ cat-all () {
 ask_yn () {
     local YN=
     while [[ "$YN" != 'y' && "$YN" != 'n' ]]; do
-        while read -r -t 0;do read -r; done;
+        while read -r -t 0;do read -r; done
         read -n 1 -p "$1 (y/n)? " YN
         echo ""
     done
@@ -2563,7 +2569,7 @@ x11-all-displays () {
     pushd . >/dev/null
     cd /tmp/.X11-unix
     for x in X*; do
-        echo ":${x#X}";
+        echo ":${x#X}"
         # TODO: do a bit better with multiple ones later
         popd >/dev/null
         return
