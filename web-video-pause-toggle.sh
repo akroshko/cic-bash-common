@@ -9,6 +9,7 @@ main () {
         local LOCKFILE_CONTENTS=$(cat "$LOCKFILE")
         if kill -0 "$LOCKFILE_CONTENTS" &>/dev/null; then
             echo "Found $LOCKFILE pid $LOCKFILE_CONTENTS"
+            # TODO: fix up this grep so I check for something valid
             if ps -ef | grep "$LOCKFILE_CONTENTS.*"'[w]eb-video' &>/dev/null; then
                 echo "A web-video script is already running!"
                 exit 1
@@ -23,7 +24,7 @@ main () {
     local CURRENTYOUTUBE=
     # filtering by name probably cuts out more windows more quickly than class
     xdotool search --name "twitch|youtube" | while IFS= read -r line; do
-        if xdotool search --class "chromium-browser|conkeror|firefox" | grep -- "${line}" >/dev/null; then
+        if [[ -n "$line"]] && xdotool search --class "chromium-browser|conkeror|firefox" | grep -- "$line" >/dev/null; then
             xdotool windowfocus --sync "${line}"
             # TODO: very arbitrary delay, perhaps wait for something to return
             sleep 0.05

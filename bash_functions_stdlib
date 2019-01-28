@@ -42,7 +42,7 @@ test-fail () {
 check-host () {
     # check if current host is a particular host, this will probably
     # become more complex as time goes on
-    [[ "${HOSTNAME}" == "$1" ]]
+    [[ "$HOSTNAME" == "$1" ]]
 }
 
 need_new_directory () {
@@ -554,10 +554,10 @@ fdi () {
 }
 
 fgi () {
-    if [[ -z "${2}" ]]; then
-        find . -type f -exec grep -H --color -n -- "${1}" {}  \;
+    if [[ -z "$2" ]]; then
+        find . -type f -exec grep -H --color -n -- "$1" {}  \;
     else
-        find . -type f -iname "*${1}*" -exec grep -H --color -n -- "${2}" {}  \;
+        find . -type f -iname "*$1*" -exec grep -H --color -n -- "$2" {}  \;
     fi
 }
 
@@ -836,7 +836,7 @@ get-mount-point-check-usb () {
     while read -r USBLINE; do
         local USBDEV=$(awk '{ print $1 }' <<< "$USBLINE")
         # TODO: better string comparison
-        if grep --color=never "$USBDEV" <<< "$THEDEVICE" >/dev/null;then
+        if [[ -n "$USBDEV" ]] && grep --color=never "$USBDEV" <<< "$THEDEVICE" >/dev/null;then
             local USBFOUND=1
         fi
     done <<< "$LSBLKUSB"
@@ -930,7 +930,7 @@ harm-id3-audiobook-all () {
         for d in ${PWD}/*; do
             [[ -d "$d" ]] || continue
             pushd . >/dev/null
-            cd "${d}"
+            cd "$d"
             yes | harm-id3-genre-as-audiobook
             yes | harm-id3-album-as-directory
             yes | harm-id3-name-as-filename
@@ -1284,7 +1284,7 @@ youtube-previous () {
     # TODO: if no window here
     local CURRENTWINDOW=$(xdotool getwindowfocus)
     xdotool search --name youtube | while IFS= read -r line; do
-        if xdotool search --class conkeror | grep -- "$line" >/dev/null; then
+        if [[ -n "$line" ]] && xdotool search --class conkeror | grep -- "$line" >/dev/null; then
             xdotool windowfocus --sync "$line"
             xdotool windowactivate --sync "$line"
             # TODO: very arbitrary delay, perhaps wait for something to return
@@ -1302,7 +1302,7 @@ youtube-next () {
     # TODO: if no window here
     local CURRENTWINDOW=$(xdotool getwindowfocus)
     xdotool search --name youtube | while IFS= read -r line; do
-        if xdotool search --class conkeror | grep -- "$line" >/dev/null; then
+        if [[ -n "$line" ]] && xdotool search --class conkeror | grep -- "$line" >/dev/null; then
             xdotool windowfocus --sync "$line"
             # TODO: very arbitrary delay, perhaps wait for something to return
             sleep 0.1
@@ -1792,7 +1792,24 @@ inhibit-tty-powersave () {
     setterm -blank 0 -powersave off
 }
 
-screensaver-builtin-disable () {
+screensaver-disable () {
+    xscreensaver-command -exit
+    xset s 0 0 s noblank
+    xset s off
+    xset dpms 0 0 0
+    xset -dpms
+}
+
+screensaver-enable () {
+    (nohup xscreensaver -nosplash &>/dev/null &)
+    xset s 0 0 s noblank
+    xset s off
+    xset dpms 0 0 0
+    xset -dpms
+}
+
+screensaver-builtin-only () {
+    xscreensaver-command -exit
     xset s 0 0 s noblank
     xset s off
     xset dpms 0 0 0
@@ -1810,7 +1827,8 @@ rsync-remove-source () {
     #     yell "Empty arguments!"
     #     return 1
     # fi
-    if ssh "${1}" true; then
+    # TODO: check here!
+    if ssh "$1" true; then
         msg "Incoming from ${1}"
         local BACKUPDIR="rsync-backups-${1}-$(date-time-stamp)"
         rsync --progress --archive --checksum --backup --backup-dir="$BACKUPDIR" --rsh='ssh' --remove-source-files ${1}:"$2"/ .
@@ -1823,7 +1841,7 @@ rsync-remove-source () {
 
 rsync-check-source () {
     # do this before running above with same arguments
-    if ssh "${1}" true; then
+    if ssh "$1" true; then
         # TODO: make explicitly that contents of that directory come into current directory
         rsync --verbose --checksum --progress --archive  --rsh='ssh' ${1}:"$2"/ .
     else
@@ -1893,7 +1911,7 @@ youtube-normalize-volume () {
     # TODO: if no window here
     local CURRENTWINDOW=$(xdotool getwindowfocus)
     xdotool search --name youtube | while IFS= read -r line; do
-        if xdotool search --class conkeror | grep -- "$line" >/dev/null; then
+        if [[ -n "$line" ]] && xdotool search --class conkeror | grep -- "$line" >/dev/null; then
             xdotool windowfocus --sync "$line"
             xdotool windowactivate --sync "$line"
             # TODO: very arbitrary delay, perhaps wait for something to return
@@ -2373,7 +2391,7 @@ unzip-in-path () {
     if [[ -n "$1" ]] || [[ -f "$1" ]]; then
         mkdir -p "${1}.d"
         cd "${1}.d"
-        unzip ../"${1}"
+        unzip ../"$1"
     else
         yell "Does not exist or is not a file!"
     fi

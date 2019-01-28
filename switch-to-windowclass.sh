@@ -26,6 +26,7 @@ main () {
         echo "No next window ID!"
     fi
     # are we actually on a the selected window class id
+    # TODO: fix up this grep so I check that there is something valid
     if wmctrl -lx | awk '{print $1 " " $3}' | sed -e 's/0x0*//g' | grep -- "$CURRENTWINDOWID.*$WINDOWCLASS"; then
         # am I on the current line
         wmctrl -i -a "$NEXT_WINDOW_ID"

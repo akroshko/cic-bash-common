@@ -7,6 +7,7 @@ main () {
         local LOCKFILE_CONTENTS=$(cat "$LOCKFILE")
         if kill -0 "$LOCKFILE_CONTENTS" &>/dev/null; then
             echo "Found $LOCKFILE pid $LOCKFILE_CONTENTS"
+            # TODO: fix up this grep so I check for something valid
             if ps -ef | grep "$LOCKFILE_CONTENTS.*"'[w]eb-video' &>/dev/null; then
                 echo "A web-video script is already running!"
                 exit 1
@@ -20,7 +21,7 @@ main () {
     # find the best candidate for currently playing video
     # TODO: add more intelligence
     xdotool search --name "twitch|youtube" | while IFS= read -r WINID; do
-        if xdotool search --class "chromium-browser|conkeror|firefox" | grep -- "$WINID" >/dev/null; then
+        if [[ -n "$WINID"]] && xdotool search --class "chromium-browser|conkeror|firefox" | grep -- "$WINID" >/dev/null; then
             local FOCUSID=$(xdotool getwindowfocus)
             echo "$FOCUSID" > /tmp/cic-web-video-focus-last.txt
             echo $(xprop WM_CLASS -id "$FOCUSID") >> /tmp/cic-web-video-focus-last.txt

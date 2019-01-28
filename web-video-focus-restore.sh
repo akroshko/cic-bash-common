@@ -7,6 +7,7 @@ main () {
         local LOCKFILE_CONTENTS=$(cat "$LOCKFILE")
         if kill -0 "$LOCKFILE_CONTENTS" &>/dev/null; then
             echo "Found $LOCKFILE pid $LOCKFILE_CONTENTS"
+            # TODO: fix up this grep so I check for something valid
             if ps -ef | grep "$LOCKFILE_CONTENTS.*"'[w]eb-video' &>/dev/null; then
                 echo "A web-video script is already running!"
                 exit 1
@@ -29,7 +30,7 @@ main () {
         echo "$WINCLASS_EXIST"
         if [[ -n "$WINID_EXIST" && -n "$WINCLASS_EXIST" ]]; then
             echo "Restoring"
-            xdotool windowactivate --sync "${WINID}"
+            xdotool windowactivate --sync "$WINID"
         fi
     fi
 }

@@ -4,7 +4,7 @@ if wmctrl -lx | awk '{print $1 " " $3}' | sed -e 's/0x0*//g' | grep -- "$(xprop 
     echo $(xdotool getwindowfocus) > "$HOME/.emacs-switch-last.txt"
     wmctrl -x -a emacs.Emacs
 else
-    # windowactivate --sync "${WINID}"
+    # windowactivate --sync "$WINID"
     # TODO: which program is this for? if it's for emacs I can run a command instead
     xdotool getwindowfocus key --window "%1" "super+c"
 fi

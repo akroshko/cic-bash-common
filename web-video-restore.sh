@@ -9,6 +9,7 @@ main () {
         local LOCKFILE_CONTENTS=$(cat "$LOCKFILE")
         if kill -0 "$LOCKFILE_CONTENTS" &>/dev/null; then
             echo "Found $LOCKFILE pid $LOCKFILE_CONTENTS"
+            # TODO: fix up this grep so I check for something valid
             if ps -ef | grep "$LOCKFILE_CONTENTS.*"'[w]eb-video' &>/dev/null; then
                 echo "A web-video script is already running!"
                 exit 1
@@ -31,8 +32,9 @@ main () {
         echo "$WINCLASS_EXIST"
         if [[ -n "$WINID_EXIST" && -n "$WINCLASS_EXIST" ]]; then
             echo "Restoring"
-            xdotool windowactivate --sync "${WINID}"
+            xdotool windowactivate --sync "$WINID"
             sleep 0.5
+            # TODO: fix up this grep so I check for something valid
             if grep -i dolphin <<< "$WINCLASS_EXIST" &>/dev/null && grep -i dolphin <<< "$WINCLASS_EXIST" &>/dev/null; then
                 echo "Dolphin"
                 xdotool keydown --delay 50 --window "$WINID" "F10" keyup --delay 50 --window "$WINID" "F10"
@@ -48,7 +50,7 @@ main () {
                 xdotool getwindowfocus key --window "%1" key "shift+F10"
             elif grep -i conkeror <<< "$WINCLASS_EXIST" &>/dev/null && grep -i conkeror <<< "$WINCLASS_EXIST" &>/dev/null; then
                 echo "Conkeror"
-                if xdotool search --name "twitch|youtube" | grep -- "${WINID}" >/dev/null; then
+                if xdotool search --name "twitch|youtube" | grep -- "$WINID" >/dev/null; then
                     # TODO: very arbitrary delay, perhaps wait for something to return
                     sleep 0.5
                     "$HOME/bin/conkeror-batch" -f web-video-play

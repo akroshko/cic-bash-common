@@ -31,7 +31,7 @@ main () {
     # minimize always minimizes video sites and get rid of social media first
     if [[ "$1" == "--all" || "$1" == "--pause" ]]; then
         xdotool search --onlyvisible --name "game|facebook|instagram|pixiv|strava|twitter|wikia" | while IFS= read -r WINID; do
-            if xdotool search --onlyvisible --class "chromium-browser|conkeror|firefox" | grep -- "$WINID" >/dev/null; then
+            if [[ -n "$WINID"]] && xdotool search --onlyvisible --class "chromium-browser|conkeror|firefox" | grep -- "$WINID" >/dev/null; then
                 xdotool windowminimize "$WINID"
                 sleep 0.10
             fi
@@ -40,7 +40,7 @@ main () {
     # get rid of downloads and documents directory
     if [[ "$1" == "--all" || "$1" == "--pause" ]]; then
         xdotool search --onlyvisible --name "downloads|documents" | while IFS= read -r WINID; do
-            if xdotool search --onlyvisible --class "pcmanfm" | grep -- "$WINID" >/dev/null; then
+            if [[ -n "$WINID"]] && xdotool search --onlyvisible --class "pcmanfm" | grep -- "$WINID" >/dev/null; then
                 xdotool windowminimize "$WINID"
                 sleep 0.10
             fi
@@ -50,7 +50,7 @@ main () {
     # Dolpin has a few problems so it is in a seperate place
     # very conservative sleeps
     xdotool search --class "dolphin-emu" | while IFS= read -r WINID; do
-        if xdotool search --name "FPS" | grep "$WINID" &>/dev/null; then
+        if [[ -n "$WINID"]] && xdotool search --name "FPS" | grep "$WINID" &>/dev/null; then
             echo "$WINID"
             # TODO: wmctrl seems more robust than xdotool for this but investigage more
             # xdotool getwindowfocus "$WINID" windowfocus --sync "$WINID"
@@ -157,7 +157,7 @@ main () {
         # turn off youtube even if not visible
         # TODO there does not seem to be a way to do two searches in one command
         xdotool  search --name "twitch|youtube" | while IFS= read -r WINID; do
-            if xdotool search --class "conkeror"  | grep -- "$WINID" >/dev/null; then
+            if [[ -n "$WINID"]] && xdotool search --class "conkeror"  | grep -- "$WINID" >/dev/null; then
                 xdotool getwindowfocus --sync "$WINID"
                 # TODO: very arbitrary delay, perhaps wait for something to return
                 # TODO definitely want this better
@@ -173,7 +173,7 @@ main () {
     fi
 
     xdotool search --onlyvisible --name "twitch|youtube" | while IFS= read -r WINID; do
-        if xdotool search --onlyvisible --class "chromium-browser|conkeror|firefox" | grep -- "$WINID" >/dev/null; then
+        if [[ -n "$WINID"]] && xdotool search --onlyvisible --class "chromium-browser|conkeror|firefox" | grep -- "$WINID" >/dev/null; then
             sleep 0.10
             xdotool windowminimize "$WINID"
             sleep 0.10

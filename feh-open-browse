@@ -16,7 +16,7 @@ fi
 #       but I don't see it
 # taking out --force-aliasing
 # TODO: actually check images manually
-if [[ "${HOSTNAME}" == 'akroshko-main' ]]; then
+if [[ "$HOSTNAME" == 'akroshko-main' ]]; then
     # TODO: extremely specific to my computer
     # TODO: check for dockapps
     # the geometry
