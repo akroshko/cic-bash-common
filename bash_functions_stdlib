@@ -394,8 +394,16 @@ not_match_string_array () {
 
 view-def () {
     # view the definition of a bash function
-    # TODO: check if it is an alias first
-    declare -f "$1"
+    # TODO: what if I have something as both alias and bash function
+    # TODO: avoid double run
+    if declare -f "$1" 2>&1 >/dev/null; then
+        h1 "Bash function definition"
+        declare -f "$1"
+    fi
+    if alias | grep -- '^alias \([A-Za-z0-9_-]*'"$1"'[A-Za-z0-9_-]*\)=' 2>&1 >/dev/null; then
+       h1 "Alias definition"
+       alias | grep -- '^alias \([A-Za-z0-9_-]*'"$1"'[A-Za-z0-9_-]*\)='
+    fi
 }
 
 read-file-regexp () {
@@ -623,7 +631,7 @@ vcs-check-root () {
     # from https://stackoverflow.com/questions/3258243/git-check-if-pull-needed
     # stop it from running home because that's dumb
     # TODO: other directories
-    if [[ ${PWD} == $HOME ]]; then
+    if [[ "$PWD" == "$HOME" ]]; then
         yell "Cannot run in home directory!!!"
         return 1
     fi
@@ -671,7 +679,7 @@ vcs-check-root () {
 }
 
 vcs-check-root-fetch-all () {
-    if [[ ${PWD} == $HOME ]]; then
+    if [[ "$PWD" == "$HOME" ]]; then
         yell "Cannot run in home directory!!!"
         return 1
     fi
@@ -704,7 +712,7 @@ vcs-check-root-fetch-all () {
 }
 
 vcs-check-root-pull-all () {
-    if [[ ${PWD} == $HOME ]]; then
+    if [[ "$PWD" == "$HOME" ]]; then
         yell "Cannot run in home directory!!!"
         return 1
     fi
@@ -732,6 +740,17 @@ vcs-check-root-pull-all () {
             h1 "Not pulling $dirname"
         fi
     done
+}
+
+vcs-pi-pull () {
+    if [[ "$HOSTNAME" == *pi ]]; then
+        cd "$HOME/cic-vcs"
+        vcs-check-root-pull-all
+        # cd "$HOME/cic-vcs-phd"
+        # vcs-check-root-pull-all
+    else
+        yell "Can only run on raspberry pi hosts!"
+    fi
 }
 
 vcs-update-versions () {
@@ -786,9 +805,9 @@ mount-disk-uuid () {
     local UUID="$1"
     # allow full UUID path to be given
     if [[ "$UUID" == /dev/disk/by-uuid/* ]]; then
-        local UUIDDEVICE=$(readlink -f "${UUID}")
+        local UUIDDEVICE=$(readlink -f "$UUID")
     else
-        local UUIDDEVICE=$(readlink -f "/dev/disk/by-uuid/${UUID}")
+        local UUIDDEVICE=$(readlink -f "/dev/disk/by-uuid/$UUID")
     fi
     # TODO: do this better
     if findmnt -nr -o target -S "$UUIDDEVICE" >/dev/null; then
@@ -800,16 +819,16 @@ mount-disk-uuid () {
         return 1
         # # TODO: mount on a temporary directory
         # MOUNTPOINT=$(mktemp -d)
-        # sudo mount "${IDDEVICE}" "${MOUNTPOINT}"
-        # echo "${MOUNTPOINT}"
+        # sudo mount "$IDDEVICE" "$MOUNTPOINT"
+        # echo "$MOUNTPOINT"
     fi
 }
 
 device-disk-uuid () {
     # find mounted disk or ???
     local UUID="$1"
-    local UUIDDEVICE=$(readlink -f "/dev/disk/by-uuid/${UUID}")
-    echo ${UUIDDEVICE}
+    local UUIDDEVICE=$(readlink -f "/dev/disk/by-uuid/$UUID")
+    echo "$UUIDDEVICE"
 }
 
 get-mount-point-check-usb () {
@@ -1174,7 +1193,8 @@ fix-permissive-permissions-recursive () {
 add-line-if-not-exist () {
     local THEFILE="$1"
     local NEWLINE="$2"
-    grep -q -F -- "${NEWLINE}" "${THEFILE}" || echo "$NEWLINE" >> "$THEFILE"
+    # TODO: check grep input before running
+    grep -q -F -- "$NEWLINE" "$THEFILE" || echo "$NEWLINE" >> "$THEFILE"
 }
 
 kill-blank-lines () {
@@ -1209,16 +1229,16 @@ sage-notebook () {
     if [[ -n "${JUPYTER_NOTEBOOK_ROOT}" ]]; then
         # TODO: do I still need this?
         bleachbit --overwrite --clean epiphany.* google_chrome.*
-        local NBPATH="${JUPYTER_NOTEBOOK_ROOT}/sage-notebooks-${HOSTNAME}.sagenb"
-        mkdir -p "${NBPATH}"
+        local NBPATH="${JUPYTER_NOTEBOOK_ROOT}/sage-notebooks-$HOSTNAME.sagenb"
+        mkdir -p "$NBPATH"
         # XXXX: grep to avoid just sage-notebook from scripts that might run this
         if ps -ef | grep '[s]rc/bin/sage-notebook' >/dev/null; then
             sage-notebook-browser
             return 255
         else
             # TODO: select firefox and chromium?
-            SAGE_BROWSER="nohup firefox -P sagenotebook" sage --notebook=sagenb secure=True port=18080 automatic_login=True interface='' directory="${NBPATH}"
-            # SAGE_BROWSER="nohup chromium" sage --notebook=sagenb secure=True port=18080 automatic_login=True interface='' directory="${NBPATH}"
+            SAGE_BROWSER="nohup firefox -P sagenotebook" sage --notebook=sagenb secure=True port=18080 automatic_login=True interface='' directory="$NBPATH"
+            # SAGE_BROWSER="nohup chromium" sage --notebook=sagenb secure=True port=18080 automatic_login=True interface='' directory="$NBPATH"
             return 0
         fi
     else
@@ -1294,7 +1314,7 @@ youtube-previous () {
     done
     # TODO: very arbitrary, perhaps wait for something to return
     sleep 0.5
-    xdotool windowactivate --sync ${CURRENTWINDOW}
+    xdotool windowactivate --sync "$CURRENTWINDOW"
 }
 
 youtube-next () {
@@ -1311,7 +1331,7 @@ youtube-next () {
     done
     # TODO: very arbitrary delay, perhaps wait for something to return
     sleep 0.5
-    xdotool windowactivate --sync ${CURRENTWINDOW}
+    xdotool windowactivate --sync "$CURRENTWINDOW"
 }
 
 focus-emacs-window () {
@@ -1481,7 +1501,7 @@ mdstat-status () {
     local MDSTAT=$(cat /proc/mdstat | sed -n '/^md\|^[[:space:]]*\[\|blocks/p')
     local FIRST=1
     IFS=$'\n'
-    for i in $(echo "${MDSTAT}"); do
+    for i in $(echo "$MDSTAT"); do
         if [[ "$i" =~ ^m.* ]]; then
             printf "$i"
         else
@@ -1496,7 +1516,7 @@ mdstat-status () {
 repl-restartable () {
     # restart a repl over and over again if desired
     local TRYAGAIN=" "
-    while [[ "${TRYAGAIN}" == " " ]]; do
+    while [[ "$TRYAGAIN" == " " ]]; do
         ($@)
         local RETURNVALUE=$?
         echo "repl-restartable return code: $RETURNVALUE"
@@ -1506,7 +1526,7 @@ repl-restartable () {
         fi
         while read -r -t 0;do read -r; done
         IFS= read -n 1 -s -p 'Press [Enter] to exit or [Space] to restart...' TRYAGAIN
-        if [[ "${TRYAGAIN}" == " " ]]; then
+        if [[ "$TRYAGAIN" == " " ]]; then
             reset
         fi
     done
@@ -1678,7 +1698,7 @@ svg2png-hq () {
 }
 
 function ls-cron () {
-    crontab -u ${USERNAME} -l
+    crontab -u "$USERNAME" -l
 }
 
 function ag-rdep () {
@@ -1816,8 +1836,13 @@ screensaver-builtin-only () {
     xset -dpms
 }
 
-grep-functions () {
+grep-commands () {
+    h1 'Commands in $PATH'
+    printf '%s\n' ${PATH//:/\/* } | grep -- "$1"
+    h1 "Bash functions"
     declare -F | grep -- "$1"
+    h1 "Aliases"
+    alias | grep -- "$1"
 }
 
 rsync-remove-source () {
@@ -1829,9 +1854,9 @@ rsync-remove-source () {
     # fi
     # TODO: check here!
     if ssh "$1" true; then
-        msg "Incoming from ${1}"
+        msg "Incoming from $1"
         local BACKUPDIR="rsync-backups-${1}-$(date-time-stamp)"
-        rsync --progress --archive --checksum --backup --backup-dir="$BACKUPDIR" --rsh='ssh' --remove-source-files ${1}:"$2"/ .
+        rsync --progress --archive --checksum --backup --backup-dir="$BACKUPDIR" --rsh='ssh' --remove-source-files "${1}:${2}/" .
         # will cause error if there are backups
         rmdir --ignore-fail-on-non-empty "$BACKUPDIR"
     else
@@ -1843,7 +1868,7 @@ rsync-check-source () {
     # do this before running above with same arguments
     if ssh "$1" true; then
         # TODO: make explicitly that contents of that directory come into current directory
-        rsync --verbose --checksum --progress --archive  --rsh='ssh' ${1}:"$2"/ .
+        rsync --verbose --checksum --progress --archive  --rsh='ssh' "${1}:${2}/" .
     else
         warn "Hostname $1 not found!"
     fi
@@ -1921,7 +1946,7 @@ youtube-normalize-volume () {
     done
     # TODO: very arbitrary, perhaps wait for something to return
     sleep 0.05
-    xdotool windowactivate --sync ${CURRENTWINDOW}
+    xdotool windowactivate --sync "$CURRENTWINDOW"
 }
 
 alias ffn='find-iname'

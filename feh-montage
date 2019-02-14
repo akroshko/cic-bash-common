@@ -26,7 +26,7 @@ main () {
             # TODO: can I calculate best size for device?
             /usr/bin/nice --adjustment=20 find "$TMPDIR" -iname "pg*.pdf" -print0 | sort -z | parallel --will-cite -r0 --progress -I FILE -n 1 -j$(nproc) /usr/bin/pdftoppm -png -r 150 -singlefile FILE FILE
             # this is a hack
-            rename "s/.pdf.png/.png/" "${TMPDIR}"/*.pdf.png
+            rename "s/.pdf.png/.png/" "$TMPDIR"/*.pdf.png
             # XXXX: this fence may not always work, but ensures pdfs in current dir are not accidently deleted
             THEMD5SUM=$(md5sum "$1" | awk '{print $1}')
             echo "Using hash for filename root: $THEMD5SUM"
@@ -58,7 +58,7 @@ feh-display-montage () {
     echo "Thumbnail height: $THUMBHEIGHT"
     echo "Thumbnail width: $THUMBWIDTH"
     if [[ $@ == *"--slideshow"* ]]; then
-        if [[ "${NIMAGES}" == "1" ]]; then
+        if [[ "$NIMAGES" == "1" ]]; then
             # no --keep-zoom-vp if only one image
             feh --scale-down --sort filename --info "exiv2 \"%f\" 2>/dev/null | grep -v ': *$'" *.png
         else

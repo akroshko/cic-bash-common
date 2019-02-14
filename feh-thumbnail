@@ -1,7 +1,7 @@
 #!/bin/bash
 main () {
     if [[ ! -e "$1" ]]; then
-        local THEDIR="${PWD}"
+        local THEDIR="$PWD"
     else
         if [[ -d "$1" ]];then
             local THEDIR="$1"

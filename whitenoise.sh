@@ -38,7 +38,7 @@ ALREADYRUNNING=0
 # TODO: make more universal, check if playing
 for SS in "${BACKGROUNDNOISESUBSTRINGS[@]}";do
     # TODO: get rid of grep -v grep
-    if ps -ef | grep -- "${SS}" | grep -v grep >/dev/null; then
+    if ps -ef | grep -- "$SS" | grep -v grep >/dev/null; then
         ALREADYRUNNING=1
     fi
 done
@@ -64,7 +64,7 @@ else
             FIRSTITEM=0
             continue
         fi
-        echo "enqueue ${WN}" | nc -q 2 localhost 19000
+        echo "enqueue $WN" | nc -q 2 localhost 19000
         sleep 1
     done
     # let the playlist loop
