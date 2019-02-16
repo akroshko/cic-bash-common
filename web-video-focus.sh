@@ -21,7 +21,7 @@ main () {
     # find the best candidate for currently playing video
     # TODO: add more intelligence
     xdotool search --name "twitch|youtube" | while IFS= read -r WINID; do
-        if [[ -n "$WINID"]] && xdotool search --class "chromium-browser|conkeror|firefox" | grep -- "$WINID" >/dev/null; then
+        if [[ -n "$WINID" ]] && xdotool search --class "chromium-browser|conkeror|firefox" | grep -- "$WINID" >/dev/null; then
             local FOCUSID=$(xdotool getwindowfocus)
             echo "$FOCUSID" > /tmp/cic-web-video-focus-last.txt
             echo $(xprop WM_CLASS -id "$FOCUSID") >> /tmp/cic-web-video-focus-last.txt

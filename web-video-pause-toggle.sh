@@ -24,7 +24,7 @@ main () {
     local CURRENTYOUTUBE=
     # filtering by name probably cuts out more windows more quickly than class
     xdotool search --name "twitch|youtube" | while IFS= read -r line; do
-        if [[ -n "$line"]] && xdotool search --class "chromium-browser|conkeror|firefox" | grep -- "$line" >/dev/null; then
+        if [[ -n "$line" ]] && xdotool search --class "chromium-browser|conkeror|firefox" | grep -- "$line" >/dev/null; then
             xdotool windowfocus --sync "$line"
             # TODO: very arbitrary delay, perhaps wait for something to return
             sleep 0.05
