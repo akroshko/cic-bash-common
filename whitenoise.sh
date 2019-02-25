@@ -2,7 +2,7 @@
 # whitenoise.sh is a script that runs/pauses/unpauses a playing a
 # particular sound file
 #
-# Copyright (C) 2015-2018, Andrew Kroshko, all rights reserved.
+# Copyright (C) 2015-2019, Andrew Kroshko, all rights reserved.
 #
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>

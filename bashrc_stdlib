@@ -75,6 +75,7 @@ alias f90=gfortran
 alias f='feh-open-browse'
 alias firefox-profile-manager="firefox --ProfileManager"
 # TODO: change these, no longer relevant
+
 alias fm='feh-montage --montage'
 alias fp='feh-montage --montage'
 alias ft='feh-thumbnail'
