@@ -71,7 +71,7 @@ main () {
         # TODO: eventually just flip them off without muting
         # TODO: eventually have restore for all of these
         if [[ "$1" == '--pause' || "$1" == '--all' ]]; then
-            THECLASS=$(xprop WM_CLASS -id "$WINID")
+            local THECLASS=$(xprop WM_CLASS -id "$WINID")
             # appears to be case insensitve
             # TODO: make sure one day
             if [[ "$THECLASS" =~ "mpv" ]]; then
