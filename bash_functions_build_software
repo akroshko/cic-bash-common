@@ -258,10 +258,11 @@ build-software-mupdf () {
     sudo true || return 1
     pushd . >/dev/null
     cd mupdf-external
+    make clean
     check-host-main && git pull
+    # rm -rf thirdparty
     git submodule update --init
     # seems to be necessary for this one
-    make clean
     make prefix=/usr/local
     sudo make prefix=/usr/local install
     make clean
