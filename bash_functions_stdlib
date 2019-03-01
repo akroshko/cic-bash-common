@@ -722,7 +722,7 @@ vcs-check-root-pull-all () {
             h1 "Checking $dirname/.git"
             pushd . >/dev/null
             cd "$dirname"
-            git pull
+            git pull --ff-only
             popd >/dev/null
         elif [[ -d "$dirname/.hg" ]]; then
             h1 "Pulling $dirname/.hg"
@@ -1888,7 +1888,7 @@ vcs-incoming () {
     git diff @{upstream}
 }
 
-vcs-reset () {
+git-reset () {
     # dangerous command, check first
     # TODO: often used to reset and pull
     if dangerous-function-ask; then
