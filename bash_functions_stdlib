@@ -623,7 +623,8 @@ fix-gpg-ssh-permissions () {
 
 backlight-percentage () {
     # XXXX: very device dependent but useful to include, make more general
-    echo "`cat /sys/class/backlight/intel_backlight/brightness`*100/`cat /sys/class/backlight/intel_backlight/max_brightness`" | bc -l | xargs printf "%1.0f\n"
+    # TODO: check for directory
+    echo $(cat /sys/class/backlight/intel_backlight/brightness*100)/$(cat /sys/class/backlight/intel_backlight/max_brightness) | bc -l | xargs printf "%1.0f\n"
 }
 
 vcs-check-root () {
@@ -1101,7 +1102,15 @@ git-ls () {
 
 test-all-colors () {
     # http://askubuntu.com/questions/27314/script-to-display-all-terminal-colors
-    for x in 0 1 4 5 7 8; do for i in `seq 30 37`; do for a in `seq 40 47`; do echo -ne "\e[$x;$i;$a""m\\\e[$x;$i;$a""m\e[0;37;40m "; done; echo; done; done; echo ""
+    for x in 0 1 4 5 7 8; do
+        for i in $(seq 30 37); do
+            for a in $(seq 40 47); do
+                echo -ne "\e[$x;$i;$a""m\\\e[$x;$i;$a""m\e[0;37;40m ";
+            done
+            echo;
+        done
+    done
+    echo ""
 }
 
 aloopback () {
