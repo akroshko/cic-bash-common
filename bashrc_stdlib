@@ -128,8 +128,6 @@ alias sftp-fallback='sftp -o "BatchMode no" -o "ChallengeResponseAuthentication 
 # sage
 alias sipy='sage -ipython'
 # for testing my raspberry pi
-alias ssh-pi='ssh pi@raspberrypi.local'
-alias sftp-pi='sftp pi@raspberrypi.local'
 alias svn-log-full='svn log -l 100 -v | less'
 alias sagepy='sage -python'
 alias sageipy='sage -ipython'

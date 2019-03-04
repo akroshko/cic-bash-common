@@ -20,6 +20,9 @@ main () {
     fi
     echo $$ > "$LOCKFILE"
 
+    # TODO: this should be standard after LOCKFILE
+    local CURRENTWINDOW=$(xdotool getwindowfocus)
+
     if [[ -e /tmp/cic-web-video-last.txt ]]; then
         local WINID=$(sed -n '1p' /tmp/cic-web-video-last.txt)
         local WINCLASS=$(sed -n '2p' /tmp/cic-web-video-last.txt)
@@ -45,9 +48,10 @@ main () {
                 xdotool getwindowfocus key --window "%1" key "space"
             elif grep -i vlc <<< "$WINCLASS_EXIST" &>/dev/null && grep -i vlc <<< "$WINCLASS_EXIST" &>/dev/null; then
                 echo "vlc"
-                wmctrl -i -R "$WINID"
+                echo "play" | nc -q 2 localhost 19555
+                # TODO: can I cut these sleeps, or should I give tVLC thismuch time to settle
                 sleep 0.25
-                xdotool getwindowfocus key --window "%1" key "shift+F10"
+                # xdotool windowactivate --sync "$CURRENTWINDOW"
             elif grep -i conkeror <<< "$WINCLASS_EXIST" &>/dev/null && grep -i conkeror <<< "$WINCLASS_EXIST" &>/dev/null; then
                 echo "Conkeror"
                 if xdotool search --name "twitch|youtube" | grep -- "$WINID" >/dev/null; then

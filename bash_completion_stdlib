@@ -29,27 +29,24 @@
 source /etc/bash_completion
 
 _bash_functions () {
-    IFS=$(echo -en "\n\b")
-    COMPREPLY=( $(compgen -A function | grep -- "${COMP_WORDS[COMP_CWORD]}") )
+    COMPREPLY=(IFS=$(echo -en "\n\b") $(compgen -A function | grep -- "${COMP_WORDS[COMP_CWORD]}") )
 }
 
 # TODO: replace with bash_completion.d/apt-file
 # TODO: replace with bash_completion.d/apt-show-versions
 _apt_all_packages () {
-    IFS=$(echo -en "\n\b")
-    COMPREPLY=( $(apt-cache search "${COMP_WORDS[COMP_CWORD]}" | cut -d' ' -f1 | grep -- "${COMP_WORDS[COMP_CWORD]}") )
+    COMPREPLY=(IFS=$(echo -en "\n\b") $(apt-cache search "${COMP_WORDS[COMP_CWORD]}" | cut -d' ' -f1 | grep -- "${COMP_WORDS[COMP_CWORD]}") )
+
 }
 
 _apt_installed_packages () {
-    IFS=$(echo -en "\n\b")
+
     COMPREPLY=( $(dpkg-query -l | cut -d' ' -f3 | grep -- "${COMP_WORDS[COMP_CWORD]}") )
 }
 
 _screen_sockets () {
-    # or tr -d "[:space:]"
-    IFS=$(echo -en "\n\b")
     # TODO: only want for first argument, not others after
-    COMPREPLY=( $(screen -ls | grep -- "^[[:space:]]\+[0-9]\+" | cut -f1 -d"." | sed -e 's/^[[:space:]]*//g' | grep -- "${COMP_WORDS[COMP_CWORD]}") )
+    COMPREPLY=(IFS=$(echo -en "\n\b") $(screen -ls | grep -- "^[[:space:]]\+[0-9]\+" | cut -f1 -d"." | sed -e 's/^[[:space:]]*//g' | grep -- "${COMP_WORDS[COMP_CWORD]}") )
 }
 
 # https://unix.stackexchange.com/questions/4219/how-do-i-get-bash-completion-for-command-aliases
@@ -78,7 +75,7 @@ function _apt_get_install {
     #       not in original...
     # TODO: use printf...
     #       https://superuser.com/questions/461981/how-do-i-convert-a-bash-array-variable-to-a-string-delimited-with-newlines
-    COMP_LINE=$(IFS=" "; echo "${COMP_WORDS[*]}" )
+    COMP_LINE=$(IFS=" " echo "${COMP_WORDS[*]}" )
     COMP_POINT=${#COMP_LINE}
     _apt_get
 }
@@ -90,7 +87,7 @@ function _apt_get_remove {
     #       not in original...
     # TODO: use printf...
     #       https://superuser.com/questions/461981/how-do-i-convert-a-bash-array-variable-to-a-string-delimited-with-newlines
-    COMP_LINE=$(IFS=" "; echo "${COMP_WORDS[*]}" )
+    COMP_LINE=$(IFS=" " echo "${COMP_WORDS[*]}" )
     COMP_POINT=${#COMP_LINE}
     _apt_get
 }
@@ -102,7 +99,7 @@ function _apt_cache_show {
     #       not in original...
     # TODO: use printf...
     #       https://superuser.com/questions/461981/how-do-i-convert-a-bash-array-variable-to-a-string-delimited-with-newlines
-    COMP_LINE=$(IFS=" "; echo "${COMP_WORDS[*]}" )
+    COMP_LINE=$(IFS=" " echo "${COMP_WORDS[*]}" )
     COMP_POINT=${#COMP_LINE}
     _apt_cache
 }
@@ -110,7 +107,7 @@ function _apt_cache_show {
 function _dpkg_l {
     ((COMP_CWORD+=1))
     COMP_WORDS=( dpkgquery -L ${COMP_WORDS[@]:1} )
-    COMP_LINE=$(IFS=" "; echo "${COMP_WORDS[*]}" )
+    COMP_LINE=$(IFS=" " echo "${COMP_WORDS[*]}" )
     COMP_POINT=${#COMP_LINE}
     _dpkg
 }

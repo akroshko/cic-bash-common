@@ -20,24 +20,21 @@ main () {
     fi
     echo $$ > "$LOCKFILE"
 
+    # TODO: this should be standard after LOCKFILE
     local CURRENTWINDOW=$(xdotool getwindowfocus)
-
-    xdotool search --class --onlyvisible --maxdepth 2 "dolphin-emu|Fceux|mGBA|mpv|PCSXR|PCSX2|PPSSPPSDL|vlc|zsnes" | while IFS= read -r WINID; do
-        local THECLASS=$(xprop WM_CLASS -id "$WINID")
-        echo "$WINID: $THECLASS"
-        if [[ "$THECLASS" =~ "vlc" ]]; then
-            # TODO: requires different from default config
-            wmctrl -i -R "$WINID"
-            sleep 0.25
-            # TODO: only get window focus temporarily, why do I need --clearmodifiers here?
-            xdotool getwindowfocus key --window "%1" --clearmodifiers "space"
-            sleep 0.25
-            # TODO: not yet
-            # echo "$WINID" > /tmp/cic-web-video-last.txt
-            # echo $(xprop WM_CLASS -id "$WINID") >> /tmp/cic-web-video-last.txt
-            xdotool windowactivate --sync "$CURRENTWINDOW"
-        fi
-    done
+    if xdotool search --class "vlc"; then
+        local VLCFOUND=1
+    fi
+    if [[ -n "$VLCFOUND" ]]; then
+        sleep 0.25
+        echo "pause" | nc -q 2 localhost 19555
+        sleep 0.25
+        # TODO: not yet
+        # echo "$WINID" > /tmp/cic-web-video-last.txt
+        # echo $(xprop WM_CLASS -id "$WINID") >> /tmp/cic-web-video-last.txt
+        # TODO: probably not needed
+        # xdotool windowactivate --sync "$CURRENTWINDOW"
+    fi
 
     local CURRENTYOUTUBE=
     # filtering by name probably cuts out more windows more quickly than class

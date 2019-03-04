@@ -1501,11 +1501,6 @@ vcs-grep-conflicted () {
     find . -not -path "*.git*" -type f -exec grep -nH --color -- "^<<<<<<< \|^>>>>>>> \|^=======$\|^####### " {} \;
 }
 
-# TODO: broken, rfigure out if I can remove
-# flashplayer-update () {
-#     sudo update-flashplugin-nonfree --install --verbose
-# }
-
 mdstat-status () {
     local MDSTAT=$(cat /proc/mdstat | sed -n '/^md\|^[[:space:]]*\[\|blocks/p')
     local FIRST=1

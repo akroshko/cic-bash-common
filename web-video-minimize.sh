@@ -18,6 +18,9 @@ main () {
     fi
     echo $$ > "$LOCKFILE"
 
+    # TODO: this should be standard after LOCKFILE
+    local CURRENTWINDOW=$(xdotool getwindowfocus)
+
     # TODO: put in tmp directory?
     # TODO: make sure null operations do not overwrite last
     echo "" > /tmp/cic-web-video-last.txt
@@ -49,6 +52,7 @@ main () {
 
     # Dolpin has a few problems so it is in a seperate place
     # very conservative sleeps
+    # TODO: seperate completely from big loop below
     xdotool search --class "dolphin-emu" | while IFS= read -r WINID; do
         if [[ -n "$WINID" ]] && xdotool search --name "FPS" | grep "$WINID" &>/dev/null; then
             echo "$WINID"
@@ -59,12 +63,24 @@ main () {
             # just a keypress even is only detected about 25% of the time
             xdotool keydown --delay 50 --window "$WINID" "F10" keyup --delay 50 --window "$WINID" "F10"
             # at least some sleep delay after inputting key seems to help
+            # TODO: move this down below?
             sleep 0.25
             echo "$WINID" > /tmp/cic-web-video-last.txt
             echo $(xprop WM_CLASS -id "$WINID") >> /tmp/cic-web-video-last.txt
         fi
     done
-
+    # vlc is a progressive application that can be controlled through a localhost port
+    # TODO: this double search is horrible, fix???
+    if xdotool search --class "vlc"; then
+        # TODO: requires different from default config
+        if [[ "$1" == '--pause' || "$1" == '--all' ]]; then
+            echo "Pausing VLC!!!"
+            if echo "status" | nc -q 2 localhost 19555 | grep "state playing" >/dev/null; then
+                echo "pause" | nc -q 2 localhost 19555
+            fi
+            sleep 0.25
+        fi
+    fi
     # always pause playback or emulation
     xdotool search --class --onlyvisible --maxdepth 2 "dolphin-emu|Fceux|mGBA|mpv|PCSXR|PCSX2|PPSSPPSDL|vlc|zsnes" | while IFS= read -r WINID; do
         # now go through rest of potential websites
@@ -83,11 +99,6 @@ main () {
                 echo "$WINID" > /tmp/cic-web-video-last.txt
                 echo $(xprop WM_CLASS -id "$WINID") >> /tmp/cic-web-video-last.txt
             elif [[ "$THECLASS" =~ "vlc" ]]; then
-                # TODO: requires different from default config
-                wmctrl -i -R "$WINID"
-                sleep 0.25
-                xdotool getwindowfocus key --window "%1" "F10"
-                sleep 0.25
                 echo "$WINID" > /tmp/cic-web-video-last.txt
                 echo $(xprop WM_CLASS -id "$WINID") >> /tmp/cic-web-video-last.txt
             elif [[ "$THECLASS" =~ "Fceux" ]]; then
