@@ -1,12 +1,12 @@
 #!/bin/bash
 # bashrc_stdlib is a bashrc file reflecting my specific settings
 #
-# Copyright (C) 2015-2017, Andrew Kroshko, all rights reserved.
+# Copyright (C) 2015-2019, Andrew Kroshko, all rights reserved.
 #
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Fri Mar 27, 2015
-# Version: 20190228
+# Version: 20190311
 # URL: https://github.com/akroshko/bash-stdlib
 #
 # This program is free software: you can redistribute it and/or modify
@@ -134,6 +134,7 @@ alias sageipy='sage -ipython'
 # TODO: silly but I can remember these things
 alias xmodmap-ls='xmodmap -pm'
 alias ls-xmodmap='xmodmap -pm'
+alias ls-xrandr='xrandr --listmonitors;xrandr'
 alias gnuplot-test='gnuplot --persist -e "test;"'
 alias wine-desktop='wine explorer /desktop=1280x1024'
 alias wine-desktop-wide='wine explorer /desktop=1600x900'

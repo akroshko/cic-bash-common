@@ -29,7 +29,7 @@
 build-software () {
     # assumes I'm in directory with appropriate subdirectories
     # TODO: compile against downloaded poppler
-    sudo true || return 1
+    sudo true || { echo "Failed to sudo!"; return 1; }
     # at least for now, download and build a few select pieces of software
     # TODO: evantually make this the only one
     [[ ! -d "$HOME/cic-external-vcs" ]] && mkdir -p "$HOME/cic-external-vcs"
@@ -62,7 +62,7 @@ build-software () {
 }
 
 build-software-games () {
-    sudo true || return 1
+    sudo true || { echo "Failed to sudo!"; return 1; }
     [[ ! -d "$HOME/cic-external-vcs" ]] && mkdir -p "$HOME/cic-external-vcs"
     cd "$HOME/cic-external-vcs"
     [[ ! -d "$HOME/cic-external-vcs/desmume-external/" ]]      && git clone https://github.com/TASVideos/desmume/ desmume-external
@@ -86,8 +86,8 @@ build-software-zathura () {
     #       have checks to make sure branches don't hang around
     ################################################################################
     h2 "girara"
-    [[ ! -d "girara-external" ]] && yell "Directory girara-external not found!" && return 1
-    sudo true || return 1
+    [[ ! -d "girara-external" ]] && { yell "Directory girara-external not found!"; return 1; }
+    sudo true || { echo "Failed to sudo!"; return 1; }
     pushd . >/dev/null
     cd girara-external
     check-host-main && git pull
@@ -235,7 +235,7 @@ build-software-xpdf () {
     if check-host-main || check-host-laptop;then
         h2 "xpdf"
         [[ ! -d "xpdf-3.04-external" ]] && yell "Directory xpdf-3.04-external not found!" && return 1
-        sudo true || return 1
+        sudo true || { echo "Failed to sudo!"; return 1; }
         pushd . >/dev/null
         cd xpdf-3.04-external
         # these work on debian 8.x
@@ -255,7 +255,7 @@ build-software-xpdf () {
 build-software-mupdf () {
     h2 "mupdf"
     [[ ! -d "mupdf-external" ]] && yell "Directory mupdf-external not found!" && return 1
-    sudo true || return 1
+    sudo true || { echo "Failed to sudo!"; return 1; }
     pushd . >/dev/null
     cd mupdf-external
     make clean
@@ -273,7 +273,7 @@ build-software-mupdf () {
 build-software-feh () {
     h2 "feh"
     [[ ! -d "feh-external" ]] && yell "Directory feh-external not found!" && return 1
-    sudo true || return 1
+    sudo true || { echo "Failed to sudo!"; return 1; }
     # must be in proper directory
     pushd . >/dev/null
     cd feh-external
@@ -288,7 +288,7 @@ build-software-desmume () {
     time {
         h2 "desmume"
         [[ ! -d "desmume-external" ]] && yell "Directory desmume-external not found!" && return 1
-        sudo true || return 1
+        sudo true || { echo "Failed to sudo!"; return 1; }
         pushd . >/dev/null
         cd desmume-external
         check-host-main && git pull
@@ -304,7 +304,7 @@ build-software-mgba () {
     time {
         h2 "mgba"
         [[ ! -d "mgba-external" ]] && yell "Directory mgba-external not found!" && return 1
-        sudo true || return 1
+        sudo true || { echo "Failed to sudo!"; return 1; }
         pushd . >/dev/null
         cd mgba-external
         check-host-main && git pull
@@ -324,7 +324,7 @@ build-software-pcsx-reloaded () {
         # TODO: check out as well
         h2 "PCSX-Reloaded"
         [[ ! -d "PCSX-Reloaded-external" ]] && yell "Directory PCSX-Reloaded-external not found!" && return 1
-        sudo true || return 1
+        sudo true || { echo "Failed to sudo!"; return 1; }
         pushd . >/dev/null
         cd PCSX-Reloaded-external
         check-host-main && git pull
@@ -343,7 +343,7 @@ build-software-ppsspp () {
     time {
         h2 "ppsspp (empty)"
         [[ ! -d "ppsspp-source-external" ]] && yell "Directory ppsspp-source-external not found!" && return 1
-        sudo true || return 1
+        sudo true || { echo "Failed to sudo!"; return 1; }
         pushd . >/dev/null
         cd ppsspp-source-external
         check-host-main && git pull
@@ -373,7 +373,7 @@ build-software-zsnes () {
     # TODO: broken, just use debian package
     h2 "zsnes"
     [[ ! -d "zsnes-external" ]] && yell "Directory zsnes-external not found!" && return 1
-    sudo true || return 1
+    sudo true || { echo "Failed to sudo!"; return 1; }
     pushd . >/dev/null
     cd zsnes-external
     check-host-main && git pull
@@ -391,7 +391,7 @@ build-software-dockapps () {
     # https://unix.stackexchange.com/questions/67781/use-shared-libraries-in-usr-local-lib
     h2 "libdockapps"
     [[ ! -d "dockapps-external" ]] && yell "Directory dockapps-external not found!" && return 1
-    sudo true || return 1
+    sudo true || { echo "Failed to sudo!"; return 1; }
     pushd . >/dev/null
     cd dockapps-external
     check-host-main && git pull
