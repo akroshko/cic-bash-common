@@ -1049,38 +1049,38 @@ msg () {
 
 h1 () {
     if [[ -z "$*" ]]; then
-        local OUTSTR=$(cut -c 1-80 <<< "================================================================================")
+        local OUTSTR=$(printf "%-80s" "================================================================================")
     else
-        local OUTSTR=$(cut -c 1-80 <<< "==== $* ================================================================================")
+        local OUTSTR=$(printf "%-80s" "==== $* ================================================================================")
     fi
     echo -e "${BWhite}${On_Blue}$OUTSTR${Color_Off}" >&2
 }
 
 h1-end () {
     if [[ -z "$*" ]]; then
-        local OUTSTR=$(cut -c 1-80 <<< "")
+        local OUTSTR=$(printf "%-80s" "")
     else
-        local OUTSTR=$(cut -c 1-80 <<< "$*")
+        local OUTSTR=$(printf "%-80s" "$*")
     fi
     echo -e "${BWhite}${On_Blue}<<<<${Color_Off} ${BWhite}$OUTSTR${Color_Off}" >&2
 }
 
 h1-script () {
-    local OUTSTR=$(cut -c 1-80 <<< "==== Running $(basename -- $0) ================================================================================")
+    local OUTSTR=$(printf "%-80s" "==== Running $(basename -- $0) ================================================================================")
     echo -e "${BWhite}${On_Blue}$OUTSTR${Color_Off}" >&2
 }
 
 h1-script-end () {
-    local OUTSTR=$(cut -c 1-80 <<< "Finishing $(basename -- $0)")
+    local OUTSTR=$(printf "%-80s" "Finishing $(basename -- $0)")
     echo -e "${BWhite}${On_Blue}<<<<${Color_Off} ${BWhite}$OUTSTR${Color_Off}" >&2
 }
 
 h2 () {
    if [[ -z "$*" ]]
     then
-        local OUTSTR=$(cut -c 1-60 <<< "----------------------------------------")
+        local OUTSTR=$(printf "%-60s" "----------------------------------------")
     else
-        local OUTSTR=$(cut -c 1-60 <<< "---- $* ----------------------------------------")
+        local OUTSTR=$(printf "%-60s" "---- $* ----------------------------------------")
    fi
    # TODO: probably want different color than cyan
    echo -e "${BWhite}${On_Cyan}$OUTSTR${Color_Off}" >&2
