@@ -6,8 +6,8 @@ shopt -s nullglob
 if [[ -z "$1" ]]; then
 	FULLPATH=$(pwd)
 else
-    FULLPATH=$(readlink -f "$1")
-    DNAME=$(dirname "$FULLPATH")
+    FULLPATH=$(readlink -f -- "$1")
+    DNAME=$(dirname -- "$FULLPATH")
 fi
 
 # TODO: want --keep-zoom-vp, but does not work that well

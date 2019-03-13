@@ -6,8 +6,8 @@ shopt -s nullglob
 [[ -z "$1" ]] && exit 1
 # FULLPATH=$(pwd)
 # else
-# DNAME=$(dirname "$FULLPATH")
-FULLPATH=$(readlink -f "$1")
+# DNAME=$(dirname -- "$FULLPATH")
+FULLPATH=$(readlink -f -- "$1")
 
 # TODO: want --keep-zoom-vp, but does not work that well
 # TODO: --scroll-step Note that this option accepts negative numbers in case you need to inverse the scroll direction; see KEYS CONFIG SYNTAX to change it permanently.  Default: 20

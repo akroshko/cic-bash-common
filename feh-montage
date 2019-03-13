@@ -16,7 +16,7 @@ main () {
             cp "$1" "$TMPDIR"
             pushd . >/dev/null
             cd "$TMPDIR"
-            local FNAME=$(basename "$1")
+            local FNAME=$(basename -- "$1")
             echo $(pdfinfo "$1" | grep "Pages: ")
             pdftk "$TMPDIR"/"$FNAME" burst
             # XXXX: tends to be done interactively so making things nice is good

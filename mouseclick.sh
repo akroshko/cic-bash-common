@@ -4,7 +4,7 @@ xcoord=$(printf "%.0f\n" "$3")
 ycoord=$(printf "%.0f\n" "$4")
 # 72*11.5=828.0, however, assume margines?
 # a bit off, but assume 8.5x11 paper
-bname=$(basename $1 .pdf)
+bname=$(basename -- "$1" .pdf)
 pagesize=$(pdfinfo "${bname}.pdf" | grep "Page size:" | sed -e 's/[^0-9 ]//g' | awk '{print $2}')
 launch-emacsclient noframe --eval "(message \"Pagesize: $pagesize\")"
 ycoord=$(( $pagesize - $ycoord ))

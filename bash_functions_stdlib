@@ -7,7 +7,7 @@
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Fri Mar 27, 2015
-# Version: 20190228
+# Version: 20190313
 # URL: https://github.com/akroshko/bash-stdlib
 #
 # This program is free software: you can redistribute it and/or modify
@@ -346,9 +346,9 @@ need_new_symlink () {
         # symlink exists but is invalid
         rm -f "$2"
         ln -s "$1" "$2"
-    elif [[ -h "$2" && $(readlink -f "$2") != $(readlink -f "$1") ]]; then
+    elif [[ -h "$2" && $(readlink -f -- "$2") != $(readlink -f -- "$1") ]]; then
         # symlink exists but points to different location than we are going to
-        yell "Symlink $2 exists but points to $(readlink -f "$2") instead of $1!"
+        yell "Symlink $2 exists but points to $(readlink -f -- "$2") instead of $1!"
     fi
 }
 
@@ -362,7 +362,7 @@ cp_if_different () {
     local FOUNDDIFFERENT=1
     # is destination a directory
     if [[ -d "$2" ]]; then
-        local THEBASENAME=$(basename "$1")
+        local THEBASENAME=$(basename -- "$1")
         if ! cmp --silent "$1" "$2"/"$THEBASENAME"; then
             command cp "$1" "$2"
             FOUNDDIFFERENT=0
@@ -604,9 +604,9 @@ fix-crypt-permissions () {
                 chmod --recursive o-rwx "$1"
                 chmod u+rwX --recursive "$1"
             else
-                chmod g-rwx "$(readlink -f $1)"
-                chmod o-rwx "$(readlink -f $1)"
-                chmod u+rwX "$(readlink -f $1)"
+                chmod g-rwx $(readlink -f -- "$1")
+                chmod o-rwx $(readlink -f -- "$1")
+                chmod u+rwX $(readlink -f -- "$1")
             fi
         fi
     fi
@@ -806,9 +806,9 @@ mount-disk-uuid () {
     local UUID="$1"
     # allow full UUID path to be given
     if [[ "$UUID" == /dev/disk/by-uuid/* ]]; then
-        local UUIDDEVICE=$(readlink -f "$UUID")
+        local UUIDDEVICE=$(readlink -f -- "$UUID")
     else
-        local UUIDDEVICE=$(readlink -f "/dev/disk/by-uuid/$UUID")
+        local UUIDDEVICE=$(readlink -f -- "/dev/disk/by-uuid/$UUID")
     fi
     # TODO: do this better
     if findmnt -nr -o target -S "$UUIDDEVICE" >/dev/null; then
@@ -828,7 +828,7 @@ mount-disk-uuid () {
 device-disk-uuid () {
     # find mounted disk or ???
     local UUID="$1"
-    local UUIDDEVICE=$(readlink -f "/dev/disk/by-uuid/$UUID")
+    local UUIDDEVICE=$(readlink -f -- "/dev/disk/by-uuid/$UUID")
     echo "$UUIDDEVICE"
 }
 
@@ -996,7 +996,7 @@ harm-id3-alphabetical-track () {
 harm-id3-album-as-directory () {
     # use directory name for album name as all tracks
     if dangerous-function-ask; then
-        local ALBUM=$(basename "$PWD")
+        local ALBUM=$(basename -- "$PWD")
         eyeD3 --to-v2.4 --album "$ALBUM" *.mp3
     fi
 }
@@ -1066,12 +1066,12 @@ h1-end () {
 }
 
 h1-script () {
-    local OUTSTR=$(cut -c 1-80 <<< "==== Running $(basename $0) ================================================================================")
+    local OUTSTR=$(cut -c 1-80 <<< "==== Running $(basename -- $0) ================================================================================")
     echo -e "${BWhite}${On_Blue}$OUTSTR${Color_Off}" >&2
 }
 
 h1-script-end () {
-    local OUTSTR=$(cut -c 1-80 <<< "Finishing $(basename $0)")
+    local OUTSTR=$(cut -c 1-80 <<< "Finishing $(basename -- $0)")
     echo -e "${BWhite}${On_Blue}<<<<${Color_Off} ${BWhite}$OUTSTR${Color_Off}" >&2
 }
 
@@ -1408,15 +1408,15 @@ select-disk-uuid-usb () {
     # TODO: will I always want to do this with usb? do I want option to select non-usb like FUSE?
     local USBARRAY=()
     if [[ -n "$1" ]]; then
-        if [[ -e /dev/disk/by-uuid/"$1" ]]; then
-            if findmnt -nr -o target /dev/disk/by-uuid/"$1" >/dev/null; then
-                MOUNTPOINT=$(findmnt -nr -o target /dev/disk/by-uuid/"$1")
-                DEVICE=$(readlink -f /dev/disk/by-uuid/"$1")
-                LABEL=$(lsblk --output label /dev/disk/by-uuid/"$1" | tail -n 1)
+        if [[ -e "/dev/disk/by-uuid/$1" ]]; then
+            if findmnt -nr -o target "/dev/disk/by-uuid/$1" >/dev/null; then
+                MOUNTPOINT=$(findmnt -nr -o target "/dev/disk/by-uuid/$1")
+                DEVICE=$(readlink -f -- "/dev/disk/by-uuid/$1")
+                LABEL=$(lsblk --output label "/dev/disk/by-uuid/$1" | tail -n 1)
                 printf "0) %-10s %-40s %-25s (default, mounted on $MOUNTPOINT)\n" "$DEVICE" "$1" "$LABEL" >&2
             else
-                DEVICE=$(readlink -f /dev/disk/by-uuid/"$1")
-                LABEL=$(lsblk --output label /dev/disk/by-uuid/"$1" | tail -n 1)
+                DEVICE=$(readlink -f -- "/dev/disk/by-uuid/$1")
+                LABEL=$(lsblk --output label "/dev/disk/by-uuid/$1" | tail -n 1)
                 printf "0) %-10s %-40s %-25s (default, not mounted)\n" "$DEVICE" "$1" "$LABEL" >&2
             fi
         else
@@ -1426,14 +1426,14 @@ select-disk-uuid-usb () {
     local count=1
     for d in /dev/disk/by-uuid/*; do
         [[ "$d" == "/dev/disk/by-uuid/$1" ]] && continue
-        if /sbin/udevadm info --query=all --name=$(readlink -f $d) | grep 'ID_BUS=usb' >/dev/null; then
+        if /sbin/udevadm info --query=all --name=$(readlink -f -- "$d") | grep 'ID_BUS=usb' >/dev/null; then
             if findmnt -nr -o target "$d" >/dev/null; then
                 MOUNTPOINT=$(findmnt -nr -o target "$d")
                 LABEL=$(lsblk --output label "$d" | tail -n 1)
-                printf "$count) %-10s %-40s %-25s (mounted on $MOUNTPOINT)\n" "$(readlink -f $d)" "$(basename $d)" "$LABEL" >&2
+                printf "$count) %-10s %-40s %-25s (mounted on $MOUNTPOINT)\n" $(readlink -f -- "$d") $(basename -- "$d") "$LABEL" >&2
             else
                 LABEL=$(lsblk --output label "$d" | tail -n 1)
-                printf "$count) %-10s %-40s %-25s (not mounted)\n" "$(readlink -f $d)" "$(basename $d)" "$LABEL" >&2
+                printf "$count) %-10s %-40s %-25s (not mounted)\n" $(readlink -f -- "$d") $(basename -- "$d") "$LABEL" >&2
             fi
             local count=$(( $count + 1 ))
             USBARRAY+=("$d")
@@ -1469,12 +1469,12 @@ select-disk-uuid-info () {
     # TODO: need columns
     echo "ID: "
     for d in /dev/disk/by-id/*; do
-        echo "$d: $(readlink -f $d) $(/sbin/udevadm info --query=all --name=$(readlink -f $d) | grep ID_BUS)"
+        echo "$d: $(readlink -f $d) $(/sbin/udevadm info --query=all --name=$(readlink -f -- $d) | grep ID_BUS)"
     done
     echo ""
     echo "UUID: "
     for d in /dev/disk/by-uuid/*; do
-        echo "$d: $(readlink -f $d) $(/sbin/udevadm info --query=all --name=$(readlink -f $d) | grep ID_BUS)"
+        echo "$d: $(readlink -f $d) $(/sbin/udevadm info --query=all --name=$(readlink -f -- $d) | grep ID_BUS)"
     done
 }
 
@@ -1673,9 +1673,9 @@ wget-current-canmatrix () {
 add-timestamp-head-of-all-files () {
     for f in ${PWD}/*; do
         [[ -f "$f" ]] || continue
-        [[ ! "$(basename $f)" =~ [0-9]{14}--.* ]] || continue
+        [[ ! $(basename -- "$f") =~ [0-9]{14}--.* ]] || continue
         echo "Moving $(basename $f)"
-        mv "$(basename $f)" "$(stat $(basename $f) | grep Modify: | sed -e 's/Modify: //' | sed -e 's/-//g' | sed -e 's/://g' | sed -e 's/\..*//g' | sed -e 's/ //g')--$(basename $f)"
+        \mv --no-clobber "$(basename $f)" "$(stat $(basename $f) | grep Modify: | sed -e 's/Modify: //' | sed -e 's/-//g' | sed -e 's/://g' | sed -e 's/\..*//g' | sed -e 's/ //g')--$(basename $f)"
     done
 }
 
@@ -1859,7 +1859,7 @@ rsync-remove-source () {
     # TODO: check here!
     if ssh "$1" true; then
         msg "Incoming from $1"
-        local BACKUPDIR="rsync-backups-${1}-$(date-time-stamp)"
+        local BACKUPDIR="rsync-backups-$1-$(date-time-stamp)"
         rsync --progress --archive --checksum --backup --backup-dir="$BACKUPDIR" --rsh='ssh' --remove-source-files "${1}:${2}/" .
         # will cause error if there are backups
         rmdir --ignore-fail-on-non-empty "$BACKUPDIR"
@@ -2565,8 +2565,8 @@ tar-bzip2-remove () {
         echo "Destination $2 must not exist!"
         return 1
     fi
-    local INFULLPATH=$(readlink -f "$1")
-    local OUTFULLPATH=$(readlink -f "$2")
+    local INFULLPATH=$(readlink -f -- "$1")
+    local OUTFULLPATH=$(readlink -f -- "$2")
     # TODO: quit if readlink fails?
     local INSIZE=$(du -sh "$1")
     if [[ "$OUTFULLPATH" == "$INFULLPATH"/ ]]; then
