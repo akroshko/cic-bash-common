@@ -1049,38 +1049,38 @@ msg () {
 
 h1 () {
     if [[ -z "$*" ]]; then
-        local OUTSTR=$(printf "%-80s" "================================================================================")
+        local OUTSTR=$(printf "%.80s" "================================================================================")
     else
-        local OUTSTR=$(printf "%-80s" "==== $* ================================================================================")
+        local OUTSTR=$(printf "%.80s" "==== $* ================================================================================")
     fi
     echo -e "${BWhite}${On_Blue}$OUTSTR${Color_Off}" >&2
 }
 
 h1-end () {
     if [[ -z "$*" ]]; then
-        local OUTSTR=$(printf "%-80s" "")
+        local OUTSTR=$(printf "%.80s" "")
     else
-        local OUTSTR=$(printf "%-80s" "$*")
+        local OUTSTR=$(printf "%.80s" "$*")
     fi
     echo -e "${BWhite}${On_Blue}<<<<${Color_Off} ${BWhite}$OUTSTR${Color_Off}" >&2
 }
 
 h1-script () {
-    local OUTSTR=$(printf "%-80s" "==== Running $(basename -- $0) ================================================================================")
+    local OUTSTR=$(printf "%.80s" "==== Running $(basename -- $0) ================================================================================")
     echo -e "${BWhite}${On_Blue}$OUTSTR${Color_Off}" >&2
 }
 
 h1-script-end () {
-    local OUTSTR=$(printf "%-80s" "Finishing $(basename -- $0)")
+    local OUTSTR=$(printf "%.80s" "Finishing $(basename -- $0)")
     echo -e "${BWhite}${On_Blue}<<<<${Color_Off} ${BWhite}$OUTSTR${Color_Off}" >&2
 }
 
 h2 () {
    if [[ -z "$*" ]]
     then
-        local OUTSTR=$(printf "%-60s" "----------------------------------------")
+        local OUTSTR=$(printf "%.60s" "----------------------------------------")
     else
-        local OUTSTR=$(printf "%-60s" "---- $* ----------------------------------------")
+        local OUTSTR=$(printf "%.60s" "---- $* ----------------------------------------")
    fi
    # TODO: probably want different color than cyan
    echo -e "${BWhite}${On_Cyan}$OUTSTR${Color_Off}" >&2
@@ -1996,7 +1996,7 @@ android-record-all () {
     # TODO: specify time limit better
     pushd . >/dev/null
     cd "$HOME"
-    local FNAME=android-screenrecord-$(date-time-stamp).mp4
+    local FNAME=$(date-time-stamp)-screen-record-android.mp4
     adb shell screenrecord --verbose --time-limit 180 /sdcard/"$FNAME"
     adb pull /sdcard/"$FNAME"
     adb shell rm /sdcard/"$FNAME"
