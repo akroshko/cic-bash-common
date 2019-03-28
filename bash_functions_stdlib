@@ -926,6 +926,11 @@ vcs-push-github () {
     git checkout master
 }
 
+ssh-github-test () {
+    # XXXX: no batch here
+    ssh -vvv -T git@github.com
+}
+
 vcs-conflicts () {
     # TODO: expand at some point
     git diff --name-only --diff-filter=U
