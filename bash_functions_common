@@ -1,5 +1,5 @@
 #!/bin/bash
-# bash_functions_stdlib is a set of bash functions for non-specific
+# bash_functions_common is a set of bash functions for non-specific
 # functionality.
 #
 # Copyright (C) 2015-2019, Andrew Kroshko, all rights reserved.
@@ -7,8 +7,8 @@
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Fri Mar 27, 2015
-# Version: 20190313
-# URL: https://github.com/akroshko/bash-stdlib
+# Version: 20190409
+# URL: https://github.com/akroshko/cic-bash-common
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,28 +22,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see http://www.gnu.org/licenses/.
-
-# WARNING: most of this code has not been rigorously tested or
-# verified, use at own risk if working with important data or in
-# production settings
-
-test-fail () {
-    # this function is just a test to judge a scripts behaviour based
-    # on return values
-    # TODO: also need a test error
-    if [[ false ]]; then
-        echo "false"
-        return 1
-    fi
-    echo "not false"
-    return 0
-}
-
-check-host () {
-    # check if current host is a particular host, this will probably
-    # become more complex as time goes on
-    [[ "$HOSTNAME" == "$1" ]]
-}
 
 need_new_directory () {
     # create a new directory if it does not already exist
@@ -94,33 +72,33 @@ date-time-stamp () {
 
 date-time-stamp-t () {
     # return a time-stamp with date in standard format
-    echo $(date +%Y%m%dT%H%M%S)
-}
-
-date-time-stamp-lower-t () {
-    # return a time-stamp with date in standard format
     echo $(date +%Y%m%dt%H%M%S)
 }
 
 date-stamp () {
+    # a date stamp with just the date
     echo $(date +%Y%m%d)
 }
 
-# move this to function ASAP
 memory-log () {
-    while true; do { cat /proc/meminfo | sed -n 2p ; date ; } | tr "\n" " " ; echo ""; sleep 30; done >> "$HOME/memory-$(date +%Y%m%d%H%M%S).log"
+    # log memory, used for long running experiments that might crash a computer
+    while true; do
+        { cat /proc/meminfo | sed -n 2p ; date ; } | tr "\n" " "
+        echo ""
+        sleep 30;
+    done >> "$HOME/memory-$(date +%Y%m%d%H%M%S).log"
 }
 
 ag-show () {
-    # show details of a debian package
+    # show details of a Debian package
     apt-cache show "$1"
 }
 # XXXX: only different when using bash completion
 alias ag-show-installed=ag-show
 
-# TODO: search multiple terms?
 ag-search () {
-    # search for a debian package
+    # search for a Debian package
+    # TODO: search multiple terms?
     apt-cache search "$1"
 }
 
@@ -130,7 +108,7 @@ ag-install () {
     # TODO: check if apt-get update needed
     apt-get install --dry-run "$@"
     echo "Do install for real?"
-    # install a debian package
+    # install a Debian package
     if ask_yn "Install?";  then
         sudo apt-get install "$@"
     else
@@ -139,16 +117,17 @@ ag-install () {
 }
 
 ag-install-dry-run () {
+    # just a dry run to install a Debian package
     apt-get install --dry-run "$@"
 }
 
 ag-remove () {
-    # uninstall a debian package
+    # uninstall a Debian package
     sudo apt-get remove "$@"
 }
 
 ag-list () {
-    # list files installed by a debian package
+    # list files installed by a Debian package
     dpkg-query -L "$1"
 }
 
@@ -164,52 +143,54 @@ ag-list-installed () {
 # TODO: see if I can use aes256-gcm@openssh.com for everything
 
 ssh-batch () {
+    # run ssh in batch mode
     ssh -o "BatchMode yes" "$@"
 }
 
 ssh-batch-lan () {
+    # run ssh in batch mode but use no compression
     ssh -o "Compression no" -c aes256-gcm@openssh.com -o "BatchMode yes" "$@"
 }
 
 ssh-batch-interact () {
-    # go in in batch mode but allow interaction
-    # generally want things to fail when authentication agents not working
+    # run ssh in batch mode but allow interaction with the resulting terminal
     ssh -o "BatchMode yes" -t "$@"
 }
 
 ssh-batch-interact-lan () {
-    # go in in batch mode but allow interaction
-    # generally want things to fail when authentication agents not working
+    # run ssh in batch mode but allow interaction with the resulting terminal
     ssh -o "Compression no" -c aes256-gcm@openssh.com -o "BatchMode yes" -t "$@"
 }
 
 ssh-lan () {
+    # run ssh with no compression
     ssh -o "Compression no" "$@"
 }
 
 scp-lan () {
-    # use scp over a LAN, sets some good options
+    # run scp with no compression
     scp -o "Compression no" "$@"
 }
 
 sftp-lan () {
-    # use sftp over a LAN, sets some good options
+    # use sftp with no compression
     sftp -o "Compression no" "$@"
 }
 
-
 alias ssh-x11='sshx'
 sshx () {
+    # ssh with X11 forwarding enabled
     ssh -X -o "Compression yes" "$@"
 }
 
 sshnox () {
-    # use ssh and explicitly disable X forwarding
+    # ssh with X11 forwarding explicitly disabled
     ssh -o "ForwardX11 no" "$@"
 }
 
 alias ssh-x11-lan='sshx-lan'
 sshx-lan () {
+    # ssh with X11 forwarding and compression explicitly disabled
     ssh -X -o "Compression no" "$@"
 }
 
@@ -229,10 +210,8 @@ transform-resize-web () {
     convert "$1" -resize 1200x800 "resize_$1"
 }
 
-# transform anything to mp3 using ffmpeg
 transform-ffmpeg-mp3 () {
-    # convert any media file to an mp3
-    # TODO: ffmpeg not on debian currently (8.3)
+    # convert any media file to an mp3 using ffmpeg
     ffmpeg -i "$1" -f mp3 "${1%.*}.mp3"
 }
 
@@ -263,6 +242,7 @@ nmap-network () {
 }
 
 nmap-host-ports () {
+    # show ports open on a host
     if [[ -z "$1" ]]; then
         yell "Requires argument!"
         return 1
@@ -271,11 +251,13 @@ nmap-host-ports () {
 }
 
 nmap-host-ports-super () {
+    # really slowly look for ports open on a host
+    sudo true || { echo "Failed to sudo!"; return 1; }
     if [[ -z "$1" ]]; then
         yell "Requires argument!"
         return 1
     fi
-    time nmap -v -sS -p 1-65535 "$1"
+    time sudo nmap -v -sS -p 1-65535 "$1"
 }
 
 nmap-lan () {
@@ -288,14 +270,14 @@ nmap-lan () {
 nmap-lan-os () {
     # scan current network, based on common home router addresses,
     # quickly using nmap
-    # XXXX: generally takes less than a minute
+    # generally takes less than a minute
     time sudo nmap -sS -O 192.168.0-1.0-255
 }
 
 nmap-lan-super () {
     # scan current network, based on common home router addresses,
     # slowly using nmap
-    # XXXX: generally takes less than a 10 minutes, or lesss than 10 seconds
+    # generally takes less than 10 minutes, or less than 10 seconds
     time sudo nmap -sS 192.168.0-1.0-255
 }
 
@@ -321,11 +303,13 @@ netstat-connections-super () {
 
 lpr-double-sided-portrait () {
     # print file as double-sided in portrait mode
+    # TODO:
     lpr -o sides=two-sided-long-edge "$1"
 }
 
 lpr-double-sided-landscape () {
     # print file as double-sided in landscape mode
+    # TODO:
     lpr -o sides=two-sided-short-edge "$1"
 }
 
@@ -353,12 +337,14 @@ need_new_symlink () {
 }
 
 need_new_symlink_touch () {
+    # create a new symlink but touch the target first to ensure it exists
     touch "$1"
     need_new_symlink "$1" "$2"
 }
 
-# TODO: do something if there is a directory
+
 cp_if_different () {
+    # copy files only if they are different
     local FOUNDDIFFERENT=1
     # is destination a directory
     if [[ -d "$2" ]]; then
@@ -380,7 +366,9 @@ match_string_array () {
     # check if a given string is in a given array
     # string in $1, array in $2
     local e
-    for e in "${@:2}"; do [[ "$e" =~ "$1" ]] && return 0; done
+    for e in "${@:2}"; do
+        [[ "$e" =~ "$1" ]] && return 0
+    done
     return 1
 }
 
@@ -388,7 +376,9 @@ not_match_string_array () {
     # check if a given string is not in a given array
     # string in $1, array in $2
     local e
-    for e in "${@:2}"; do [[ "$e" =~ "$1" ]] && return 1; done
+    for e in "${@:2}"; do
+        [[ "$e" =~ "$1" ]] && return 1
+    done
     return 0
 }
 
@@ -438,6 +428,7 @@ clean-pwd-files () {
 }
 
 psg () {
+    # grep process
     if [[ -z "$1" ]]; then
         ps -efj | less
     else
@@ -448,18 +439,21 @@ psg () {
 }
 
 cpu-throttle-up () {
+    # throttle up all CPUs
     for (( i = 0; i < $(nproc); i++ )); do
         sudo cpufreq-set -c "$i" -g performance
     done
 }
 
 cpu-throttle-ondemand () {
+    # set all CPUs to ondemand
     for (( i = 0; i < $(nproc); i++ )); do
         sudo cpufreq-set -c "$i" -g ondemand
     done
 }
 
 cpu-throttle-down () {
+    # throttle down all CPUs
     for (( i = 0; i < $(nproc); i++ )); do
         sudo cpufreq-set -c "$i" -g powersave
     done
@@ -471,7 +465,7 @@ find-broken-symlinks () {
 }
 
 xclip-show-all () {
-    # TODO: maybe only show extra line if necessary
+    # show contents of X11 primary, secondary, and clipboard
     h1
     msg "Primary"
     xclip -o -selection p
@@ -486,30 +480,37 @@ xclip-show-all () {
     echo ""
 }
 
-# TODO: pop this up somehow with a key
 watch-xclip-show-all () {
+    # watch contents of X11 primary, secondary, and clipboard
     watch -n 1 --color --exec bash -c "source $HOME/.bash_library;xclip-show-all"
 }
-
-# watch-xclip () {
-#     while true; do
-#         # calling xclip-show-all does not do as expected
-#         h1
-#         msg "Primary"
-#         xclip -o -selection p
-#         h1
-#         msg "Secondary"
-#         xclip -o -selection s
-#         h1
-#         msg "Clipboard"
-#         xclip -o -selection c
-#         sleep 1
-#     done
-# }
 
 du-sort () {
     # sort by size after using du
     \du --total --summarize --human-readable -- * 2>/dev/null | sort --human-numeric-sort
+}
+
+du-sort-cumulative () {
+    # get cumulative sum of sizes using du by sorting smallest to largest
+    # get normal du output, not as slow to do it twice because caching
+    local DUOUTPUT=$(du-sort)
+    # sort by size after using du
+    local DUSORT=$(\du --summarize -Bk -- * 2>/dev/null | sort --human-numeric-sort)
+    # echo "$DUSORT"
+    local TOTALLINES=$(wc -l <<< "$DUSORT")
+    local DUSORTCUMULATIVE=""
+    # now loop over these
+    for i in $(seq 1 1 $TOTALLINES); do
+        DUSORTTRIMMED=$(head -n "$i" <<< "$DUSORT")
+        # print out sum of lines
+        # https://www.linuxquestions.org/questions/linux-newbie-8/how-to-sum-bytes-kilobytes-megabytes-and-gigabytes-using-awk-command-4175439404/
+        if [[ "$i" != "$TOTALLINES" ]]; then
+            local DUSORTCUMULATIVE="$DUSORTCUMULATIVE"$((awk '{ total = total + $1 } END { print total*1024 }' <<< "$DUSORTTRIMMED") | numfmt --to=iec --padding=7)$'\n'
+        else
+            local DUSORTCUMULATIVE="$DUSORTCUMULATIVE"$((awk '{ total = total + $1 } END { print total*1024 }' <<< "$DUSORTTRIMMED") | numfmt --to=iec --padding=7)
+        fi
+    done
+    paste <(echo "$DUSORTCUMULATIVE") <(echo "$DUOUTPUT") | column -t
 }
 
 du-sort-symlinks () {
@@ -519,23 +520,24 @@ du-sort-symlinks () {
 
 
 du-sort-directories () {
-    # sort by size after using du
+    # sort by size after using du, but show directories only
     # TODO: single file system?
     \du --total --summarize --human-readable -- ./*/ 2>/dev/null | sort --human-numeric-sort
 }
 
 du-sort-dotfiles () {
-    du --summarize --human-readable .[^.]* 2>/dev/null | sort --human-numeric-sort
+    # sort by size after using du, but show dotfiles only
+    du --total --summarize --human-readable .[^.]* 2>/dev/null | sort --human-numeric-sort
 }
 
 du-total-symlink () {
-    # sort by size after using du
-    du --summarize --total --dereference --human-readable * 2>/dev/null
+    # sort by size after using du, but show symlinks only
+    du --total --summarize --dereference --human-readable * 2>/dev/null
 }
 
 dd-progress () {
-    # TODO: spaces after | ???
-    #       try on next big dd
+    # check progress of dd commands, this outputs where the dd command is being used
+    # TODO: this does not work yet, but trigger all dd commands
     # ps auxww | grep " [d]d " | awk '{print $2}' |while read pid; do kill -USR1 $pid; done
     # http://askubuntu.com/questions/215505/how-do-you-monitor-the-progress-of-dd
     sudo kill -USR1 $(pgrep ^dd)
@@ -546,22 +548,9 @@ youtube-mp3 () {
     youtube-dl --extract-audio -audio-format mp3 "$1"
 }
 
-dconf-grep () {
-    # grep the GNOME config database
-    dconf dump / | grep -i -- "$1"
-}
-
-dconf-less () {
-    # use less to view the GNOME config database
-    dconf dump / | less
-}
-
-fdi () {
-    # search for file matching first argument in tree
-    find . -iname "*${1}*"
-}
-
-fgi () {
+find-grep () {
+    # find then grep
+    # TODO: with no arguments give help
     if [[ -z "$2" ]]; then
         find . -type f -exec grep -H --color -n -- "$1" {}  \;
     else
@@ -570,30 +559,29 @@ fgi () {
 }
 
 harm-bash () {
+    # reload bash_profile
     fix-gpg-ssh-permissions
     source "$HOME/.bash_profile"
 }
 
 harm-bashrc () {
+    # reload bashrc
     fix-gpg-ssh-permissions
     source "$HOME/.bashrc"
 }
 
 harm-xresources () {
     # reload x-resources for development purposes
-    # otherwise it is done in bash-profile....
+    # otherwise this is is done in bash-profile
     if [[ -f "$HOME/.Xresources" ]]; then
         msg "Loading Xresources!!!"
         xrdb "$HOME/.Xresources"
     fi
 }
 
-fix-standard-permissions () {
-    true
-}
-
 fix-crypt-permissions () {
     # fix the permissions on a cryptography-relevant directory
+    # generally ensures that things are only user readable
     if [[ -z "$1" ]]; then
         yell "Must have a file or directory to fix!"
     else
@@ -613,25 +601,22 @@ fix-crypt-permissions () {
 }
 
 fix-gpg-ssh-permissions () {
-    # TODO: start adding things that might be necessary
-    # TODO: start adding this to the front of critical operations
     # fix the permissions on the standard gpg and ssh directory
     fix-crypt-permissions "$HOME/.gnupg"
     fix-crypt-permissions "$HOME/.ssh"
-    fix-crypt-permissions "$HOME/.msmtprc"
 }
 
 backlight-percentage () {
-    # XXXX: very device dependent but useful to include, make more general
-    # TODO: check for directory
+    # check the backlight percentage on
+    # XXXX: very device dependent but I find this useful
+    # TODO: check that directory exists
     echo $(cat /sys/class/backlight/intel_backlight/brightness*100)/$(cat /sys/class/backlight/intel_backlight/max_brightness) | bc -l | xargs printf "%1.0f\n"
 }
 
 vcs-check-root () {
     # check if a pull is needed for for child directories if they correspond to common version control systems
-    # from https://stackoverflow.com/questions/3258243/git-check-if-pull-needed
-    # stop it from running home because that's dumb
-    # TODO: other directories
+    # stop it from running home because that can cause problems
+    # TODO: stop other directories
     if [[ "$PWD" == "$HOME" ]]; then
         yell "Cannot run in home directory!!!"
         return 1
@@ -644,14 +629,8 @@ vcs-check-root () {
             h1 "Checking $dirname/.git"
             pushd . >/dev/null
             cd "$dirname"
-            # TODO: why was first git fetch here?
-            #       does it stil work the same now?
-            # git fetch
             git -c color.ui=always fetch --verbose
-            # h2 "diff origin/master"
-            # git diff origin/master --summary
             h2 "pull needed?"
-            # TODO: indicate no pull needed
             local STATUS=$(git -c color.ui=always status -uno)
             if grep "up-to-date" <<< "$STATUS" >/dev/null; then
                 msg "Seems up to date!"
@@ -696,12 +675,15 @@ vcs-check-root-fetch-all () {
             h1 "Pulling $dirname/.hg"
             pushd . >/dev/null
             cd "$dirname"
+            # TODO: fix this if I ever have functioning hg repos again
             # hg pull == git fetch
             hg pull
             popd >/dev/null
         elif [[ -d "$dirname/.svn" ]]; then
             h1 "Updating $dirname/.svn"
-            yell "Not fetching svn!"
+            yell "Fetching does not make sense for svn!"
+            # TODO: fix this if I ever have an svn repo it is needed for
+            # TODO: make sure I fix this if I ever have an svn repo it is needed for
             # pushd . >/dev/null
             # cd "$dirname"
             # svn update
@@ -729,61 +711,20 @@ vcs-check-root-pull-all () {
             h1 "Pulling $dirname/.hg"
             pushd . >/dev/null
             cd "$dirname"
+            # TODO: fix this if I ever have functioning hg repos again
+            # hg pull == git fetch
             hg pull
             popd >/dev/null
         elif [[ -d "$dirname/.svn" ]]; then
             h1 "Updating $dirname/.svn"
-            pushd . >/dev/null
-            cd "$dirname"
-            svn update
-            popd >/dev/null
+            yell "Not updating svn until this is fixed!"
+            # TODO: make sure I fix this if I ever have an svn repo it is needed for
+            # pushd . >/dev/null
+            # cd "$dirname"
+            # svn update
+            # popd >/dev/null
         else
             h1 "Not pulling $dirname"
-        fi
-    done
-}
-
-vcs-pi-pull () {
-    if [[ "$HOSTNAME" == *pi ]]; then
-        cd "$HOME/cic-vcs"
-        vcs-check-root-pull-all
-        # cd "$HOME/cic-vcs-academic"
-        # vcs-check-root-pull-all
-    else
-        yell "Can only run on raspberry pi hosts!"
-    fi
-}
-
-vcs-update-versions () {
-    # TODO: add fences and safeguards
-    # TODO: search recursively with find command
-    # find . -not -path "*git*" -type f -exec bash -c 'source ~/.bash_library;vcs-update-file-version "{}"'  \;
-    local CURRENTYEAR=$(date +"%Y")
-    for f in ${PWD}/*; do
-        [[ -f "$f" ]] || continue
-        local FILETYPE=$(file -L "$f")
-        # if file starts with #!
-        if [[ "$(head -n 1 $f)" =~ ^\#! ]]; then
-            # hash comment
-            sed -i -e "s/^# Version:.*$/# Version: $(date-stamp)/g" "$f"
-            # if not copyright matches this year
-            if grep -- "^# Copyright" $f >/dev/null && ! grep -- "^# Copyright.*#$CURRENTYEAR" $f >/dev/null; then
-                warn "Need to update year in $f"
-            fi
-        elif [[ "$FILETYPE" =~ "Lisp/Scheme program" || "$VERSIONFILE" =~ \.el$ ]]; then
-            # lisp
-            sed -i -e "s/^;; Version:.*$/;; Version: $(date-stamp)/g" "$f"
-            # if not copyright matches this year
-            if grep -- "^;; Copyright" $f >/dev/null && ! grep -- "Copyright.*$CURRENTYEAR" $f >/dev/null; then
-                warn "Need to update year in $f"
-            fi
-        elif [[ "$FILETYPE" =~ "LaTeX document" ]]; then
-            # latex
-            sed -i -e "s/^% Version:.*$/% Version: $(date-stamp)/g" "$f"
-            # if not copyright matches this year
-            if ! grep -- "Copyright.*2018" $f >/dev/null; then
-                warn "Need to update year in $f"
-            fi
         fi
     done
 }
@@ -798,11 +739,15 @@ fail2ban-check () {
 }
 
 drop-caches () {
+    # drop caches
+    # TODO: should this hae dangerous-function-ask
     su -c "free && sync && echo 3 > /proc/sys/vm/drop_caches && free"
 }
 
 mount-disk-uuid () {
-    # find mounted disk or ???
+    # find the uuid of a mounted disk
+    # TODO: change name, this mounts nothing
+    # TODO: this will likely become more sophisticated
     local UUID="$1"
     # allow full UUID path to be given
     if [[ "$UUID" == /dev/disk/by-uuid/* ]]; then
@@ -810,29 +755,17 @@ mount-disk-uuid () {
     else
         local UUIDDEVICE=$(readlink -f -- "/dev/disk/by-uuid/$UUID")
     fi
-    # TODO: do this better
     if findmnt -nr -o target -S "$UUIDDEVICE" >/dev/null; then
         findmnt -nr -o target -S "$UUIDDEVICE"
         return 0
     else
-        # TODO: for now I have gnome mount for me but would like to change this
         yell "Disk not mounted!!!"
         return 1
-        # # TODO: mount on a temporary directory
-        # MOUNTPOINT=$(mktemp -d)
-        # sudo mount "$IDDEVICE" "$MOUNTPOINT"
-        # echo "$MOUNTPOINT"
     fi
 }
 
-device-disk-uuid () {
-    # find mounted disk or ???
-    local UUID="$1"
-    local UUIDDEVICE=$(readlink -f -- "/dev/disk/by-uuid/$UUID")
-    echo "$UUIDDEVICE"
-}
-
 get-mount-point-check-usb () {
+    # get the specified mountpoint and make sure it's a usb device
     if [[ -e "/dev/disk/by-uuid/$1" ]]; then
         # argument is a uuid
         local THEDEVICE="/dev/disk/by-uuid/$1"
@@ -869,9 +802,10 @@ get-mount-point-check-usb () {
 }
 
 vcs-diff-public () {
-    # diff the "master" with the "public" branch for current directory or all child directories that are git repositories
-    # XXXX: git only for now
-    if [[ -d "${PWD}/.git" ]]; then
+    # diff the "master" with the "public" branch for git repository in the
+    # current directory or all child directories that are git repositories
+    # only does git until other vcs systems are necessary
+    if [[ -d "$PWD/.git" ]]; then
         git diff public..master
     else
         for dirname in ${PWD}/*; do
@@ -891,9 +825,7 @@ vcs-diff-public () {
 vcs-push-github () {
     # merge public branch and commit to github
     # XXXX: repository must be setup properly
-    # TODO: update verions and commit
-    # TODO: this probably only works because I use controlmaster
-    #       second ssh to git@github.com does not work alone, the pipe makes it freeze
+    # TODO: update versions  in the source files themselves before commit
     ssh-batch -T git@github.com &>/dev/null
     if ! ssh-batch -T git@github.com 2>&1 | grep --color=never "success"; then
         yell "Error connecting to github! Aborting!"
@@ -903,14 +835,12 @@ vcs-push-github () {
         yell "Checkout of public unsuccessful!"
         return 1
     fi
-    # test the connection before doing any funny business
     # TODO: is this safe?
     git -c color.ui=always merge --squash -X theirs master --stat --allow-unrelated-histories
     local COMMITCORRECT=n
     while [[ "$COMMITCORRECT" != "y" ]]; do
         while read -r -t 0;do read -r; done
         read -e -p "Enter commit message: " COMMITMESSAGE
-        # TODO: add option for quit
         while read -r -t 0;do read -r; done
         read -n 1 -p "Use commit message (y/n/q)? " COMMITCORRECT
         echo ""
@@ -921,18 +851,18 @@ vcs-push-github () {
         fi
     done
     git -c color.ui=always commit -a -m "$COMMITMESSAGE"
-    # TODO: eventually go "public" locally to "master" globally
     git -c color.ui=always push --force --set-upstream github public:master
     git checkout master
 }
 
 ssh-github-test () {
-    # XXXX: no batch here
+    # test that I can login to github
     ssh -vvv -T git@github.com
 }
 
 vcs-conflicts () {
-    # TODO: expand at some point
+    # show conflicted files in git
+    # TODO: add other vcs if it becomes important
     git diff --name-only --diff-filter=U
 }
 
@@ -948,111 +878,55 @@ git-serve () {
     git instaweb
 }
 
-harm-id3-audiobook-all () {
-    # set up all audiobooks in immediate subdirectories for my player
-    # (after appropriate file renaming)
-    if dangerous-function-ask; then
-        for d in ${PWD}/*; do
-            [[ -d "$d" ]] || continue
-            pushd . >/dev/null
-            cd "$d"
-            yes | harm-id3-genre-as-audiobook
-            yes | harm-id3-album-as-directory
-            yes | harm-id3-name-as-filename
-            yes | harm-id3-alphabetical-track
-            yes | harm-id3-remove-v1
-            popd >/dev/null
-        done
-    fi
-}
-
-harm-id3-genre-as-audiobook () {
-    # set genre of all .mp3 as audiobook
-    if dangerous-function-ask; then
-        eyeD3 --to-v2.4 --genre="Audiobook" *.mp3
-    fi
-}
-
-harm-id3-name-as-filename () {
-    # make track name correspond to filename
-    if dangerous-function-ask; then
-        for F in ${PWD}/*.mp3; do
-            local BNAME="${f%%.mp3}"
-            # XXXX: basename doesn't work with comma in filename
-            local BNAME="${bname##*/}"
-            eyeD3 --to-v2.4 --title="$BNAME" "$F"
-        done
-    fi
-}
-
-harm-id3-alphabetical-track () {
-    # number tracks based on the alphabetical sort order
-    if dangerous-function-ask; then
-        # totals cause confusion
-        eyeD3 --track-total=0 *.mp3
-        local COUNT=1
-        for F in ${PWD}/*.mp3; do
-            eyeD3 --to-v2.4 --track=$(printf "%03d\n" $COUNT) "$F"
-            let COUNT+=1
-        done
-    fi
-}
-
-harm-id3-album-as-directory () {
-    # use directory name for album name as all tracks
-    if dangerous-function-ask; then
-        local ALBUM=$(basename -- "$PWD")
-        eyeD3 --to-v2.4 --album "$ALBUM" *.mp3
-    fi
-}
-
-harm-id3-remove-v1 () {
-    # remove v1 id3 tags because they interfere with some players
-    if dangerous-function-ask; then
-        eyeD3 --remove-v1 *.mp3
-    fi
-}
-
 ls-id3 () {
     # list id3 tags of all mp3s in directory
     eyeD3 *.mp3
 }
 
 ag-list-doc () {
+    # list doc packages, I often grep the output of this
     apt-cache search . | grep -- "\-doc " | cut -d' ' -f1
 }
 
 ag-list-packages-only () {
+    # list only pakcages without other information
     ag-list-installed | cut -d' ' -f3
 }
 
-
 # the three-fingered claw, see https://stackoverflow.com/questions/1378274/in-a-bash-script-how-can-i-exit-the-entire-script-if-a-certain-condition-occurs
+# these are incredibly useful to add to adhoc scripts
+# TODO: put in own file so I can copy easily?
 yell () {
+    # give an error in red
+    # TODO: may wish to redefine colors in here? if not already defined?
     local NEWCOM=$(sed -r 's|'"$HOME"'|~|g' <<< "$0")
     echo -e "${BRed}$NEWCOM${Red}: $*${Color_Off}" >&2
 }
 
 die () {
+    # give and error in red and then exit with 111
     yell "$*"; exit 111
 }
 
 try () {
+    # try a command
     "$@" || die "cannot $*"
 }
 
 warn () {
-    # XXXX: not good because it starts up a new command, but avoids escaping slashes
+    # give a warning in yellow
     local NEWCOM=$(sed -r 's|'"$HOME"'|~|g' <<< "$0")
     echo -e "${BYellow}$NEWCOM${Yellow}: $*${Color_Off}" >&2
 }
 
 msg () {
+    # give a message in green
     local NEWCOM=$(sed -r 's|'"$HOME"'|~|g' <<< "$0")
     echo -e "${BGreen}$NEWCOM${Green}: $*${Color_Off}" >&2
 }
 
 h1 () {
+    # a top level heading with color
     if [[ -z "$*" ]]; then
         local OUTSTR=$(printf "%.80s" "================================================================================")
     else
@@ -1071,20 +945,22 @@ h1-end () {
 }
 
 h1-script () {
+    # a top level heading to start a script
     local OUTSTR=$(printf "%.80s" "==== Running $(basename -- $0) ================================================================================")
     echo -e "${BWhite}${On_Blue}$OUTSTR${Color_Off}" >&2
 }
 
 h1-script-end () {
+    # a top level heading to end a script
     local OUTSTR=$(printf "%.80s" "Finishing $(basename -- $0)")
     echo -e "${BWhite}${On_Blue}<<<<${Color_Off} ${BWhite}$OUTSTR${Color_Off}" >&2
 }
 
 h2 () {
-   if [[ -z "$*" ]]
-    then
-        local OUTSTR=$(printf "%.60s" "----------------------------------------")
-    else
+   # a second level heading with color
+   if [[ -z "$*" ]]; then
+       local OUTSTR=$(printf "%.60s" "----------------------------------------")
+   else
         local OUTSTR=$(printf "%.60s" "---- $* ----------------------------------------")
    fi
    # TODO: probably want different color than cyan
@@ -1092,8 +968,8 @@ h2 () {
 }
 
 h3 () {
-   if [[ -z "$*" ]]
-    then
+    # a third level heading with color
+    if [[ -z "$*" ]]; then
         local OUTSTR=$(echo "----")
     else
         local OUTSTR=$(echo "---- $*")
@@ -1102,10 +978,12 @@ h3 () {
 }
 
 git-ls () {
+    # list files under git version control
     git ls-tree -r master --name-only
 }
 
 test-all-colors () {
+    # show all terminal colors
     # http://askubuntu.com/questions/27314/script-to-display-all-terminal-colors
     for x in 0 1 4 5 7 8; do
         for i in $(seq 30 37); do
@@ -1118,39 +996,36 @@ test-all-colors () {
     echo ""
 }
 
-aloopback () {
-    arecord -vv | sox -t wav - -t wav - highpass 300 | aplay
-}
-
-aloopback-high () {
-    arecord -vv | sox -t wav - -t wav - highpass 300 | aplay
-}
-
-aloopback-low () {
-    arecord -vv | sox -t wav - -t wav - lowpass 300 | aplay
-}
-
 vcs-init-full () {
+    # init a git repository, add all files, and do an initial commit
     # TODO: check for files existing
     git init && git add * && git commit -a -m 'initial commit'
 }
 
 check-emacs-daemon () {
+    # check whether an emacs daemon is running
     ps -ef | grep -- '[e]macs --daemon' >/dev/null
+    # TODO: change to implicit return once I can test thoroughly
     return $?
 }
 
 check-chromium () {
+    # check whether the chromium browser is running
+    # TODO: this may not be robust
     ps -ef | grep '/usr/lib/chromium/[c]hromium' >/dev/null
+    # TODO: change to implicit return once I can test thoroughly
     return $?
 }
 
 check-firefox () {
-    ps -ef | grep '[f]irefox\|[i]ceweasel\|[p]alemoon' >/dev/null
+    # check whether a firefox or similar browser is running
+    ps -ef | grep '[f]irefox\|[i]ceweasel\|[p]alemoon\|[w]aterfox' >/dev/null
+    # TODO: change to implicit return once I can test thoroughly
     return $?
 }
 
 disk-info () {
+    # get disk info from smartctl for selected disk
     if [[ -b "$1" ]]; then
         h1
         msg "$1"
@@ -1159,6 +1034,7 @@ disk-info () {
 }
 
 monitor-disks () {
+    # this is crude but useful to quickly get information
     disk-info /dev/sda
     disk-info /dev/sdb
     disk-info /dev/sdc
@@ -1169,6 +1045,7 @@ monitor-disks () {
 
 
 disk-temp () {
+    # get disk temperate from selected disk
     if [[ -b "$1" ]]; then
         h1
         msg "$1"
@@ -1178,6 +1055,7 @@ disk-temp () {
 }
 
 monitor-disk-temp () {
+    # this is crude but useful to quickly get temperature of disks
     disk-temp /dev/sda
     disk-temp /dev/sdb
     disk-temp /dev/sdc
@@ -1187,24 +1065,28 @@ monitor-disk-temp () {
 }
 
 monitor-disk-speed () {
+    # check disk speed
     # https://www.webhostingtalk.com/showthread.php?t=906573
     # http://www.yasith.info/2010/01/how-to-check-hard-disk-performance-and.html
     sudo hdparm -tT /dev/"$1"
 }
 
 fix-permissive-permissions () {
+    # create permissive permission for a path
     if [[ -e "$1" ]]; then
         chmod 755 "$1"
     fi
 }
 
 fix-permissive-permissions-recursive () {
+    # recursively create permissive permission for a path
     if [[ -d "$1" ]]; then
         chmod -R 755 "$1"
     fi
 }
 
 add-line-if-not-exist () {
+    # add a line to a file if the exact line does not exist already
     local THEFILE="$1"
     local NEWLINE="$2"
     # TODO: check grep input before running
@@ -1212,16 +1094,18 @@ add-line-if-not-exist () {
 }
 
 kill-blank-lines () {
+    # delete any blank lines in a file
     sed -n -e '/^\s*$/d' "$1"
 }
 
 screen-select () {
-    # TODO: do I want letters instead???
+    # select a running screen session using a number (1,2,3...)
+    # TODO: do I want to select by letters (a,b,c...) instead???
     local SCREENSESSIONS=$(screen -ls | grep pts | cut -f1 -d"." | sed -e 's/^[[:space:]]*//g')
     if [[ -n "$SCREENSESSIONS" ]]; then
-        #Set the field separator to new line
+        # set the field separator to new line
         IFS=$'\n'
-        #Try to iterate over each line
+        # try to iterate over each line
         local count=1
         for item in $SCREENSESSIONS; do
             echo "$count) $item"
@@ -1230,77 +1114,15 @@ screen-select () {
         while read -r -t 0;do read -r; done
         read -n 1 -p "Enter the screen session: " SCREENSELECT
         echo ""
-        screen -dr $(sed -n "${SCREENSELECT}"p <<< "${SCREENSESSIONS}")
+        screen -dr $(sed -n "$SCREENSELECT"p <<< "$SCREENSESSIONS")
     else
         false
     fi
 }
 
-sage-notebook () {
-    # open a Sage notebook and browser securely on port 18080
-    # XXXX: requires defining of ${PYTHON_NOTEBOOK_ROOT} before calling, do I want this for sage.... fix...
-    # TODO: JUPYTER_NOTEBOOK_ROOT is forward-looking...
-    if [[ -n "${JUPYTER_NOTEBOOK_ROOT}" ]]; then
-        # TODO: do I still need this?
-        bleachbit --overwrite --clean epiphany.* google_chrome.*
-        local NBPATH="${JUPYTER_NOTEBOOK_ROOT}/sage-notebooks-$HOSTNAME.sagenb"
-        mkdir -p "$NBPATH"
-        # XXXX: grep to avoid just sage-notebook from scripts that might run this
-        if ps -ef | grep '[s]rc/bin/sage-notebook' >/dev/null; then
-            sage-notebook-browser
-            return 255
-        else
-            # TODO: select firefox and chromium?
-            SAGE_BROWSER="nohup firefox -P sagenotebook" sage --notebook=sagenb secure=True port=18080 automatic_login=True interface='' directory="$NBPATH"
-            # SAGE_BROWSER="nohup chromium" sage --notebook=sagenb secure=True port=18080 automatic_login=True interface='' directory="$NBPATH"
-            return 0
-        fi
-    else
-        yell 'JUPYTER_NOTEBOOK_ROOT not defined!!!'
-    fi
-}
-
-# TODO: support multiple browsers?
-sage-notebook-browser () {
-    # open just the browser for a running Sage notebook
-    if false; then
-        bleachbit --overwrite --clean google_chrome.*
-        chromium https://localhost:18080/ &>/dev/null &
-    else
-        # TODO: shred firefox if not running
-        (nohup firefox -P sagenotebook https://localhost:18080/ &>/dev/null &)
-    fi
-}
-
-sage-jupyter-notebook () {
-    # open an iPython notebook and browser using the Sage platorm on port 18888
-    # TODO: need to control where goes
-    # XXXX: requires defining of ${PYTHON_NOTEBOOK_ROOT} before calling
-    if [[ -n "$JUPYTER_NOTEBOOK_ROOT" ]]; then
-        bleachbit --overwrite --clean epiphany.* google_chrome.*
-        # set a good directory for these
-        local NBPATH="${JUPYTER_NOTEBOOK_ROOT}/sage-jupyter-projects"
-        mkdir -p "$NBPATH"
-        # TODO: subsitute for --deep-reload --automagic --secure --pprint depricated options
-        if ps -ef | grep -- '--[n]otebook=jupyter' >/dev/null; then
-            sage-jupyter-notebook-browser
-        else
-            sage --notebook=jupyter --notebook-dir="$NBPATH" --browser="firefox -P default" --port=18888
-        fi
-    else
-        yell '$PYTHON_NOTEBOOK_ROOT not defined!!!'
-    fi
-}
-
-# TODO: support multiple browsers?
-sage-jupyter-notebook-browser () {
-    # open just the browser for a running iPython notebook
-    bleachbit --overwrite --clean epiphany.* google_chrome.*
-    firefox -P default http://localhost:18888/
-}
-
 file-mimetype () {
     # quick way to get mimetype
+    # this should probably be an alias
     file --mime-type "$1"
 }
 
@@ -1311,45 +1133,8 @@ ssh-scs () {
     # ssh "$@" -t "bash --rcfile ~/.bash_library -li -c \"screen-select;/bin/bash\""
 }
 
-# TODO: move these out
-
-youtube-previous () {
-    # global function to see previous video in youtube playlist
-    # TODO: if no window here
-    local CURRENTWINDOW=$(xdotool getwindowfocus)
-    xdotool search --name youtube | while IFS= read -r line; do
-        if [[ -n "$line" ]] && xdotool search --class conkeror | grep -- "$line" >/dev/null; then
-            xdotool windowfocus --sync "$line"
-            xdotool windowactivate --sync "$line"
-            # TODO: very arbitrary delay, perhaps wait for something to return
-            sleep 0.1
-            conkeror-batch -f youtube-previous
-        fi
-    done
-    # TODO: very arbitrary, perhaps wait for something to return
-    sleep 0.5
-    xdotool windowactivate --sync "$CURRENTWINDOW"
-}
-
-youtube-next () {
-    # global function to see previous video in youtube playlist
-    # TODO: if no window here
-    local CURRENTWINDOW=$(xdotool getwindowfocus)
-    xdotool search --name youtube | while IFS= read -r line; do
-        if [[ -n "$line" ]] && xdotool search --class conkeror | grep -- "$line" >/dev/null; then
-            xdotool windowfocus --sync "$line"
-            # TODO: very arbitrary delay, perhaps wait for something to return
-            sleep 0.1
-            conkeror-batch -f youtube-next
-        fi
-    done
-    # TODO: very arbitrary delay, perhaps wait for something to return
-    sleep 0.5
-    xdotool windowactivate --sync "$CURRENTWINDOW"
-}
-
 focus-emacs-window () {
-    # TODO: do something a little nicer, maybe use xdotool
+    # focus an emacs window, useful when tied to hotkeys for some workflows
     wmctrl -x -a emacs.Emacs
 }
 
@@ -1357,8 +1142,8 @@ focus-emacs-window () {
 ## enumerate things like block devices
 
 enumerate-physical-disks () {
-    # find all physical disks
-    # TODO: will likely need to be improved for all appropriate uses
+    # find all physical disks on a linux system
+    # TODO: will likely need to be improved for more general use
     for d in /dev/sd*; do
         [[ -b "$d" && ! "$d" =~ .*[[:digit:]] ]] || continue
         echo "$d"
@@ -1367,7 +1152,7 @@ enumerate-physical-disks () {
 
 enumerate-crypt-disks () {
     # find all decrypted block devices
-    # TODO: will likely need to be improved for all appropriate uses
+    # TODO: will likely need to be improved for more general use
     for d in /dev/mapper/crypt--*; do
         [[ -b "$d" ]] || continue
         echo "$d"
@@ -1408,8 +1193,8 @@ smartctl-disks-errors () {
 }
 
 select-disk-uuid-usb () {
-    # select a usb disk by UUID or alternately any other mounted drive
-    # XXXX: doesn't work with more than 9 drives, but could be fixed
+    # select a usb disk using a specific UUID as a default or alternately select a different drive
+    # TODO: doesn't work with more than 9 drives, but could be fixed
     # TODO: will I always want to do this with usb? do I want option to select non-usb like FUSE?
     local USBARRAY=()
     if [[ -n "$1" ]]; then
@@ -1449,29 +1234,28 @@ select-disk-uuid-usb () {
     while read -r -t 0;do read -r; done
     read -n 1 -p "Enter the USB drive: " USBSELECT >&2
     echo "" >&2
-    if [[ $USBSELECT == "0" ]]; then
+    if [[ "$USBSELECT" == "0" ]]; then
         echo /dev/disk/by-uuid/"$1"
         return 0
     fi
-    if [[ $USBSELECT == "-" ]]; then
+    if [[ "$USBSELECT" == "-" ]]; then
         echo "Canceled!" >&2
         return 1
     fi
-    if ! [[ $USBSELECT =~ ^[0-9]$ ]] || (( $USBSELECT >= $count )); then
+    if ! [[ "$USBSELECT" =~ ^[0-9]$ ]] || (( $USBSELECT >= $count )); then
         return 1
     fi
     local USBSELECT=$(( $USBSELECT - 1 ))
-    # TODO: keep ensuring only proper thing is every returned, avoid use of tail
+    # TODO: ensuring only proper selection is returned, avoid use of tail
     echo ${USBARRAY[$USBSELECT]}
     return 0
 }
 
-# TODO: helper function to query physical disk info.... but only works for unencrypted
-# TODO: query only USB
-# TODO: keep finding parent disk
-# TODO: lsblk may be best, but this shows what is needed for select-disk-uuid-??? functions
 select-disk-uuid-info () {
-    # TODO: need columns
+    # query disk info for testing and debugging purposes
+    # TODO: need proper columns
+    # TODO: query only USB
+    # TODO: handle encrypted disk better
     echo "ID: "
     for d in /dev/disk/by-id/*; do
         echo "$d: $(readlink -f $d) $(/sbin/udevadm info --query=all --name=$(readlink -f -- $d) | grep ID_BUS)"
@@ -1484,29 +1268,32 @@ select-disk-uuid-info () {
 }
 
 dangerous-function-ask () {
+    # ask whether to continue with a dangerous function
     if ask_yn "Dangerous function! Continue"; then
-        true
+        return 0
     else
-        false
+        return 1
     fi
 }
 
 continue-ask () {
+    # aak whether to continue
     if ask_yn "Continue"; then
-        true
+        return 0
     else
-        false
+        return 1
     fi
 }
 
 vcs-grep-conflicted () {
-    # find git conflicted markers in current directory tree
-    # TODO: proper return values?
+    # find git or other VCS conflicted markers in current directory tree
+    # TODO: a proper return values?
     # TODO: avoid running /home or above... takes way too long!
     find . -not -path "*.git*" -type f -exec grep -nH --color -- "^<<<<<<< \|^>>>>>>> \|^=======$\|^####### " {} \;
 }
 
 mdstat-status () {
+    # check mdstat with just a summary, use as a quick text summary for system monitors
     local MDSTAT=$(cat /proc/mdstat | sed -n '/^md\|^[[:space:]]*\[\|blocks/p')
     local FIRST=1
     IFS=$'\n'
@@ -1542,157 +1329,13 @@ repl-restartable () {
     return 0
 }
 
-vcs-attr () {
-    # https://stackoverflow.com/questions/6855712/why-does-git-treat-this-text-file-as-a-binary-file
-    # check attributes
-    git check-attr --all -- "$1"
-}
-
-################################################################################
-## genric download for Canada NTS topo maps
-## good scripts for slurping data from other ftp websites
-
-wget-download-canmatrix2-doc () {
-    local NEWDIR="/mnt-secondary/"
-    mkdir -p "$NEWDIR"
-    pushd . >/dev/null
-    cd "$NEWDIR"
-    wget \
-      --execute robots=off \
-      --user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.73 Safari/537.36" \
-      --recursive \
-      --no-parent \
-      --level=inf \
-      --restrict-file-names=unix \
-      --random-wait \
-      --continue \
-      --limit-rate=300k \
-      --wait=300 \
-      --waitretry=60 \
-      ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/doc/
-    popd >/dev/null
-}
-
-wget-download-canmatrix2-50k-preview () {
-    local NEWDIR="/mnt-secondary"
-    mkdir -p "$NEWDIR"
-    pushd . >/dev/null
-    cd "$NEWDIR"
-    popd >/dev/null
-    wget \
-      --execute robots=off \
-      --user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.73 Safari/537.36" \
-      --recursive \
-      --no-parent \
-      --level=inf \
-      --restrict-file-names=unix \
-      --random-wait \
-      --continue \
-      --limit-rate=300k \
-      --wait=600 \
-      --waitretry=60 \
-      ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k/
-}
-
-wget-download-canmatrix2-250k-preview () {
-    local NEWDIR="/mnt-secondary"
-    mkdir -p "$NEWDIR"
-    pushd . >/dev/null
-    cd "$NEWDIR"
-    popd >/dev/null
-    wget \
-      --execute robots=off \
-      --user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.73 Safari/537.36" \
-      --recursive \
-      --no-parent \
-      --level=inf \
-      --restrict-file-names=unix \
-      --random-wait \
-      --continue \
-      --limit-rate=300k \
-      --wait=600 \
-      --waitretry=60 \
-      ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/250k/
-}
-
-wget-download-canmatrix2 () {
-    local NEWDIR="/mnt-secondary"
-    mkdir -p "$NEWDIR"
-    pushd . >/dev/null
-    cd "$NEWDIR"
-    # TODO: need an alias for this type of download
-    wget \
-      --execute robots=off \
-      --user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.73 Safari/537.36" \
-      --recursive \
-      --no-parent \
-      --level=inf \
-      --random-wait \
-      --continue \
-      --limit-rate=300k \
-      --wait=600 \
-      --waitretry=60 \
-      "$1"
-    popd >/dev/null
-}
-
-# TODO: this can be a lot better at some point
-wget-current-canmatrix () {
-    # expect to take about 16*((16 * 12) + 60) per large grid = 4032min per large numbered grid
-    # generally run this on my server to an external hard drive at ~/mnt
-    local URLS=("ftp://ftp2.cits.rncan.gc.ca/pub/canmatrix2/50k_tif/104/p")
-    if ! type send-returncode-mail >/dev/null; then
-        warn "No text message progress reports, send-returncode-mail function not configured."
-        alias send-returncode-mail="false"
-    else
-        true
-        send-returncode-mail "Canmatrix- starting!"
-    fi
-    if mountpoint -q /mnt-secondary; then
-        {
-            time {
-                pushd . >/dev/null
-                cd /mnt-secondary
-                # 83 urls, area around edmonton
-                h1 "Starting!!!"
-                for URL in "${URLS[@]}"; do
-                    h2 "Next!!!"
-                    h3 "$URL"
-                    wget-download-canmatrix2 "$URL"
-                    # TODO: fix this, probably by aliasing send-returncode-mail to false if not exist
-                    send-returncode-mail "Canmatrix- done another grid!" "$URL"
-                    sleep $(( $RANDOM % 60 + 30 ))m
-                    # test code
-                    # echo "$URL"
-                    # sleep $(( $RANDOM % 60 + 30 ))s
-                done
-                popd >/dev/null
-            }
-        } 2>&1 | tee -a /mnt-secondary/canmatrix2-$(date-time-stamp).log
-        send-returncode-mail "Canmatrix- done grid script!"
-    else
-        yell "Nothing mounted to collect data!!!"
-    fi
-}
-
-add-timestamp-head-of-all-files () {
-    for f in ${PWD}/*; do
-        [[ -f "$f" ]] || continue
-        [[ ! $(basename -- "$f") =~ [0-9]{14}--.* ]] || continue
-        echo "Moving $(basename $f)"
-        \mv --no-clobber "$(basename $f)" "$(stat $(basename $f) | grep Modify: | sed -e 's/Modify: //' | sed -e 's/-//g' | sed -e 's/://g' | sed -e 's/\..*//g' | sed -e 's/ //g')--$(basename $f)"
-    done
-}
-
-read-mail () {
-    less /var/spool/mail/${USERNAME}
-}
-
 gpg-decrypt () {
+    # decrypt a batch file
     gpg-batch --decrypt "$1" 2>/dev/null
 }
 
-svg2png-hq () {
+transform-svg2png-hq () {
+    # convert an svg to a png in high quality
     if [[ -z "$1" ]]; then
         yell "No input!"
         return 1
@@ -1707,19 +1350,24 @@ svg2png-hq () {
 }
 
 function ls-cron () {
+    # list the current users crontab
     crontab -u "$USERNAME" -l
 }
 
 function ag-rdep () {
+    # search for reverse dependencies of a package
+    # TODO: add help
     apt-cache rdepends "$1"
 }
 
 function ag-rdep-installed () {
+    # search for reverse dependencies installed for a package
+    # TODO: add help
     apt-cache rdepends "$1" --installed
 }
 
 function ls-mime-files () {
-    # list mime settings
+    # list mime settings by enumerating all possible files where they could be
     # https://wiki.archlinux.org/index.php/default_applications
     local THEFILES=("$HOME/.config/$desktop-mimeapps.list" "$HOME/.config/mimeapps.list" "/etc/xdg/mimeapps.list" "$HOME/.local/share/applications/mimeapps.list" "/usr/local/share/applications/mimeapps.list" "/usr/share/applications/mimeapps.list")
     for f in ${THEFILES[@]}; do
@@ -1730,49 +1378,31 @@ function ls-mime-files () {
             warn "$f not exist!"
         fi
     done
-
 }
 
 function ls-mime-files2 () {
+    # list useful information related to mime settings
     # see https://unix.stackexchange.com/questions/36380/how-to-properly-and-easy-configure-xdg-open-without-any-enviroment
-    # XXXX: changed variable from dd, bad name for bash variable
+    # TODO: make more robust and more usefully named next time this is need
     for thedir in /usr/share/applications $HOME/.local/share/applications; do
         h2 "$thedir"
-        for thefile in $(ls $thedir 2>/dev/null | grep "\\.desktop$"); do
+        for thefile in $(ls "$thedir" 2>/dev/null | grep "\\.desktop$"); do
             h3 "$thefile"
-            for m in $(grep MimeType $thedir/$thefile | cut -d= -f2 | tr ";" " "); do
-                echo xdg-mime default $thefile $m
+            for m in $(grep MimeType "$thedir/$thefile" | cut -d= -f2 | tr ";" " "); do
+                echo xdg-mime default "$thefile" "$m"
             done
         done
     done
 }
 
 caps-toggle () {
-    # toggle caps just in case
+    # toggle caps lock from command line just in case
     xdotool key Caps_Lock
 }
 
-view-mail () {
-    tail -n 200 /var/spool/mail/${USERNAME}
-}
-
-srvg () {
-    if [[ -z "$1" ]]; then
-        service --status-all
-    else
-        service --status-all | grep -- "$1"
-    fi
-}
-
-srvr () {
-    sudo service "$1" restart
-}
-
-srvs () {
-    sudo service "$1" status
-}
-
 flatten-current-directory () {
+    # flatten the current directory tree
+    # TODO: warn how destructive this actually is,
     if [[ $@ != *"--for-real"* ]]; then
         find . -mindepth 2 -type f -exec mv {} .
     else
@@ -1781,20 +1411,23 @@ flatten-current-directory () {
 }
 
 dunst-notifications () {
+    # list dunst desktop notification that have appeared
     printf "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
     grep "summary: \|body: " "$HOME/tmp/dunst-current.log" | grep -v \'\' | sed -e 's/^[ \t]*//' | sed -e 's/body: /    /' | sed -e 's/summary: //'
 }
 
 ag-list-explicitly-installed () {
+    # list the package that apt has explicitly installed
     aptitude search '~i !~M'
 }
 
 show-all-x-displays () {
-    # https://unix.stackexchange.com/questions/17255/is-there-a-command-to-list-all-open-displays-on-a-machine
+    # show all x11 displays on the current machine (even if $DISPLAY is not set)
     cd /tmp/.X11-unix && for x in X*; do echo ":${x#X}"; done
 }
 
 phoronix-describe-all-tests () {
+    # describe all tests in the phoronix test suit
     (IFS=$'\n'
      for testline in $(\phoronix-test-suite list-available-tests | tail -n +5 | head -n -2); do
          h2 $(awk '{ print $1 }' <<< "$testline")
@@ -1803,10 +1436,10 @@ phoronix-describe-all-tests () {
 }
 
 inhibit-powersave () {
-    # make sure screensaver does not restart
+    # make sure screensaver and other power saving does not start does not restart
+    # useful for times where screensavers and other power/screensaving features would be detrimental
     # TODO: inhibit power management too
-    # TODO: if I can blow out of loop and reenable screensaver?
-    # TODO: power up all...
+    # TODO: quite loop and reenable disabled features
     while true; do
         echo "Trying..."
         xscreensaver-command -exit
@@ -1818,10 +1451,13 @@ inhibit-powersave () {
 }
 
 inhibit-tty-powersave () {
+    # explicitly disable powersave in ttys
+    # I usually do this automatically but it helps to have this
     setterm -blank 0 -powersave off
 }
 
 screensaver-disable () {
+    # disable xscreensaver and other powersaving commands
     xscreensaver-command -exit
     xset s 0 0 s noblank
     xset s off
@@ -1830,6 +1466,7 @@ screensaver-disable () {
 }
 
 screensaver-enable () {
+    # reenable xscreensaver and other powersaving commands
     (nohup xscreensaver -nosplash &>/dev/null &)
     xset s 0 0 s noblank
     xset s off
@@ -1837,15 +1474,8 @@ screensaver-enable () {
     xset -dpms
 }
 
-screensaver-builtin-only () {
-    xscreensaver-command -exit
-    xset s 0 0 s noblank
-    xset s off
-    xset dpms 0 0 0
-    xset -dpms
-}
-
 grep-commands () {
+    # print out matching commands that can be run from the shell
     h1 'Commands in $PATH'
     printf '%s\n' ${PATH//:/\/* } | grep -- "$1"
     h1 "Bash functions"
@@ -1855,17 +1485,17 @@ grep-commands () {
 }
 
 rsync-remove-source () {
-    # TODO: better interace
-    # TODO: still put right picket fence
-    # if [[ ! -d "$1" ]]; then
-    #     yell "Empty arguments!"
-    #     return 1
-    # fi
+    # rsync and remove source, but also backup just in case
+    # TODO: better interface and safety
+    if [[ ! -d "$2" ]]; then
+        yell "Empty directory argument!!!"
+        return 1
+    fi
     # TODO: check here!
     if ssh "$1" true; then
         msg "Incoming from $1"
         local BACKUPDIR="rsync-backups-$1-$(date-time-stamp)"
-        rsync --progress --archive --checksum --backup --backup-dir="$BACKUPDIR" --rsh='ssh' --remove-source-files "${1}:${2}/" .
+        rsync --progress --archive --checksum --backup --backup-dir="$BACKUPDIR" --rsh='ssh' --remove-source-files "$1:$2/" .
         # will cause error if there are backups
         rmdir --ignore-fail-on-non-empty "$BACKUPDIR"
     else
@@ -1874,21 +1504,19 @@ rsync-remove-source () {
 }
 
 rsync-check-source () {
-    # do this before running above with same arguments
+    # check before running rsync-remove-source with same arguments
     if ssh "$1" true; then
         # TODO: make explicitly that contents of that directory come into current directory
-        rsync --verbose --checksum --progress --archive  --rsh='ssh' "${1}:${2}/" .
+        rsync --verbose --checksum --progress --archive  --rsh='ssh' "$1:$2/" .
     else
         warn "Hostname $1 not found!"
     fi
 }
 
 vcs-incoming () {
-    # https://stackoverflow.com/questions/1331385/how-can-i-see-incoming-commits-in-git
-    # do not do above anymore
-    # https://stackoverflow.com/questions/1800783/compare-local-git-branch-with-remote-branch
+    # see what would be changed with a git pull
     h2 "The log: "
-    # TODO: configure a little better, want to see on screen and not wierd pager stuff
+    # TODO: configure a little better, want to see on screen and not always in a pager
     git log --decorate=full --graph --stat ..origin/"$(git rev-parse --abbrev-ref HEAD)"
     read -n 1 -s -r -p "Press any key to continue... "
     echo ""
@@ -1898,35 +1526,44 @@ vcs-incoming () {
 }
 
 git-reset () {
-    # dangerous command, check first
+    # reset git repository
     # TODO: often used to reset and pull
+    # dangerous command, check first
     if dangerous-function-ask; then
         git reset --hard HEAD
     fi
 }
 
 trim-mp3-to-30min-skip-first-30s () {
+    # trim an mp3 but skip first 30s
+    # often used to reduce recordings of white noise to mp3 player size
     ffmpeg -i "$1" -codec copy -ss 00:00:30 -t 00:30:00 "$2"
 }
 
 trim-mp3-to-30min () {
+    # trim an mp3 to 30min
     ffmpeg -i "$1" -codec copy -ss 00:00:00 -t 00:30:00 "$2"
 }
 
 trim-mp3-to-1hr-skip-first-30s () {
+    # trim an mp3 to 1 hour but skip first 30s
+    # often used to reduce recordings of white noise to mp3 player size
     ffmpeg -i "$1" -codec copy -ss 00:00:30 -t 01:00:00 "$2"
 }
 
 trim-mp3-to-1hr () {
+    # trim an mp3 to 1 hour
     ffmpeg -i "$1" -codec copy -ss 00:00:00 -t 01:00:00 "$2"
 }
 
 trim-mp3-to-2hr-skip-first-30s () {
-    # this is a good function to trim long playing music that has an unwanted intro
+    # trim an mp3 to 2 hours but skip first 30s
+    # often used to reduce recordings of white noise to mp3 player size
     ffmpeg -i "$1" -codec copy -ss 00:00:30 -t 02:00:00 "$2"
 }
 
 trim-mp3-to-2hr () {
+    # trim an mp3 to 2 hours
     ffmpeg -i "$1" -codec copy -ss 00:00:00 -t 02:00:00 "$2"
 }
 
@@ -1942,7 +1579,7 @@ normalize-volume () {
 
 youtube-normalize-volume () {
     # global function to normalize volume in youtube windows
-    # TODO: if no window here
+    # often tied to a hotkey
     local CURRENTWINDOW=$(xdotool getwindowfocus)
     xdotool search --name youtube | while IFS= read -r line; do
         if [[ -n "$line" ]] && xdotool search --class conkeror | grep -- "$line" >/dev/null; then
@@ -1958,64 +1595,43 @@ youtube-normalize-volume () {
     xdotool windowactivate --sync "$CURRENTWINDOW"
 }
 
-alias ffn='find-iname'
 find-iname () {
-    # TODO: need alias for this
+    # find matching files, one of my most used functions
     find . -iname '*'"$1"'*'
 }
 
 xset-query () {
+    # query xset options
     xset -q
 }
 
 grep-gz-files () {
-    # only elisp for now
+    # gz files, but only elisp for now
+    # TODO: make more general
     find -name "*.el.gz" -print0 | xargs -0 zgrep "$1"
 }
 
 strip-leading-trailing-chars () {
     # strip leading and trail characters I do not want for many applications
     # TODO: keep adding more as I need them
-    # TODO: make work with more things
     read string
     echo "$string" | sed 's/^[-]*//' | sed 's/[-]*$//'
 }
 
 gpg-batch () {
+    # run gpg with appropriate options for batch mode
     gpg2 --no-verbose --quiet --batch --yes "$@"
 }
 
-
-android-screenshot-all () {
-    pushd . >/dev/null
-    cd "$HOME"
-    # TODO: better name...
-    local FNAME=android-screen-$(date-time-stamp).png
-    adb shell screencap -p /sdcard/"$FNAME"
-    adb pull /sdcard/"$FNAME"
-    adb shell rm /sdcard/"$FNAME"
-    popd >/dev/null
-}
-
-android-record-all () {
-    # TODO: specify time limit better
-    pushd . >/dev/null
-    cd "$HOME"
-    local FNAME=$(date-time-stamp)-screen-record-android.mp4
-    adb shell screenrecord --verbose --time-limit 180 /sdcard/"$FNAME"
-    adb pull /sdcard/"$FNAME"
-    adb shell rm /sdcard/"$FNAME"
-    popd >/dev/null
-}
-
 harm-fonts () {
+    # reconfigure and recache fonts, rarely run but useful to have
     sudo dpkg-reconfigure fontconfig
-    # TODO: sudo? not yet, make sure this is necessary?
-    # fc-cache -f -v
+    echo "To force font caching run: fc-cache -f -v"
 }
 
 benchmark-compression-gzip () {
-    # benchmark gzip compression
+    # benchmark gzip compression on a selected file or directory
+    # TODO: this isn't what is wanted for benchmarking extremely large things that might fill up the disk
     mkdir -p "$HOME/tmp"
     du -sh "$1"
     local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX" --suffix=.tgz)
@@ -2025,7 +1641,6 @@ benchmark-compression-gzip () {
     echo ""
     du -sh "$THETEMPFILE"
     time {
-        # XXXX: hope this is not optimized!
         gzip -d "$THETEMPFILE" >/dev/null
     }
     sleep 2
@@ -2034,7 +1649,8 @@ benchmark-compression-gzip () {
 }
 
 benchmark-compression-bzip2 () {
-    # benchmark bzip2 compression
+    # benchmark bzip2 compression on a selected file or directory
+    # TODO: this isn't what is wanted for benchmarking extremely large things that might fill up the disk
     mkdir -p "$HOME/tmp"
     du -sh "$1"
     local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX" --suffix=.tar.bz2)
@@ -2044,7 +1660,6 @@ benchmark-compression-bzip2 () {
     echo ""
     du -sh "$THETEMPFILE"
     time {
-        # XXXX: hope this is not optimized!
         bzip2 -d "$THETEMPFILE" >/dev/null
     }
     sleep 2
@@ -2053,7 +1668,8 @@ benchmark-compression-bzip2 () {
 }
 
 benchmark-compression-lz4 () {
-    # benchmark lz4 compression
+    # benchmark lz4 compression on a selected file or directory
+    # TODO: this isn't what is wanted for benchmarking extremely large things that might fill up the disk
     mkdir -p "$HOME/tmp"
     du -sh "$1"
     local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX" --suffix=.tar.lz4)
@@ -2063,7 +1679,6 @@ benchmark-compression-lz4 () {
     echo ""
     du -sh "$THETEMPFILE"
     time {
-        # XXXX: hope this is not optimized!
         lz4 -d "$THETEMPFILE" &>/dev/null
     }
     sleep 2
@@ -2071,7 +1686,8 @@ benchmark-compression-lz4 () {
 }
 
 benchmark-compression-lzop () {
-    # benchmark lzop compression
+    # benchmark lzop compression on a selected file or directory
+    # TODO: this isn't what is wanted for benchmarking extremely large things that might fill up the disk
     mkdir -p "$HOME/tmp"
     du -sh "$1"
     local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX" --suffix=.tar.lzop)
@@ -2081,25 +1697,6 @@ benchmark-compression-lzop () {
     echo ""
     du -sh "$THETEMPFILE"
     time {
-        # XXXX: hope this is not optimized!
-        lzop -d -c "$THETEMPFILE" >/dev/null
-    }
-    sleep 2
-    [[ -f "$THETEMPFILE" ]] && rm "$THETEMPFILE"
-}
-
-benchmark-compression-lzop-here () {
-    # benchmark lzop compression
-    du -sh "$1"
-    # TODO: share with above
-    local THETEMPFILE=$(mktemp "./tmp-benchmark-compression-XXXXXXXXXX" --suffix=.tar.lzop)
-    time {
-        tar --create --file - "$1" | lzop -6 > "$THETEMPFILE"
-    }
-    echo ""
-    du -sh "$THETEMPFILE"
-    time {
-        # XXXX: hope this is not optimized!
         lzop -d -c "$THETEMPFILE" >/dev/null
     }
     sleep 2
@@ -2107,7 +1704,8 @@ benchmark-compression-lzop-here () {
 }
 
 benchmark-compression-rzip () {
-    # benchmark rzip compression
+    # benchmark rzip compression on a selected file or directory
+    # TODO: this isn't what is wanted for benchmarking extremely large things that might fill up the disk
     mkdir -p "$HOME/tmp"
     du -sh "$1"
     local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX" --dry-run --suffix=.tar.rz)
@@ -2137,7 +1735,6 @@ benchmark-compression-rzip () {
 #     echo ""
 #     du -sh "$THETEMPFILE"
 #     time {
-#         # XXXX: hope this is not optimized away!
 #         lrzip -d "$THETEMPFILE" --outfile /dev/null
 #     }
 #     sleep 2
@@ -2145,7 +1742,8 @@ benchmark-compression-rzip () {
 # }
 
 benchmark-compression-lzip () {
-    # benchmark lzip compression
+    # benchmark lzip compression on a selected file or directory
+    # TODO: this isn't what is wanted for benchmarking extremely large things that might fill up the disk
     mkdir -p "$HOME/tmp"
     du -sh "$1"
     local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX" --suffix=.tar.lzip)
@@ -2155,7 +1753,6 @@ benchmark-compression-lzip () {
     echo ""
     du -sh "$THETEMPFILE"
     time {
-        # XXXX: hope this is not optimized away!
         lzip -d -c "$THETEMPFILE" >/dev/null
     }
     sleep 2
@@ -2163,7 +1760,8 @@ benchmark-compression-lzip () {
 }
 
 benchmark-compression-xz () {
-    # benchmark lz compression
+    # benchmark lz compression on a selected file or directory
+    # TODO: this isn't what is wanted for benchmarking extremely large things that might fill up the disk
     mkdir -p "$HOME/tmp"
     du -sh "$1"
     local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX" --suffix=.tar.xz)
@@ -2173,7 +1771,6 @@ benchmark-compression-xz () {
     echo ""
     du -sh "$THETEMPFILE"
     time {
-        # XXXX: hope this is not optimized!
         xz -d "$THETEMPFILE" >/dev/null
     }
     sleep 2
@@ -2182,7 +1779,8 @@ benchmark-compression-xz () {
 }
 
 benchmark-compression-zip () {
-    # benchmark lz compression
+    # benchmark zip compression on a selected file or directory
+    # TODO: this isn't what is wanted for benchmarking extremely large things that might fill up the disk
     mkdir -p "$HOME/tmp"
     du -sh "$1"
     local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX" --dry-run --suffix=.zip)
@@ -2192,7 +1790,6 @@ benchmark-compression-zip () {
     echo ""
     du -sh "$THETEMPFILE"
     time {
-        # XXXX: hope this is not optimized!
         unzip -p "$THETEMPFILE" >/dev/null
     }
     sleep 2
@@ -2200,7 +1797,7 @@ benchmark-compression-zip () {
 }
 
 benchmark-compression-all () {
-    # benchmark all supported compression methods
+    # benchmark all supported compression methods on a selected file or directory
     h2 "gzip"
     benchmark-compression-gzip "$1"
     h2 "bzip2"
@@ -2220,51 +1817,53 @@ benchmark-compression-all () {
 }
 
 pdftk-cat () {
+    # create pdf from alphabetically-order pdfs in current directory, using pdftk
     if [[ -z "$1" ]]; then
         echo "pdftk-cat <<pdf basename to create>>"
     else
-        # create pdf from alphabetically-order pdfs in current directory, using pdftk
+
         pdftk *.pdf cat output "$1".pdf
     fi
 }
 
 pdftk-split () {
+    # split pdf from start page to end page
     if [[ -z "$1" ]]; then
         echo "pdftk-split <<pdf filename in>> <<start page>> <<end page>>" "<<pdf filename out>>"
         echo "Use page numbering and not page naming."
     else
-        # create pdf from alphabetically-order pdfs in current directory, using pdftk
         pdftk "$1" cat "$2"-"$3" output "$4"
     fi
 }
 
 alias cdf="cd-first"
 cd-first () {
-    # go to the first matching pattern
+    # go to the first directory matching pattern
     local FIRST=$(ls --color=never -dtr1 "$1"* | head -1)
     cd "$FIRST"
 }
 alias lsf="ls-first"
 ls-first () {
-    # go to the first matching pattern
+    # ls the first directory matching pattern
     local FIRST=$(ls --color=never -dtr1 "$1"* | head -1)
     ls "$FIRST"
 }
 
 alias cdl="cd-latest"
 cd-latest () {
-    # go to the lastest matching pattern
+    # go to the lastest matching pattern based on alphabetically ordered datestamps
     local LATEST=$(ls --color=never -dtr1 "$1"* | tail -1)
     cd "$LATEST"
 }
 alias lsl="ls-latest"
 ls-latest () {
-    # go to the lastest matching pattern
+    # ls the lastest matching pattern based on alphabetically ordered datestamps
     local LATEST=$(ls --color=never -dtr1 "$1"* | tail -1)
     ls "$LATEST"
 }
 
 list-x11-displays () {
+    # list all x11 displays on the local machine
     pushd . >/dev/null
     cd /tmp/.X11-unix
     for x in X*; do
@@ -2274,7 +1873,7 @@ list-x11-displays () {
 }
 
 screen-list-all-session-commands () {
-    # based on
+    # lists all non-bah child processes running in bash
     SCREEN_SESSIONS=( $(screen -ls | grep pts | cut -f1 -d"." | sed -e 's/^[[:space:]]*//g') )
     for SCREEN_SESSION_PID in "${SCREEN_SESSIONS[@]}";do
         h2 "Screen session pid: $SCREEN_SESSION_PID"
@@ -2288,7 +1887,6 @@ screen-list-all-session-commands () {
         fi
     done
 }
-# TODO: do I want scl to always do this?
 alias scl-commands="screen-list-all-session-commands"
 
 ag-sizes () {
@@ -2296,8 +1894,8 @@ ag-sizes () {
     dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort --numeric -
 }
 
-# TODO: this is temporary, means I am forced to use sc, eventually want screen to just do this
 screen-default () {
+    # default screen command, ensures a simple 'screen' command does nothing, butit can still be run with options
     if [[ -z "$1" || ! "$1" =~ ^- ]]; then
         yell "Default screen must have options associated with it! Use sc command to start screen instead!"
         return 1
@@ -2307,6 +1905,7 @@ screen-default () {
 alias screen='screen-default'
 
 screen-name () {
+    # get the name of a screen session
     if [[ -z "$1" ]]; then
         yell "Must specify screen session name!!!"
         return 1
@@ -2318,64 +1917,55 @@ screen-name () {
 alias sc='screen-name'
 
 find-newest-modified () {
-    # find . -type f -print0 | xargs -0 stat --format '%Y :%y %n' | sort -nr | cut -d: -f2- | head
+    # find the most recently modified files
     find . -type f -print0 | xargs -0 stat --format '%Y :%y %n' | sort -nr | cut -d: -f2- | head -n 20
 }
 
 tar-to-here () {
+    # tar a file/directory to a file in current directory
     tar cvzf ./"$2".tgz "$1"
 }
 
-# https://stackoverflow.com/questions/26621647/convert-human-readable-to-bytes-in-bash
-dehumanise() {
-  for v in "$@"; do
-    echo $v | awk \
-      'BEGIN{IGNORECASE = 1}
-       function printpower(n,b,p) {printf "%u\n", n*b^p; next}
-       /[0-9]$/{print $1;next};
-       /K(iB)?$/{printpower($1,  2, 10)};
-       /M(iB)?$/{printpower($1,  2, 20)};
-       /G(iB)?$/{printpower($1,  2, 30)};
-       /T(iB)?$/{printpower($1,  2, 40)};
-       /KB$/{    printpower($1, 10,  3)};
-       /MB$/{    printpower($1, 10,  6)};
-       /GB$/{    printpower($1, 10,  9)};
-       /TB$/{    printpower($1, 10, 12)}'
-  done
-}
 
-vcs-change-remote () {
-    # no arguments just gives remotes
-    if [[ -z "$1" ]];then
-        git remote -v
-    else
-        git remote set-url "$1" "$2"
-    fi
+un-human-readable () {
+    # https://stackoverflow.com/questions/26621647/convert-human-readable-to-bytes-in-bash
+    for v in "$@"; do
+        echo $v | awk \
+          'BEGIN{IGNORECASE = 1}
+           function printpower(n,b,p) {printf "%u\n", n*b^p; next}
+           /[0-9]$/{print $1;next};
+           /K(iB)?$/{printpower($1,  2, 10)};
+           /M(iB)?$/{printpower($1,  2, 20)};
+           /G(iB)?$/{printpower($1,  2, 30)};
+           /T(iB)?$/{printpower($1,  2, 40)};
+           /KB$/{    printpower($1, 10,  3)};
+           /MB$/{    printpower($1, 10,  6)};
+           /GB$/{    printpower($1, 10,  9)};
+           /TB$/{    printpower($1, 10, 12)}'
+    done
 }
 
 WGETOKCODES="200 OK\|302 Found"
 WGETERRORCODES="301 Moved Permanently\|404 Not Found\|406 Not Acceptable\|503 Service Unavailable\|504 Gateway Time-out\|Read error\|416 Requested Range Not Satisfiable\|300 Multiple Choices\|500 Internal Server Error\|^Error\|^Retrying\|^Giving\|Data connection: Connection timed out"
 
 wget-check-log-unknown-codes () {
-    # TODO: find things that are not these, so I can start catologuing good errors
-    # TODO: see if I can identify fatal errors
+    # check a wget log for unknown error codes
     grep -Hn -- "awaiting response" "$1" | grep -v -- "$WGETOKCODES"  | grep -v -- "$WGETERRORCODES"
     # TODO: more informative return code?
     return 0
 }
 
 wget-check-log () {
-    # TODO: find things that are not these, so I can start catologuing good errors
-    # TODO: can I search in a grep function
+    # check a wget log for error codes
     h1 "Error codes"
     grep --color=always -Hn -B 2 -A 4 -- "$WGETERRORCODES" "$1"
     h1 "Unknown codes"
     wget-check-log-unknown-codes "$1"
 }
 
-als () {
-    # archive ls
-    # TODO: add help for command to use
+ls-archive () {
+    # list files in an archive
+    # TODO: add help and more suppot
     if [[ "$1" == *.tar* || "$1" == *.tgz ]]; then
         tar-ls "$1"
     elif [[ "$1" == *.zip ]]; then
@@ -2385,8 +1975,9 @@ als () {
     fi
 }
 
-# TODO: combine with above?
 tar-ls () {
+    # list files in a tar archive
+    # TODO: combine with ls-archive?
     if [[ "$1" == *.tar.gz || "$1" == *.tgz ]]; then
         tar -ztf "$1"
     else
@@ -2395,36 +1986,41 @@ tar-ls () {
 }
 
 ls-grep () {
-    # a simple function for simple searches of a directory
+    # a simple function for easily searches of a directory, one of my most used function
     ls --color=always -1 | grep --color=always -i -- "$1"
 
 }
 alias grep-ls="ls-grep"
 
 grep-less () {
+    # grep but view in less
     grep --color=always -Ri $@ | less -r
 }
 alias less-grep="grep-less"
 
 sqlite-cat () {
+    # view an sqlite3 database
     sqlite3 "$1" .dump | less
 }
 alias cat-sqlite="sqlite-cat"
 
 unzip-all () {
+    # unzip all zip files in directory into their own directory based on zipfile name
+    # TODO: add a dangerous-function-ask check?
     for F in ./*.zip; do
-        mkdir -p "${F}.d"
+        mkdir -p "$F.d"
         pushd . >/dev/null
-        cd "${F}.d"
+        cd "$F.d"
         unzip ../"$F"
         popd >/dev/null
     done
 }
 
 unzip-in-path () {
+    # unzip a zip file into its own directory
     if [[ -n "$1" ]] || [[ -f "$1" ]]; then
-        mkdir -p "${1}.d"
-        cd "${1}.d"
+        mkdir -p "$1.d"
+        cd "$1.d"
         unzip ../"$1"
     else
         yell "Does not exist or is not a file!"
@@ -2433,6 +2029,7 @@ unzip-in-path () {
 
 
 unzip-ls () {
+    # list contents of all zipfiles in path
     # TODO: check if zip is not here
     for F in ./*.zip; do
         h2 "$F"
@@ -2441,35 +2038,36 @@ unzip-ls () {
 }
 
 
-# TODO: are these enough patterns?
 grep-ri () {
+    # recursive case insensitive grep, one of my most use functions
+    # TODO: add more exclude
     grep --color=always -Ri "$@" . | grep -v "\\.git/" | less -R
 }
 
 less-highlight () {
-    # slight delay....
+    # use less and highlight using Python pygments
+    # TODO: a bit slow but looks really good
     if [[ -z "$1" ]]; then
-        echo "A filename is required for less-pyg!"
+        echo "A filename is required for less-highlight!"
     elif [[ -e "$1" ]]; then
         pygmentize -O style=native -g -f terminal256 "$1" | less --IGNORE-CASE --LONG-PROMPT --RAW-CONTROL-CHARS +Gg
     else
         echo "File $1 does does not exist!"
     fi
 }
+# one of my host used aliases
 alias lh='less-highlight'
 
 less-sh () {
-    # faster... but looks terrible by default
+    # faster than less-highlight ... but looks terrible by default
     # TODO: fix colors on this
     /usr/share/source-highlight/src-hilite-lesspipe.sh "$1" | less
 }
 
-count-nondot-files () {
-    find . -type f -not -path '*/\.*' | wc -l
-}
-
 geotiff-info () {
+    # get info of geotiff files in current directory
     for F in $@; do
+        # TODO: better pattern
         [[ "$F" =~ "tif" ]] || continue
         h2 "$F"
         gdalinfo "$F"
@@ -2477,17 +2075,22 @@ geotiff-info () {
 }
 
 check-git-repo () {
+    # check if we are currently within a valid git repository
     [[ -d .git ]] || git rev-parse --git-dir &>/dev/null
 }
 
 ag-reinstall-all () {
+    # reinstall all apt packages
     if dangerous-function-ask; then
-        sudo dpkg --get-selections > "$HOME/list.log"
-        for i in $(cat list.log); do sudo apt-get install --reinstall "$i"; done
+        sudo dpkg --get-selections | awk '{print $1}' > "/tmp/cic-dkpg-list.log"
+        for i in $(cat /tmp/cic-dkpg-list.log); do
+            sudo apt-get install --reinstall "$i"
+        done
     fi
 }
 
 ag-reinstall-dependent () {
+    # reinstall all apt packages that are dependencies of a particular package
     if [[ -n "$1" ]]; then
         if dangerous-function-ask; then
             # https://askubuntu.com/questions/275719/reinstall-package-and-its-installed-dependencies
@@ -2497,7 +2100,7 @@ ag-reinstall-dependent () {
 }
 
 check-permissions-rw () {
-    # find files I do not own
+    # find files I do not own in the current path
     h3 "Files not owned or in my group"
     find . ! -user "$USER"
     h3 "Directories I do not have sufficient privileges for"
@@ -2509,10 +2112,12 @@ check-permissions-rw () {
 }
 
 ls-sqlite-tables () {
+    # list table in an sqlite database
     sqlite3 "$1" '.tables'
 }
 
 cat-all () {
+    # cat all files in the directory
     for F in ./*; do
         h1 "$F"
         cat "$F"
@@ -2520,6 +2125,7 @@ cat-all () {
 }
 
 ask_yn () {
+    # ask a yes or no question, repeat until y or n is entered
     local YN=
     while [[ "$YN" != 'y' && "$YN" != 'n' ]]; do
         while read -r -t 0;do read -r; done
@@ -2552,22 +2158,23 @@ convert-size-to-bytes-1024 () {
 tar-bzip2-remove () {
     # this tars then bzips a directory and then removes the original directory
     # TODO: dangerous, I have some checks but needs more
-    # XXXX: it uses $HOME/tmp as temp directory because that has often more space than /tmp on my machines
+    # XXXX: this uses $HOME/tmp as temp directory because that has often more space than /tmp on my machines
     # make sure there are no errors except sockets
     # make sure source exists and destination does not
     echo "----------------------------------------"
     if [[ -n "$3" ]]; then
         echo "Too many arguments!"
+        return 1
     fi
     echo "Dangerous function! Sleeping for 10s!"
     sleep 10
     mkdir -p "$HOME/tmp"
-    if [[ ! -d "$1" ]]; then
-        echo "Directory $1 must exist!"
+    if [[ -z "$1" && ! -d "$1" ]]; then
+        echo "First argument $1 must be specificed and it must exist as a directory!"
         return 1
     fi
-    if [[ -e "$2" ]]; then
-        echo "Destination $2 must not exist!"
+    if [[ -z "$2" && -e "$2" ]]; then
+        echo "Second argument $2 must be specificed as destination and it must not exist!"
         return 1
     fi
     local INFULLPATH=$(readlink -f -- "$1")
@@ -2595,7 +2202,7 @@ tar-bzip2-remove () {
     }
     if [[ $? != 0 ]]; then
         echo "Error creating $1 while creating $THETEMPFILE!"
-        [[ -e "$THETEMPFILE" ]] && rm "$THETEMPFILE"
+        [[ -e "$THETEMPFILE" ]] && \rm "$THETEMPFILE"
         return 1
     fi
     echo "Compressing $THETEMPFILE to $2..."
@@ -2604,32 +2211,21 @@ tar-bzip2-remove () {
     }
     if [[ $? != 0 ]];then
         echo "Error during compression!"
-        [[ -e "$THETEMPFILE" ]] && rm "$THETEMPFILE"
+        [[ -e "$THETEMPFILE" ]] && \rm "$THETEMPFILE"
         return 1
     fi
-    [[ -e "$THETEMPFILE" ]] && rm "$THETEMPFILE"
+    [[ -e "$THETEMPFILE" ]] && \rm "$THETEMPFILE"
     local OUTSIZE=$(du -sh "$2")
     echo "Size reduced from $INSIZE to $OUTSIZE."
     echo "Creating $2 from $1 successful!"
     echo "Deleting $1 in 10s!"
     sleep 10
-    rm -rf "$1"
-}
-
-# https://unix.stackexchange.com/questions/17255/is-there-a-command-to-list-all-open-displays-on-a-machine
-x11-all-displays () {
-    pushd . >/dev/null
-    cd /tmp/.X11-unix
-    for x in X*; do
-        echo ":${x#X}"
-        # TODO: do a bit better with multiple ones later
-        popd >/dev/null
-        return
-    done
-    popd >/dev/null
+    # TODO: this is dangerous
+    \rm -rf "$1"
 }
 
 ssh-check-host () {
+    # check if an ssh host port 22 is alive
     if [[ -z "$1" ]];then
         return 1
     fi
@@ -2637,9 +2233,18 @@ ssh-check-host () {
 }
 
 ssh-check-host-verbose () {
+    # check if an ssh host port 22 is alive but be verbose
     if [[ -z "$1" ]];then
         warn "Must specify host!"
         return 1
     fi
     nc -z -v "$1" 22
+}
+
+ag-list-manual-alternatives () {
+    # list alternatives set manually in debian
+    # https://wiki.debian.org/DebianAlternatives
+    for i in /etc/alternatives/*; do
+        LANG=C update-alternatives --display "${i#/etc/alternatives/}"
+    done 2>/dev/null | awk '/manual.mode/{print $1}'
 }

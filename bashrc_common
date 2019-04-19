@@ -1,13 +1,13 @@
 #!/bin/bash
-# bashrc_stdlib is a bashrc file reflecting my specific settings
+# bashrc_common is a bashrc file reflecting my specific settings
 #
 # Copyright (C) 2015-2019, Andrew Kroshko, all rights reserved.
 #
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Fri Mar 27, 2015
-# Version: 20190313
-# URL: https://github.com/akroshko/bash-stdlib
+# Version: 20190419
+# URL: https://github.com/akroshko/cic-bash-common
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -47,37 +47,30 @@ export VISUAL="launch-emacsclient -nw"
 export ALTERNATE_EDITOR="launch-emacsclient -nw"
 export EDITOR="launch-emacsclient -nw"
 
-# type control-d 99 times to leave shell
 # aliases, generally spice up some already existing commands
 alias bash-debug='set -xv'
 alias bash-nodebug='set +xv'
 # stops things from overflowing /tmp if space is limited
+# TODO: this should be a function to make sure MAGICK_TEMPORARY_PATH works
 alias convert-safe='MAGICK_TEMPORARY_PATH=$HOME/tmp/imagemagick convert -limit memory 2GB -limit area 2GB -limit map 2GB'
 alias agu='sudo apt-get update && sudo apt-get dist-upgrade'
 alias agu-dry-run='sudo apt-get update && sudo apt-get dist-upgrade --dry-run'
 alias ag-autoremove='sudo apt-get autoremove'
-alias al='alias'
-# improve this
+# TODO: these can be improved and put into functions
 alias ssh-controlmaster-list='ps -elf | grep controlmaster | grep -v grep'
 alias ssh-controlmaster-kill='ssh -O exit'
 alias ssh-kill-controlmaster='ssh -O exit'
-# https://stackoverflow.com/questions/352098/how-can-i-pretty-print-json-in-a-unix-shell-script
 alias cat-json='python -m json.tool'
 alias check-mem='smem -twk'
 alias dc='aafire -driver curses -extended'
 alias df='df -h'
 alias df-all='df -aTh'
-# TODO: might break some functions, but might be other thing
 alias du='du -h'
 alias ec='launch-emacsclient nohup'
 alias ecnw='launch-emacsclient -nw'
-alias f90=gfortran
-alias f='feh-open-browse'
+alias f90='gfortran'
 alias firefox-profile-manager="firefox --ProfileManager"
 # TODO: change these, no longer relevant
-
-alias fm='feh-montage --montage'
-alias fp='feh-montage --montage'
 alias ft='feh-thumbnail'
 alias gccr='gcc-compile-run'
 alias gi='grep --color -i'
@@ -89,28 +82,20 @@ alias grep-fileonly='grep --color --files-with-matches'
 alias hrc='harm-bashrc'
 alias ifconfig='/sbin/ifconfig'
 alias ipy='ipython'
-# TODO: causes issues with ^M when viewing recorded wget output
 alias less='less --IGNORE-CASE --LONG-PROMPT --RAW-CONTROL-CHARS +Gg'
 alias less-raw='less --IGNORE-CASE --LONG-PROMPT --raw-control-chars --max-forw-scroll=999999 +Gg'
 alias ls='ls -hF --color'
 alias lspci-full='lspci -knnn'
-alias lsa='ls -la'
-# TODO: using for soemthing else for now
-# alias lsl='ls -l'
-alias lst='ls -ltr'
 alias killall-jobs='kill $(jobs -p)'
 alias lsblk='lsblk --output +fstype,tran,model,serial,uuid,label'
 alias man-find='man -k'
 alias man-scan='man -K'
 alias mupdf='mupdf-gl'
 alias mv='mv --no-clobber'
-alias na='nautilus .'
 alias netstat-pid='sudo netstat -nlpt'
 alias openbox-restart="openbox --restart"
 alias pc='cmatrix'
 alias pgtop='sudo -u postgres pg_activity -U postgres'
-alias po='popd'
-alias pu='pushd .'
 alias psql-postgres='sudo -u postgres psql'
 alias pdw='fortune | cowsay'
 alias phoronix-test-suite='time phoronix-test-suite'
@@ -126,30 +111,21 @@ alias scp-fallback='scp -o "BatchMode no" -o "ChallengeResponseAuthentication ye
 alias ssh-fallback='ssh -o "BatchMode no" -o "ChallengeResponseAuthentication yes" -o "PasswordAuthentication yes"'
 alias sftp-fallback='sftp -o "BatchMode no" -o "ChallengeResponseAuthentication yes" -o "PasswordAuthentication yes"'
 # sage
-alias sipy='sage -ipython'
-# for testing my raspberry pi
 alias svn-log-full='svn log -l 100 -v | less'
 alias sagepy='sage -python'
 alias sageipy='sage -ipython'
-# TODO: silly but I can remember these things
 alias xmodmap-ls='xmodmap -pm'
 alias ls-xmodmap='xmodmap -pm'
 alias ls-xrandr='xrandr --listmonitors;xrandr'
-alias gnuplot-test='gnuplot --persist -e "test;"'
 alias wine-desktop='wine explorer /desktop=1280x1024'
 alias wine-desktop-wide='wine explorer /desktop=1600x900'
 alias vlc-full-help='unbuffer vlc --longhelp --advanced | less-raw'
 
 ################################################################################
 ## do terminal stuff last so show-command-in-titlebar is not eating up all my time
-## TODO: fix permanently
 
 # prevent power save on virtual consoles
 # TODO: make a bit more configurable in case I ever want powersave
-# https://unix.stackexchange.com/questions/47037/how-can-my-script-know-when-im-in-a-virtual-console-vs-an-xterm
-# >&2 echo $DISPLAY
-# >&2 echo $(tty)
-# >&2 echo $TERM
 # XXXX: without this, can cause problems when "not a tty" and $TERM=dumb
 [[ -z "$DISPLAY" && $(tty) != *"not a tty"* && $(tty) == *tty* ]] && setterm -blank 0 -powersave off
 
@@ -164,8 +140,8 @@ case "$TERM" in
         else
             export PS1="\[${BPurple}\]\H $(if [[ -n $SSH_CLIENT && $TERM =~ screen ]];then echo -n '(ssh,screen) ';elif [[ -n $SSH_CLIENT ]];then echo -n '(ssh) ';elif [[ $TERM =~ screen ]];then echo -n '(screen) ';fi)\[${Purple}\]\j \[${BBLue}\]\w
 \[${Yellow}\][\!] \`exitstatus=\$?;if [[ exitstatus -eq 0 ]];then echo \[\033[32m\]\${exitstatus}\[\e[0m\];else echo \[\033[31m\]\${exitstatus}\[\e[0m\]; fi\` \[${Cyan}\]\t \[${Green}\]\u \[${BGreen}\]\$\[${Color_Off}\] "
-            # TODO: originally was "linux" to help with sage -python, but interfered with htop
-            #       seems fine with rxvt-256color because this is in both sage and debian
+            # XXXX: originally was "linux" to help with sage -python, but interfered with htop
+            #       seems fine with rxvt-256color because this is in both sage and Debian
             # export TERM=xterm-256color
             [[ $TERM == rxvt-unicode-256color ]] && export TERM=rxvt-256color
         fi
@@ -178,8 +154,6 @@ esac
 # TODO: enhance the terminals it works for including eterm
 #       do I want to do this with screen
 if [[ "$TERM" =~ linux|xterm*|rxvt* ]];then
-    # export PROMPT_COMMAND='history -a; history -n;echo -ne "\033]0;${USER}@${HOSTNAME}:${PWD}\007"'
-    # XXXX: username is unnecessary for my purposes
     SHORTPWD=$(sed -r 's|'"$HOME"'|~|g' <<< "$PWD")
     export PROMPT_COMMAND='history -a; history -n;echo -ne "\033]0;${HOSTNAME}:${SHORTPWD}\007"'
     # see http://askubuntu.com/questions/126737/make-gnome-terminal-show-the-command-running-as-title
@@ -187,14 +161,8 @@ if [[ "$TERM" =~ linux|xterm*|rxvt* ]];then
         export SHORTPWD=$(sed -r 's|'"$HOME"'|~|g' <<< "$PWD")
         case "$BASH_COMMAND" in
             *"\033]0"*)
-                # The command is trying to set the title bar as well;
-                # this is most likely the execution of $PROMPT_COMMAND.
-                # In any case nested escapes confuse the terminal, so don't
-                # output them.
                 ;;
             *)
-                # echo -ne "\033]0;${BASH_COMMAND}: ${USER}@${HOSTNAME}\007"
-                # XXXX: user is unnecessary for my purposes
                 echo -ne "\033]0;${BASH_COMMAND}: ${HOSTNAME}\007"
                 ;;
         esac
@@ -212,6 +180,8 @@ export HISTFILESIZE=65536
 shopt -s autocd extglob histappend
 # stop too convenient exiting
 # TODO: make higher or lower?
-export IGNOREEOF=3
+export IGNOREEOF=99
 shopt -s expand_aliases
 force_color_prompt=yes
+# this allows C-s to be useful ina  terminal
+[[ $- == *i* ]] && stty -ixon

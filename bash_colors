@@ -1,6 +1,5 @@
-# XXXX: is it likely this may clobber other things in the namespace?
 # Reset
-Color_Off='\033[0m'       # Text Reset
+Color_Off='\033[0m'     # Text Reset
 # Regular Colors
 Black='\e[0;30m'        # Black
 Red='\e[0;31m'          # Red

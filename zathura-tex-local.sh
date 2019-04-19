@@ -1,4 +1,6 @@
 #!/bin/bash
+# this function is used when calling zathura from AucTeX in Emacs
+
 main () {
     DOCUMENTMASTER="$1"
     zathura "$@"

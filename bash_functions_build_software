@@ -1,13 +1,13 @@
 #!/bin/bash
-# bash_functions_build_software contains functions for compiling some common software packages
+# bash_functions_build_software contains functions for compiling some select software packages
 #
 # Copyright (C) 2015-2019, Andrew Kroshko, all rights reserved.
 #
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Wed Sep 19, 2018
-# Version: 20190313
-# URL: https://github.com/akroshko/bash-stdlib
+# Version: 20190408
+# URL: https://github.com/akroshko/cic-bash-common
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,19 +21,20 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see http://www.gnu.org/licenses/.
-
-# WARNING: most of this code has not been rigorously tested or
-# verified, use at own risk if working with important data or in
-# production settings
+#
+# The software packages are generally ones that are unavailable in Debian or ones
+# that I wish to compile myself.
 
 build-software () {
+    # this is my general command for building software that is unavailable or a
+    # different version than the curren Debian
+
     # assumes I'm in directory with appropriate subdirectories
-    # TODO: compile against downloaded poppler
     sudo true || { echo "Failed to sudo!"; return 1; }
     # at least for now, download and build a few select pieces of software
-    # TODO: evantually make this the only one
     [[ ! -d "$HOME/cic-external-vcs" ]] && mkdir -p "$HOME/cic-external-vcs"
     pushd . >/dev/null
+    # this is the directory with appropriate subdirectories
     cd "$HOME/cic-external-vcs"
     # TODO: update this as something better and potentially less destructive
     [[ ! -d "$HOME/cic-external-vcs/conkeror-external" ]]             && git clone git://repo.or.cz/conkeror.git                     conkeror-external
@@ -47,43 +48,35 @@ build-software () {
     [[ ! -d "$HOME/cic-external-vcs/zathura-pdf-mupdf-external" ]]    && git clone https://git.pwmt.org/pwmt/zathura-pdf-mupdf.git   zathura-pdf-mupdf-external
     [[ ! -d "$HOME/cic-external-vcs/zathura-ps-external" ]]           && git clone https://git.pwmt.org/pwmt/zathura-ps.git          zathura-ps-external
     # now build, copied from build-software, and should be synced up
-    h2 "pip"
-    # TODO: upgrade pip automatically?
-    curl https://bootstrap.pypa.io/get-pip.py | sudo python
-    sudo apt-get install --reinstall python3-pip
-    sudo pip3 install meson
+    build-software-pip
+    # skip my non-graphical server for now
+    # TODO: something more robust? check if some X11 libraries exist or not
+    if [[ "$HOSTNAME" == *server* ]]; then
+        warn "This is a computer without X11 and can't build any further without working X11 installation!"
+        return 0
+    fi
     h2 "wayback downloader"
     sudo gem install wayback_machine_downloader
     build-software-feh
     build-software-mupdf
+    # TODO: compile against downloaded poppler
     build-software-xpdf
     build-software-zathura
     popd >/dev/null
 }
 
-build-software-games () {
-    sudo true || { echo "Failed to sudo!"; return 1; }
-    [[ ! -d "$HOME/cic-external-vcs" ]] && mkdir -p "$HOME/cic-external-vcs"
-    cd "$HOME/cic-external-vcs"
-    [[ ! -d "$HOME/cic-external-vcs/desmume-external/" ]]      && git clone https://github.com/TASVideos/desmume/ desmume-external
-    [[ ! -d "$HOME/cic-external-vcs/PCSX-Reloaded-external" ]] && git clone https://github.com/SonofUgly/PCSX-Reloaded        PCSX-Reloaded-external
-    [[ ! -d "$HOME/cic-external-vcs/ppsspp-source-external" ]] && git clone https://github.com/hrydgard/ppsspp    ppsspp-source-external
-    build-software-desmume
-    build-software-dolphin
-    build-software-pcsx-reloaded
-    # TODO: dummy for now
-    build-software-ppsspp
-    build-software-mgba
-    # TODO: broken, but I love this one, seems to need patches provided with debian
-    # build-software-zsnes
-    # TODO: add dolphin
-    # these tend to be much larger to compile and build then utilties
-    true
+build-software-pip () {
+    # This command install the latest version of pip as well as the meson build
+    # tool that is used by an increasing number of packages
+    h2 "pip"
+    curl https://bootstrap.pypa.io/get-pip.py | sudo python
+    curl https://bootstrap.pypa.io/get-pip.py | sudo python3
+    # basic build tool use by more and more things
+    sudo /usr/local/bin/pip3 install meson
 }
 
 build-software-zathura () {
-    # TODO: use some better versions than these giant hashes....
-    #       have checks to make sure branches don't hang around
+    # TODO: more robust specification of different versions and have checks to make sure branches don't hang around
     ################################################################################
     h2 "girara"
     [[ ! -d "girara-external" ]] && { yell "Directory girara-external not found!"; return 1; }
@@ -91,21 +84,18 @@ build-software-zathura () {
     pushd . >/dev/null
     cd girara-external
     check-host-main && git pull
-    # TODO: this needs to be checked, check if branch develop already exists
-    git checkout --track -b develop origin/develop
-    # TODO: temporary until I upgrade debian
-    # 0.2.7 release, last version my zathura will work with
-    # git checkout fe7e9194e2005a263e77c132afb3b3ef13b2aefe
-    # make clean
-    # make
-    # sudo make install
-    [[ -d ./build ]] && rm -rf ./build
+    if git rev-parse --verify develop >/dev/null; then
+        git checkout develop
+    else
+        git checkout --track -b develop origin/develop
+    fi
+    [[ -d ./build ]] && \rm -rf ./build
     meson build
     cd build
     ninja
     sudo ninja install
     cd ..
-    [[ -d ./build ]] && rm -rf ./build
+    [[ -d ./build ]] && \rm -rf ./build
     popd >/dev/null
     ################################################################################
     h2 "zathura"
@@ -113,66 +103,63 @@ build-software-zathura () {
     pushd . >/dev/null
     cd zathura-external
     check-host-main && git pull
-    git checkout --track -b develop origin/develop
-    # TODO: temporary until I upgrade debian
-    #       last version supporting girara 0.2.7
-    # git checkout cd8931cb14a89a3558d6bbbc3f9bfbe972d713dd
-    # make clean
-    # make
-    # sudo make install
-    [[ -d ./build ]] && rm -rf ./build
+    if git rev-parse --verify develop >/dev/null; then
+        git checkout develop
+    else
+        git checkout --track -b develop origin/develop
+    fi
+    # TODO: temporary until I upgrade debian, Debian's synctex version not new enough
+    # this branch is from April 5th 2018, so other ones can be adjusted accordingly if they cease working
+    git checkout acf9a3bcc160492d389e77ac8a74a43aa0151503
+    [[ -d ./build ]] && \rm -rf ./build
     meson build
     cd build
     ninja
     sudo ninja install
     cd ..
-    [[ -d ./build ]] && rm -rf ./build
+    [[ -d ./build ]] && \rm -rf ./build
     popd >/dev/null
     ################################################################################
     h2 "zathura-poppler"
-    # XXXX: a nasty hack
     # TODO: do I still need this
     # sudo cp /usr/lib/pkgconfig/girara-gtk3.pc /usr/lib/pkgconfig/girara-gtk.pc
     pushd . >/dev/null
     [[ ! -d "zathura-pdf-poppler-external" ]] && yell "Directory zathura-pdf-poppler-external not found!" && return 1
     cd zathura-pdf-poppler-external
     check-host-main && git pull
-    git checkout --track -b develop origin/develop
-    # TODO: temporary until I upgrade debian
-    # git checkout ced9b3cfb0d7440a6a049f200a2f419ce09abe1e
-    # make clean
-    # make
-    # sudo make install
-    [[ -d ./build ]] && rm -rf ./build
+    if git rev-parse --verify develop >/dev/null; then
+        git checkout develop
+    else
+        git checkout --track -b develop origin/develop
+    fi
+    [[ -d ./build ]] && \rm -rf ./build
     meson build
     cd build
     ninja
     sudo ninja install
     cd ..
-    [[ -d ./build ]] && rm -rf ./build
+    [[ -d ./build ]] && \rm -rf ./build
     popd >/dev/null
     ################################################################################
     h2 "zathura-mupdf"
-    # XXXX: a nasty hack
     # TODO: do I still need this
     # sudo cp /usr/lib/pkgconfig/girara-gtk3.pc /usr/lib/pkgconfig/girara-gtk.pc
     pushd . >/dev/null
     [[ ! -d "zathura-pdf-mupdf-external" ]] && yell "Directory zathura-pdf-mupdf-external not found!" && return 1
     cd zathura-pdf-mupdf-external
     check-host-main && git pull
-    git checkout --track -b develop origin/develop
-    # TODO: temporary until I upgrade debian
-    # git checkout ced9b3cfb0d7440a6a049f200a2f419ce09abe1e
-    # make clean
-    # make
-    # sudo make install
-    [[ -d ./build ]] && rm -rf ./build
+    if git rev-parse --verify develop >/dev/null; then
+        git checkout develop
+    else
+        git checkout --track -b develop origin/develop
+    fi
+    [[ -d ./build ]] && \rm -rf ./build
     meson build
     cd build
     ninja
-    # sudo ninja install
+    sudo ninja install
     cd ..
-    [[ -d ./build ]] && rm -rf ./build
+    [[ -d ./build ]] && \rm -rf ./build
     popd >/dev/null
     ################################################################################
     h2 "zathura-djvu"
@@ -180,36 +167,37 @@ build-software-zathura () {
     pushd . >/dev/null
     cd zathura-djvu-external
     check-host-main && git pull
-    git checkout --track -b develop origin/develop
-    # TODO: temporary until I upgrade debian
-    # git checkout e4a9ec93e2a4ff68255a38ff327179241fb69ebe
-    # make clean
-    # make
-    # sudo make install
-    [[ -d ./build ]] && rm -rf ./build
+    if git rev-parse --verify develop >/dev/null; then
+        git checkout develop
+    else
+        git checkout --track -b develop origin/develop
+    fi
+    [[ -d ./build ]] && \rm -rf ./build
     meson build
     cd build
     ninja
     sudo ninja install
     cd ..
-    [[ -d ./build ]] && rm -rf ./build
+    [[ -d ./build ]] && \rm -rf ./build
     popd >/dev/null
     ################################################################################
     h2 "zathura-cb"
     [[ ! -d "zathura-cb-external" ]] && yell "Directory zathura-cb-external not found!" && return 1
     pushd . >/dev/null
     cd zathura-cb-external
+    if git rev-parse --verify develop >/dev/null; then
+        git checkout develop
+    else
+        git checkout --track -b develop origin/develop
+    fi
     check-host-main && git pull
-    git checkout --track -b develop origin/develop
-    # TODO: temporary until I upgrade debian
-    # git checkout 21fa0f4d8da39ed9be449400d2147b876b739f56
-    [[ -d ./build ]] && rm -rf ./build
+    [[ -d ./build ]] && \rm -rf ./build
     meson build
     cd build
     ninja
     sudo ninja install
     cd ..
-    [[ -d ./build ]] && rm -rf ./build
+    [[ -d ./build ]] && \rm -rf ./build
     popd >/dev/null
     ################################################################################
     h2 "zathura-ps"
@@ -217,50 +205,51 @@ build-software-zathura () {
     pushd . >/dev/null
     cd zathura-ps-external
     check-host-main && git pull
-    git checkout --track -b develop origin/develop
-    # TODO: temporary until I upgrade debian
-    # git checkout 91a22c4d44eabfca37f0c4488c4b2d18cab3ddb
-    [[ -d ./build ]] && rm -rf ./build
+    if git rev-parse --verify develop >/dev/null; then
+        git checkout develop
+    else
+        git checkout --track -b develop origin/develop
+    fi
+    [[ -d ./build ]] && \rm -rf ./build
     meson build
     cd build
     ninja
     sudo ninja install
     cd ..
-    [[ -d ./build ]] && rm -rf ./build
+    [[ -d ./build ]] && \rm -rf ./build
     popd >/dev/null
 }
 
 build-software-xpdf () {
-    # do xpdf, but not on all machines
-    if check-host-main || check-host-laptop;then
-        h2 "xpdf"
-        [[ ! -d "xpdf-3.04-external" ]] && yell "Directory xpdf-3.04-external not found!" && return 1
-        sudo true || { echo "Failed to sudo!"; return 1; }
-        pushd . >/dev/null
-        cd xpdf-3.04-external
-        # these work on debian 8.x
-        make clean
-        ./configure --with-freetype2-library=/usr/lib/x86_64-linux-gnu \
-                    --with-freetype2-includes=/usr/include/freetype2 \
-                    --with-libpng-library=/usr/lib/x86_64-linux-gnu \
-                    --with-libpng-includes=/usr/lib/libpng \
-                    --with-Xm-library=/usr/lib \
-                    --with-Xm-includes=/usr/include/Xm
-        make
-        sudo make install
-        popd >/dev/null
-    fi
+    # build and installs xpdf
+    h2 "xpdf"
+    [[ ! -d "xpdf-3.04-external" ]] && yell "Directory xpdf-3.04-external not found!" && return 1
+    sudo true || { echo "Failed to sudo!"; return 1; }
+    pushd . >/dev/null
+    cd xpdf-3.04-external
+    make clean
+    ./configure --with-freetype2-library=/usr/lib/x86_64-linux-gnu \
+                --with-freetype2-includes=/usr/include/freetype2 \
+                --with-libpng-library=/usr/lib/x86_64-linux-gnu \
+                --with-libpng-includes=/usr/lib/libpng \
+                --with-Xm-library=/usr/lib \
+                --with-Xm-includes=/usr/include/Xm
+    make
+    sudo make install
+    popd >/dev/null
 }
 
 build-software-mupdf () {
+    # builds and installs mupdf
     h2 "mupdf"
     [[ ! -d "mupdf-external" ]] && yell "Directory mupdf-external not found!" && return 1
     sudo true || { echo "Failed to sudo!"; return 1; }
     pushd . >/dev/null
     cd mupdf-external
     make clean
+    [[ -d "thirdparty" ]] && \rm -rf thirdparty
+    make clean
     check-host-main && git pull
-    # rm -rf thirdparty
     git submodule update --init
     # seems to be necessary for this one
     make prefix=/usr/local
@@ -269,8 +258,8 @@ build-software-mupdf () {
     popd >/dev/null
 }
 
-# TODO: will do with more, but for now I build feh on its own a lot
 build-software-feh () {
+    # builds and installs the feh image viewer
     h2 "feh"
     [[ ! -d "feh-external" ]] && yell "Directory feh-external not found!" && return 1
     sudo true || { echo "Failed to sudo!"; return 1; }
@@ -284,107 +273,8 @@ build-software-feh () {
     popd >/dev/null
 }
 
-build-software-desmume () {
-    time {
-        h2 "desmume"
-        [[ ! -d "desmume-external" ]] && yell "Directory desmume-external not found!" && return 1
-        sudo true || { echo "Failed to sudo!"; return 1; }
-        pushd . >/dev/null
-        cd desmume-external
-        check-host-main && git pull
-        cd desmume/src/frontend/posix
-        ./autogen.sh
-        ./configure
-        make
-        popd >/dev/null
-    }
-}
-
-build-software-mgba () {
-    time {
-        h2 "mgba"
-        [[ ! -d "mgba-external" ]] && yell "Directory mgba-external not found!" && return 1
-        sudo true || { echo "Failed to sudo!"; return 1; }
-        pushd . >/dev/null
-        cd mgba-external
-        check-host-main && git pull
-        mkdir -p build
-        cd build
-        make clean
-        cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/local ..
-        make
-        sudo make install
-        popd >/dev/null
-    }
-}
-
-build-software-pcsx-reloaded () {
-    time {
-        # PCSX-Reloaded
-        # TODO: check out as well
-        h2 "PCSX-Reloaded"
-        [[ ! -d "PCSX-Reloaded-external" ]] && yell "Directory PCSX-Reloaded-external not found!" && return 1
-        sudo true || { echo "Failed to sudo!"; return 1; }
-        pushd . >/dev/null
-        cd PCSX-Reloaded-external
-        check-host-main && git pull
-        make clean
-        bash ./autogen.sh
-        # TODO: broken on my machines
-        # ./configure --enable-opengl
-        ./configure
-        make
-        sudo make install
-        popd >/dev/null
-    }
-}
-
-build-software-ppsspp () {
-    time {
-        h2 "ppsspp (empty)"
-        [[ ! -d "ppsspp-source-external" ]] && yell "Directory ppsspp-source-external not found!" && return 1
-        sudo true || { echo "Failed to sudo!"; return 1; }
-        pushd . >/dev/null
-        cd ppsspp-source-external
-        check-host-main && git pull
-        popd >/dev/null
-    }
-}
-
-build-software-dolphin-emu () {
-    time {
-        h2 "dolphin"
-        [[ ! -d "dolphin-emu-external" ]] && yell "Directory dolphin-emu-external not found!" && return 1
-        cd dolphin-emu-external
-        # XXXX: last version that supports QT 5.7
-        git checkout b94262ec33b4266fbff31c18cffcedf8c83929d2
-        # TODO: delete build first?
-        local DOLPHINDIR=$(readlink -f -- "$PWD")
-        [[ -d "$HOME/tmp/dolphin-build" ]] && rm -r "$HOME/tmp/dolphin-build"
-        mkdir -p "$HOME/tmp/dolphin-build"
-        cd "$HOME/tmp/dolphin-build"
-        # TODO: set up to /usr/local explicitly, other explicit options?
-        cmake "$DOLPHINDIR" -DENABLE_LTO=ON
-        make
-    }
-}
-
-build-software-zsnes () {
-    # TODO: broken, just use debian package
-    h2 "zsnes"
-    [[ ! -d "zsnes-external" ]] && yell "Directory zsnes-external not found!" && return 1
-    sudo true || { echo "Failed to sudo!"; return 1; }
-    pushd . >/dev/null
-    cd zsnes-external
-    check-host-main && git pull
-    cd src
-    ./configure
-    make
-    sudo make -install
-    popd >/dev/null
-}
-
 build-software-dockapps () {
+    # builds and dockapps for X11
     pushd . >/dev/null
     cd "$HOME/cic-external-vcs/"
     # need proper version of dockapps and wmgeneral built
@@ -405,9 +295,9 @@ build-software-dockapps () {
     h2 "pywmdockapps"
     pushd . >/dev/null
     cd pywmdockapps-external/pywmdockapps-1.21
-    [[ -d ./build ]] && sudo rm -rf ./build
+    [[ -d ./build ]] && sudo \rm -rf ./build
     sudo python ./setup.py install
-    [[ -d ./build ]] && sudo rm -rf ./build
+    [[ -d ./build ]] && sudo \rm -rf ./build
     popd >/dev/null
     h2 "wmtimer"
     pushd . >/dev/null

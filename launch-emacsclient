@@ -7,8 +7,8 @@
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Sun Sep 20, 2015
-# Version: 20190313
-# URL: https://github.com/akroshko/bash-stdlib
+# Version: 20190411
+# URL: https://github.com/akroshko/cic-bash-common
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,60 +24,55 @@
 # along with this program. If not, see http://www.gnu.org/licenses/.
 
 # check if the Emacs server is running, if not start the server
-# see http://www.emacswiki.org/emacs/EmacsClient
+# see http://www.emacswiki.org/emacs/EmacsClient, although this is outdated
 
-# TODO: can remove some redundancy
-firstarg=$1
-# start emacs deamon if not already started
+# start emacs daemon if not already started
 # XXXX: avoid starting daemon if computer is configured with systemd service
 # TODO: better way to do this
 if ! [[ -e "$HOME/.config/systemd/user/emacs.service" ]] && ! ps -ef | grep '[e]macs --daemon' >/dev/null; then
     emacs --daemon --no-init-file --load "$HOME/.emacs-cic.el"
     sleep 15
 fi
-# get emacsclient command based on nice value
+# set up emacsclient command based on nice value
 if [[ $(ulimit -e) -gt "29" ]]; then
     EMACSCLIENT="nice --adjustment=-10 emacsclient"
 else
     EMACSCLIENT="emacsclient"
 fi
-case $firstarg in
+case $1 in
     batch )
         shift
         ;;
     capture )
         shift
         # check if the server is running, if not start the server
-        # TODO: change name...
         if ! ps -ef | grep '[e]macs --daemon' >/dev/null; then
             $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" --create-frame --eval "(make-frame '((name . \"capture\") (top . 40) (left . 40) (width . 200) (height . 60)))" --eval "(select-frame-by-name \"capture\")" "$@"
         else
-            # TODO: why does this seem to be creating a frame anyways?
             exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"           --eval "(make-frame '((name . \"capture\") (top . 40) (left . 40) (width . 200) (height . 60)))" --eval "(select-frame-by-name \"capture\")" "$@"
         fi
         ;;
-    # similar to capture but with different name, decide have "maximized" as frame name, decide if I really want to do this or if it's useful
+    # similar to capture but with different name
+    # TODO: decide have "maximized" as frame name, decide if I really want to do this or if it's useful?
     maximized )
         shift
         # check if the server is running, if not start the server
         if ! ps -ef | grep '[e]macs --daemon' >/dev/null; then
             exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" --create-frame --eval "(make-frame '((name . \"*maximized*\") (top . 40) (left . 40) (width . 200) (height . 60) (user-position . t)))" --eval "(select-frame-by-name \"*maximized*\")" "$@"
         else
-            # TODO: why does this seem to be creating a frame anyways?
             exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --eval "(make-frame '((name . \"*maximized*\") (top . 40) (left . 40) (width . 200) (height . 60) (user-position . t)))" --eval "(select-frame-by-name \"*maximized*\")" "$@"
         fi
         ;;
 
-    # similar to capture but with different name, decide have "*transient*" as frame name, decide if I really want to do this?
+    # similar to capture but with different name
+    # TODO: decide have "*transient*" as frame name, decide if I really want to do this?
     # TODO: figure out size from window
-    # TODO: more custom names...
     transient )
         shift
         # check if the server is running, if not start the server
         if ! ps -ef | grep '[e]macs --daemon' >/dev/null; then
             exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" --create-frame --eval "(make-frame '((name . \"*transient*\") (top . 40) (left . 40)   (width . 120) (height . 60) (user-position . t) (user-size . t)))" --eval "(select-frame-by-name \"*transient*\")" "$@"
         else
-            # TODO: why does this seem to be creating a frame anyways?
             exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --eval "(make-frame '((name . \"*transient*\") (top . 40) (left . 1320) (width . 120) (height . 60) (user-position . t) (user-size . t)))" --eval "(select-frame-by-name \"*transient*\")" "$@"
         fi
         ;;
@@ -105,7 +100,6 @@ case $firstarg in
             if [[ $? = "1" ]]; then
                 exec $EMACSCLIENT --create-frame --no-wait --alternate-editor="launch-emacsclient-fail.sh" "$@"
             else
-                # TODO: why does this seem to be creating a frame anyways?
                 exec $EMACSCLIENT                --no-wait --alternate-editor="launch-emacsclient-fail.sh" "$@"
             fi
         fi
@@ -124,9 +118,7 @@ case $firstarg in
         exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" --create-frame "$@"
         ;;
 esac
-# TODO: might want to make sure these work without server?
-# TODO do I want to make zile, mg, or another terminal Emacs version the EDITOR?
-# TODO possibly check display variable?
+# TODO: do I need these here and do they affect anything?
 export EDITOR="launch-emacsclient -nw"
 export ALTERNATE_EDITOR="launch-emacsclient -nw"
 export VISUAL="launch-emacsclient -nw"
