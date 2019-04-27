@@ -837,6 +837,8 @@ vcs-push-github () {
     fi
     # TODO: is this safe?
     git -c color.ui=always merge --squash -X theirs master --stat --allow-unrelated-histories
+    # TODO: showing files that are different, add this
+    # git -c color.ui=always diff public..master --name-status
     local COMMITCORRECT=n
     while [[ "$COMMITCORRECT" != "y" ]]; do
         while read -r -t 0;do read -r; done
