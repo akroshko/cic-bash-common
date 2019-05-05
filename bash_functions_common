@@ -706,6 +706,10 @@ vcs-check-root-pull-all () {
             pushd . >/dev/null
             cd "$dirname"
             git pull --ff-only
+            # restore any deleted files
+            # TODO: is this safest? only want to run it in places I am cloning "read-only"
+            # TODO: may want to reset hard...
+            git checkout .
             popd >/dev/null
         elif [[ -d "$dirname/.hg" ]]; then
             h1 "Pulling $dirname/.hg"
