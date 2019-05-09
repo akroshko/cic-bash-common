@@ -47,9 +47,9 @@ case $1 in
         shift
         # check if the server is running, if not start the server
         if ! ps -ef | grep '[e]macs --daemon' >/dev/null; then
-            exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" --create-frame --eval "(make-frame '((name . \"capture\") (top . 40) (left . 40) (width . 200) (height . 60)))" --eval "(select-frame-by-name \"capture\")" "$@"
+            exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" --create-frame --eval "(make-frame '((name . \"capture\") (fullscreen . maximized)  (user-position . t) (user-size . t)))" --eval "(select-frame-by-name \"capture\")" "$@"
         else
-            exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --eval "(make-frame '((name . \"capture\") (top . 40) (left . 40) (width . 200) (height . 60)))" --eval "(select-frame-by-name \"capture\")" "$@"
+            exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --eval "(make-frame '((name . \"capture\") (fullscreen . maximized)  (user-position . t) (user-size . t)))" --eval "(select-frame-by-name \"capture\")" "$@"
         fi
         ;;
     # similar to capture but with different name
@@ -71,9 +71,9 @@ case $1 in
         shift
         # check if the server is running, if not start the server
         if ! ps -ef | grep '[e]macs --daemon' >/dev/null; then
-            exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" --create-frame --eval "(make-frame '((name . \"*transient*\") (top . 40) (left . 40)   (width . 120) (height . 60) (user-position . t) (user-size . t)))" --eval "(select-frame-by-name \"*transient*\")" "$@"
+            exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" --create-frame --eval "(make-frame '((name . \"*transient*\") (fullscreen . maximized)  (user-position . t) (user-size . t)))" --eval "(select-frame-by-name \"*transient*\")" "$@"
         else
-            exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --eval "(make-frame '((name . \"*transient*\") (top . 40) (left . 40) (width . 120) (height . 60) (user-position . t) (user-size . t)))" --eval "(select-frame-by-name \"*transient*\")" "$@"
+            exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --eval "(make-frame '((name . \"*transient*\") (fullscreen . maximized)  (user-position . t) (user-size . t)))" --eval "(select-frame-by-name \"*transient*\")" "$@"
         fi
         ;;
     # no frame,
@@ -98,9 +98,9 @@ case $1 in
         else
             emacsclient --no-wait --eval "(if (> (length (frame-list)) 1) 't)" | grep t
             if [[ $? = "1" ]]; then
-                exec $EMACSCLIENT --create-frame --no-wait --alternate-editor="launch-emacsclient-fail.sh" "$@"
+                exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" --create-frame --no-wait "$@"
             else
-                exec $EMACSCLIENT                --no-wait --alternate-editor="launch-emacsclient-fail.sh" "$@"
+                exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --no-wait "$@"
             fi
         fi
         ;;
