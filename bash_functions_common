@@ -493,9 +493,14 @@ du-sort () {
 du-sort-cumulative () {
     # get cumulative sum of sizes using du by sorting smallest to largest
     # get normal du output, not as slow to do it twice because caching
-    local DUOUTPUT=$(du-sort)
-    # sort by size after using du
-    local DUSORT=$(\du --summarize -Bk -- * 2>/dev/null | sort --human-numeric-sort)
+    # sort by size after using du, any argument gives dotfiles
+    if [[ -z "$1" ]]; then
+        local DUOUTPUT=$(du-sort)
+        local DUSORT=$(\du --summarize -Bk -- *      2>/dev/null | sort --human-numeric-sort)
+    else
+        local DUOUTPUT=$(du-sort-dotfiles)
+        local DUSORT=$(\du --summarize -Bk -- .[^.]* 2>/dev/null | sort --human-numeric-sort)
+    fi
     # echo "$DUSORT"
     local TOTALLINES=$(wc -l <<< "$DUSORT")
     local DUSORTCUMULATIVE=""
@@ -1882,7 +1887,7 @@ alias ls-x11-displays='x11-list-displays'
 screen-list-all-session-commands () {
     # lists all non-bah child processes running in bash
     SCREEN_SESSIONS=( $(screen -ls | grep pts | cut -f1 -d"." | sed -e 's/^[[:space:]]*//g') )
-    for SCREEN_SESSION_PID in "${SCREEN_SESSIONS[@]}";do
+    for SCREEN_SESSION_PID in ${SCREEN_SESSIONS[@]};do
         h2 "Screen session pid: $SCREEN_SESSION_PID"
         screen -ls "$SCREEN_SESSION_PID"
         # TODO: will all screens have bash base

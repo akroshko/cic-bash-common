@@ -26,7 +26,7 @@
 ################################################################################
 ## set interesting things for bashrc, should these be here or a seperate file?
 # XXXX: is it likely this may clobber other things in the namespace?
-source "$HOME/.bash_library.d/bash_colors"
+source "$HOME/.bash_env.d/bash_colors"
 
 # set up colors in less
 # https://wiki.archlinux.org/index.php/Color_output_in_console#less

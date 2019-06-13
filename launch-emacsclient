@@ -29,9 +29,11 @@
 # start emacs daemon if not already started
 # XXXX: avoid starting daemon if computer is configured with systemd service
 # TODO: better way to do this
-if ! [[ -e "$HOME/.config/systemd/user/emacs.service" ]] && ! ps -ef | grep '[e]macs --daemon' >/dev/null; then
+# if ! [[ -e "$HOME/.config/systemd/user/emacs.service" ]] && ! ps -ef | grep '[e]macs --daemon' >/dev/null; then
+if ! ps -ef | grep '[e]macs --daemon' >/dev/null; then
+    notify-send 'launching emacs --daemon!!!' -t 5000
     emacs --daemon --no-init-file --load "$HOME/.emacs-cic.el"
-    sleep 15
+    sleep 3
 fi
 # set up emacsclient command based on nice value
 if [[ $(ulimit -e) -gt "29" ]]; then
