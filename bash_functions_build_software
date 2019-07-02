@@ -218,6 +218,8 @@ build-software-zathura () {
     cd ..
     [[ -d ./build ]] && \rm -rf ./build
     popd >/dev/null
+    # because I've had issues with libraries installed until I run this
+    sudo ldconfig
 }
 
 build-software-xpdf () {
