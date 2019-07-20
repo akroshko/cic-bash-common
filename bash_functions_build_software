@@ -48,7 +48,11 @@ build-software () {
     [[ ! -d "$HOME/cic-external-vcs/zathura-pdf-mupdf-external" ]]    && git clone https://git.pwmt.org/pwmt/zathura-pdf-mupdf.git   zathura-pdf-mupdf-external
     [[ ! -d "$HOME/cic-external-vcs/zathura-ps-external" ]]           && git clone https://git.pwmt.org/pwmt/zathura-ps.git          zathura-ps-external
     # now build, copied from build-software, and should be synced up
-    build-software-pip
+    h2 "pip"
+    curl https://bootstrap.pypa.io/get-pip.py | sudo python
+    curl https://bootstrap.pypa.io/get-pip.py | sudo python3
+    # basic build tool use by more and more things
+    sudo /usr/local/bin/pip3 install meson
     # skip my non-graphical server for now
     # TODO: something more robust? check if some X11 libraries exist or not
     if [[ "$HOSTNAME" == *server* ]]; then
@@ -63,16 +67,6 @@ build-software () {
     build-software-xpdf
     build-software-zathura
     popd >/dev/null
-}
-
-build-software-pip () {
-    # This command install the latest version of pip as well as the meson build
-    # tool that is used by an increasing number of packages
-    h2 "pip"
-    curl https://bootstrap.pypa.io/get-pip.py | sudo python
-    curl https://bootstrap.pypa.io/get-pip.py | sudo python3
-    # basic build tool use by more and more things
-    sudo /usr/local/bin/pip3 install meson
 }
 
 build-software-zathura () {

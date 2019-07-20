@@ -1507,7 +1507,7 @@ rsync-remove-source () {
         msg "Incoming from $1"
         local BACKUPDIR="rsync-backups-$1-$(date-time-stamp)"
         rsync --progress --archive --checksum --backup --backup-dir="$BACKUPDIR" --rsh='ssh' --remove-source-files "$1:$2/" .
-        # will cause error if there are backups
+        # will cause error if there are no backups
         rmdir --ignore-fail-on-non-empty "$BACKUPDIR"
     else
         warn "Hostname $1 not found!"
