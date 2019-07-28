@@ -7,7 +7,7 @@
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Sun Sep 20, 2015
-# Version: 20190508
+# Version: 20190728
 # URL: https://github.com/akroshko/cic-bash-common
 #
 # This program is free software: you can redistribute it and/or modify
@@ -41,6 +41,10 @@ if [[ $(ulimit -e) -gt "29" ]]; then
 else
     EMACSCLIENT="emacsclient"
 fi
+if ! ps -ef | grep '[e]macs --daemon' >/dev/null; then
+    echo "Emacs daemon failed to run!"
+    return 1
+fi
 case $1 in
     batch )
         shift
@@ -48,22 +52,16 @@ case $1 in
     capture )
         shift
         # check if the server is running, if not start the server
-        if ! ps -ef | grep '[e]macs --daemon' >/dev/null; then
-            exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" --create-frame --eval "(make-frame '((name . \"capture\") (fullscreen . maximized)  (user-position . t) (user-size . t)))" --eval "(select-frame-by-name \"capture\")" "$@"
-        else
-            exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --eval "(make-frame '((name . \"capture\") (fullscreen . maximized)  (user-position . t) (user-size . t)))" --eval "(select-frame-by-name \"capture\")" "$@"
-        fi
+        # XXXX: select-frame-by-name does not work all the time but the let statement does
+        exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --eval "(let ((the-new-frame (make-frame '((name . \"*capture*\") (fullscreen . maximized)  (user-position . t) (user-size . t) (window-system . x))))) (select-frame the-new-frame))" "$@"
         ;;
     # similar to capture but with different name
     # TODO: decide have "maximized" as frame name, decide if I really want to do this or if it's useful?
     maximized )
         shift
         # check if the server is running, if not start the server
-        if ! ps -ef | grep '[e]macs --daemon' >/dev/null; then
-            exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" --create-frame --eval "(make-frame '((name . \"*maximized*\") (fullscreen . maximized)  (user-position . t) (user-size . t)))" --eval "(select-frame-by-name \"*maximized*\")" "$@"
-        else
-            exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --eval "(make-frame '((name . \"*maximized*\") (fullscreen . maximized)  (user-position . t) (user-size . t)))" --eval "(select-frame-by-name \"*maximized*\")" "$@"
-        fi
+        # XXXX: select-frame-by-name does not work all the time but the let statement does
+        exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --eval "(let ((the-new-frame (make-frame '((name . \"*maximized*\") (fullscreen . maximized)  (user-position . t) (user-size . t) (window-system . x))))) (select-frame the-new-frame))" "$@"
         ;;
 
     # similar to capture but with different name
@@ -72,11 +70,8 @@ case $1 in
     transient )
         shift
         # check if the server is running, if not start the server
-        if ! ps -ef | grep '[e]macs --daemon' >/dev/null; then
-            exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" --create-frame --eval "(make-frame '((name . \"*transient*\") (fullscreen . maximized)  (user-position . t) (user-size . t)))" --eval "(select-frame-by-name \"*transient*\")" "$@"
-        else
-            exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --eval "(make-frame '((name . \"*transient*\") (fullscreen . maximized)  (user-position . t) (user-size . t)))" --eval "(select-frame-by-name \"*transient*\")" "$@"
-        fi
+        # XXXX: select-frame-by-name does not work all the time but the let statement does
+        exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --eval "(let ((the-new-frame (make-frame '((name . \"*transient*\") (fullscreen . maximized)  (user-position . t) (user-size . t) (window-system . x))))) (select-frame the-new-frame))" "$@"
         ;;
     # no frame,
     noframe )

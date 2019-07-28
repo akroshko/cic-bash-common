@@ -7,7 +7,7 @@
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Fri Mar 27, 2015
-# Version: 20190508
+# Version: 20190728
 # URL: https://github.com/akroshko/cic-bash-common
 #
 # This program is free software: you can redistribute it and/or modify
@@ -1028,10 +1028,15 @@ check-chromium () {
     return $?
 }
 
-check-firefox () {
+check-mozilla-running () {
     # check whether a firefox or similar browser is running
     ps -ef | grep '[f]irefox\|[i]ceweasel\|[p]alemoon\|[w]aterfox' >/dev/null
     # TODO: change to implicit return once I can test thoroughly
+    return $?
+}
+
+check-vlc-running () {
+    ps -ef | grep '[v]lc' >/dev/null
     return $?
 }
 
@@ -1096,6 +1101,7 @@ fix-permissive-permissions-recursive () {
     fi
 }
 
+# TODO: not used right now, but useful to have too
 add-line-if-not-exist () {
     # add a line to a file if the exact line does not exist already
     local THEFILE="$1"
@@ -1104,9 +1110,25 @@ add-line-if-not-exist () {
     grep -q -F -- "$NEWLINE" "$THEFILE" || echo "$NEWLINE" >> "$THEFILE"
 }
 
+add-line-if-not-exist-move-to-top () {
+    # TODO: hope there are no pipes in the lines to add
+    # add a line to a file if the exact line does not exist already
+    local THEFILE="$1"
+    local NEWLINE="$2"
+    # delete line if exists
+    if grep -q -F -- "$NEWLINE" "$THEFILE";then
+        # delete line, need to start with backslash to use | as delimeters
+        local SEDCOMMAND='\|'"$NEWLINE"'|d'
+        sed -i "$SEDCOMMAND" "$1"
+    fi
+    # add line to top of file regardless
+    local SEDCOMMAND='1s|^|'"$NEWLINE"'\n|'
+    sed -i "$SEDCOMMAND" "$1"
+}
+
 kill-blank-lines () {
     # delete any blank lines in a file
-    sed -n -e '/^\s*$/d' "$1"
+    sed -i '/^\s*$/d' "$1"
 }
 
 screen-select () {
@@ -1304,20 +1326,22 @@ vcs-grep-conflicted () {
 }
 
 mdstat-status () {
+    awk '/^md/ {printf "%s ", $0}; /blocks/ {print $NF}' < /proc/mdstat
+    # TODO: the following is complicated and primitive and not needed anymore, delete when I want to
     # check mdstat with just a summary, use as a quick text summary for system monitors
-    local MDSTAT=$(cat /proc/mdstat | sed -n '/^md\|^[[:space:]]*\[\|blocks/p')
-    local FIRST=1
-    IFS=$'\n'
-    for i in $(echo "$MDSTAT"); do
-        if [[ "$i" =~ ^m.* ]]; then
-            printf "$i"
-        else
-            local SELECTED=$(grep --color=never -Eo -- "\[[A-Za-z]*\]$" <<< "$i")
-            if [[ -n "$SELECTED" ]]; then
-                echo " $SELECTED"
-            fi
-        fi
-    done
+    # local MDSTAT=$(cat /proc/mdstat | sed -n '/^md\|^[[:space:]]*\[\|blocks/p')
+    # local FIRST=1
+    # IFS=$'\n'
+    # for i in $(echo "$MDSTAT"); do
+    #     if [[ "$i" =~ ^m.* ]]; then
+    #         printf "$i"
+    #     else
+    #         local SELECTED=$(grep --color=never -Eo -- "\[[A-Za-z]*\]$" <<< "$i")
+    #         if [[ -n "$SELECTED" ]]; then
+    #             echo " $SELECTED"
+    #         fi
+    #     fi
+    # done
 }
 
 repl-restartable () {
