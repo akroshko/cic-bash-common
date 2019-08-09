@@ -58,8 +58,6 @@ alias agu-dry-run='sudo apt-get update && sudo apt-get dist-upgrade --dry-run'
 alias ag-autoremove='sudo apt-get autoremove'
 # TODO: these can be improved and put into functions
 alias ssh-controlmaster-list='ps -elf | grep controlmaster | grep -v grep'
-alias ssh-controlmaster-kill='ssh -O exit'
-alias ssh-kill-controlmaster='ssh -O exit'
 alias cat-json='python -m json.tool'
 alias check-mem='smem -twk'
 alias dc='aafire -driver curses -extended'

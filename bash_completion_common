@@ -27,22 +27,22 @@
 source /etc/bash_completion
 
 _bash_functions () {
-    COMPREPLY=($(export IFS=$(echo -en "\n\b");compgen -A function | grep -- "${COMP_WORDS[COMP_CWORD]}") )
+    COMPREPLY=($(export IFS=$(echo -en "\n\b");compgen -A function | grep --color=never -- "${COMP_WORDS[COMP_CWORD]}") )
 }
 
 _apt_all_packages () {
-    COMPREPLY=($(export IFS=$(echo -en "\n\b");apt-cache search "${COMP_WORDS[COMP_CWORD]}" | cut -d' ' -f1 | grep -- "${COMP_WORDS[COMP_CWORD]}") )
+    COMPREPLY=($(export IFS=$(echo -en "\n\b");apt-cache search "${COMP_WORDS[COMP_CWORD]}" | cut -d' ' -f1 | grep --color=never -- "${COMP_WORDS[COMP_CWORD]}") )
 
 }
 
 _apt_installed_packages () {
 
-    COMPREPLY=( $(dpkg-query -l | cut -d' ' -f3 | grep -- "${COMP_WORDS[COMP_CWORD]}") )
+    COMPREPLY=( $(dpkg-query -l | cut -d' ' -f3 | grep --color=never -- "${COMP_WORDS[COMP_CWORD]}") )
 }
 
 _screen_sockets () {
     # TODO: only want for first argument, not others after
-    COMPREPLY=($(export IFS=$(echo -en "\n\b");screen -ls | grep -- "^[[:space:]]\+[0-9]\+" | cut -f1 -d"." | sed -e 's/^[[:space:]]*//g' | grep -- "${COMP_WORDS[COMP_CWORD]}") )
+    COMPREPLY=($(export IFS=$(echo -en "\n\b");screen -ls | grep --color=never -- "^[[:space:]]\+[0-9]\+" | cut -f1 -d"." | sed -e 's/^[[:space:]]*//g' | grep --color=never -- "${COMP_WORDS[COMP_CWORD]}") )
 }
 
 function _apt_get_install {

@@ -390,7 +390,7 @@ view-def () {
         h1 "Bash function definition"
         declare -f "$1"
     fi
-    if alias | grep -- '^alias \([A-Za-z0-9_-]*'"$1"'[A-Za-z0-9_-]*\)=' 2>&1 >/dev/null; then
+    if alias | grep --color=never -- '^alias \([A-Za-z0-9_-]*'"$1"'[A-Za-z0-9_-]*\)=' 2>&1 >/dev/null; then
        h1 "Alias definition"
        alias | grep -- '^alias \([A-Za-z0-9_-]*'"$1"'[A-Za-z0-9_-]*\)='
     fi
@@ -637,7 +637,7 @@ vcs-check-root () {
             git -c color.ui=always fetch --verbose
             h2 "pull needed?"
             local STATUS=$(git -c color.ui=always status -uno)
-            if grep "up-to-date" <<< "$STATUS" >/dev/null; then
+            if grep --color=never "up-to-date" <<< "$STATUS" >/dev/null; then
                 msg "Seems up to date!"
             else
                 yell "Not up to date!"
@@ -793,7 +793,7 @@ get-mount-point-check-usb () {
         return 1
     fi
     local LSBLK=$(\lsblk --list --output +tran)
-    local LSBLKUSB=$(\lsblk --list --output +tran | grep usb)
+    local LSBLKUSB=$(\lsblk --list --output +tran | grep --color=never usb)
     local USBFOUND=
     while read -r USBLINE; do
         local USBDEV=$(awk '{ print $1 }' <<< "$USBLINE")
@@ -1116,7 +1116,7 @@ add-line-if-not-exist-move-to-top () {
     local THEFILE="$1"
     local NEWLINE="$2"
     # delete line if exists
-    if grep -q -F -- "$NEWLINE" "$THEFILE";then
+    if grep --color=never -q -F -- "$NEWLINE" "$THEFILE";then
         # delete line, need to start with backslash to use | as delimeters
         local SEDCOMMAND='\|'"$NEWLINE"'|d'
         sed -i "$SEDCOMMAND" "$1"
@@ -1134,7 +1134,7 @@ kill-blank-lines () {
 screen-select () {
     # select a running screen session using a number (1,2,3...)
     # TODO: do I want to select by letters (a,b,c...) instead???
-    local SCREENSESSIONS=$(screen -ls | grep pts | cut -f1 -d"." | sed -e 's/^[[:space:]]*//g')
+    local SCREENSESSIONS=$(screen -ls | grep --color=never '^[[:space:]]\+[0-9]')
     if [[ -n "$SCREENSESSIONS" ]]; then
         # set the field separator to new line
         IFS=$'\n'
@@ -1147,7 +1147,8 @@ screen-select () {
         while read -r -t 0;do read -r; done
         read -n 1 -p "Enter the screen session: " SCREENSELECT
         echo ""
-        screen -dr $(sed -n "$SCREENSELECT"p <<< "$SCREENSESSIONS")
+        # TODO: hadnle invalid screen
+        screen -dr $((sed -n "$SCREENSELECT"p | cut -f1 -d"." | sed -e 's/^[[:space:]]*//g') <<< "$SCREENSESSIONS")
     else
         false
     fi
@@ -1214,7 +1215,7 @@ smartctl-disks-errors () {
     # TODO: current powered up time
     for d in $(enumerate-physical-disks); do
         h2 "$d"
-        local POWERONHOURS=$(sudo smartctl -A "$d" | grep Power_On_Hours)
+        local POWERONHOURS=$(sudo smartctl -A "$d" | grep --color=never Power_On_Hours)
         local SMARTOUTPUT=$(sudo smartctl --log=error "$d")
         if [[ $(($? & 1)) ]]; then
             echo -n "$d: "
@@ -1249,7 +1250,7 @@ select-disk-uuid-usb () {
     local count=1
     for d in /dev/disk/by-uuid/*; do
         [[ "$d" == "/dev/disk/by-uuid/$1" ]] && continue
-        if /sbin/udevadm info --query=all --name=$(readlink -f -- "$d") | grep 'ID_BUS=usb' >/dev/null; then
+        if /sbin/udevadm info --query=all --name=$(readlink -f -- "$d") | grep --color=never 'ID_BUS=usb' >/dev/null; then
             if findmnt -nr -o target "$d" >/dev/null; then
                 MOUNTPOINT=$(findmnt -nr -o target "$d")
                 LABEL=$(lsblk --output label "$d" | tail -n 1)
@@ -1291,12 +1292,12 @@ select-disk-uuid-info () {
     # TODO: handle encrypted disk better
     echo "ID: "
     for d in /dev/disk/by-id/*; do
-        echo "$d: $(readlink -f $d) $(/sbin/udevadm info --query=all --name=$(readlink -f -- $d) | grep ID_BUS)"
+        echo "$d: $(readlink -f $d) $(/sbin/udevadm info --query=all --name=$(readlink -f -- $d) | grep --color=never ID_BUS)"
     done
     echo ""
     echo "UUID: "
     for d in /dev/disk/by-uuid/*; do
-        echo "$d: $(readlink -f $d) $(/sbin/udevadm info --query=all --name=$(readlink -f -- $d) | grep ID_BUS)"
+        echo "$d: $(readlink -f $d) $(/sbin/udevadm info --query=all --name=$(readlink -f -- $d) | grep --color=never ID_BUS)"
     done
 }
 
@@ -1421,9 +1422,9 @@ function ls-mime-files2 () {
     # TODO: make more robust and more usefully named next time this is need
     for thedir in /usr/share/applications $HOME/.local/share/applications; do
         h2 "$thedir"
-        for thefile in $(ls "$thedir" 2>/dev/null | grep "\\.desktop$"); do
+        for thefile in $(ls --color=never "$thedir" 2>/dev/null | grep --color=never "\\.desktop$"); do
             h3 "$thefile"
-            for m in $(grep MimeType "$thedir/$thefile" | cut -d= -f2 | tr ";" " "); do
+            for m in $(grep --color=never MimeType "$thedir/$thefile" | cut -d= -f2 | tr ";" " "); do
                 echo xdg-mime default "$thefile" "$m"
             done
         done
@@ -1617,7 +1618,7 @@ youtube-normalize-volume () {
     # often tied to a hotkey
     local CURRENTWINDOW=$(xdotool getwindowfocus)
     xdotool search --name youtube | while IFS= read -r line; do
-        if [[ -n "$line" ]] && xdotool search --class conkeror | grep -- "$line" >/dev/null; then
+        if [[ -n "$line" ]] && xdotool search --class conkeror | grep --color=never -- "$line" >/dev/null; then
             xdotool windowfocus --sync "$line"
             xdotool windowactivate --sync "$line"
             # TODO: very arbitrary delay, perhaps wait for something to return
@@ -1910,12 +1911,12 @@ alias ls-x11-displays='x11-list-displays'
 
 screen-list-all-session-commands () {
     # lists all non-bah child processes running in bash
-    SCREEN_SESSIONS=( $(screen -ls | grep pts | cut -f1 -d"." | sed -e 's/^[[:space:]]*//g') )
+    SCREEN_SESSIONS=( $(screen -ls | grep --color=never pts | cut -f1 -d"." | sed -e 's/^[[:space:]]*//g') )
     for SCREEN_SESSION_PID in ${SCREEN_SESSIONS[@]};do
         h2 "Screen session pid: $SCREEN_SESSION_PID"
         screen -ls "$SCREEN_SESSION_PID"
         # TODO: will all screens have bash base
-        SCREEN_CHILD=$(ps -el | grep -- $(ps -el | grep "$SCREEN_SESSION_PID" | grep bash | awk '{print $4}') | grep -v bash | awk '{print $4}')
+        SCREEN_CHILD=$(ps -el | grep -- $(ps -el | grep --color=never "$SCREEN_SESSION_PID" | grep --color=never bash | awk '{print $4}') | grep --color=never -v bash | awk '{print $4}')
         if [[ -n "$SCREEN_CHILD" ]]; then
             echo $(ps u -p "$SCREEN_CHILD") | fold -w 160
         else

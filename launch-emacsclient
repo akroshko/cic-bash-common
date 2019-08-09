@@ -29,8 +29,8 @@
 # start emacs daemon if not already started
 # XXXX: avoid starting daemon if computer is configured with systemd service
 # TODO: better way to do this
-# if ! [[ -e "$HOME/.config/systemd/user/emacs.service" ]] && ! ps -ef | grep '[e]macs --daemon' >/dev/null; then
-if ! ps -ef | grep '[e]macs --daemon' >/dev/null; then
+# if ! [[ -e "$HOME/.config/systemd/user/emacs.service" ]] && ! ps -ef | grep --color=never '[e]macs --daemon' >/dev/null; then
+if ! ps -ef | grep --color=never '[e]macs --daemon' >/dev/null; then
     notify-send 'launching emacs --daemon!!!' -t 5000
     emacs --daemon --no-init-file --load "$HOME/.emacs-cic.el"
     sleep 3
@@ -41,7 +41,7 @@ if [[ $(ulimit -e) -gt "29" ]]; then
 else
     EMACSCLIENT="emacsclient"
 fi
-if ! ps -ef | grep '[e]macs --daemon' >/dev/null; then
+if ! ps -ef | grep --color=never '[e]macs --daemon' >/dev/null; then
     echo "Emacs daemon failed to run!"
     return 1
 fi
@@ -53,7 +53,8 @@ case $1 in
         shift
         # check if the server is running, if not start the server
         # XXXX: select-frame-by-name does not work all the time but the let statement does
-        exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --eval "(let ((the-new-frame (make-frame '((name . \"*capture*\") (fullscreen . maximized)  (user-position . t) (user-size . t) (window-system . x))))) (select-frame the-new-frame))" "$@"
+        # (user-position . t)
+        exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --eval "(let ((the-new-frame (make-frame '((name . \"*capture*\") (fullscreen . maximized)  (user-size . t) (window-system . x))))) (select-frame the-new-frame))" "$@"
         ;;
     # similar to capture but with different name
     # TODO: decide have "maximized" as frame name, decide if I really want to do this or if it's useful?
@@ -61,7 +62,7 @@ case $1 in
         shift
         # check if the server is running, if not start the server
         # XXXX: select-frame-by-name does not work all the time but the let statement does
-        exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --eval "(let ((the-new-frame (make-frame '((name . \"*maximized*\") (fullscreen . maximized)  (user-position . t) (user-size . t) (window-system . x))))) (select-frame the-new-frame))" "$@"
+        exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --eval "(let ((the-new-frame (make-frame '((name . \"*maximized*\") (fullscreen . maximized) (user-size . t) (window-system . x))))) (select-frame the-new-frame))" "$@"
         ;;
 
     # similar to capture but with different name
@@ -71,15 +72,15 @@ case $1 in
         shift
         # check if the server is running, if not start the server
         # XXXX: select-frame-by-name does not work all the time but the let statement does
-        exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --eval "(let ((the-new-frame (make-frame '((name . \"*transient*\") (fullscreen . maximized)  (user-position . t) (user-size . t) (window-system . x))))) (select-frame the-new-frame))" "$@"
+        exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --eval "(let ((the-new-frame (make-frame '((name . \"*transient*\") (fullscreen . maximized) (user-size . t) (window-system . x))))) (select-frame the-new-frame))" "$@"
         ;;
     # no frame,
     noframe )
         shift
-        if ! ps -ef | grep '[e]macs --daemon' >/dev/null; then
+        if ! ps -ef | grep --color=never '[e]macs --daemon' >/dev/null; then
             $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" -c "$@"
         else
-            emacsclient --no-wait --eval "(if (> (length (frame-list)) 1) 't)" | grep t
+            emacsclient --no-wait --eval "(if (> (length (frame-list)) 1) 't)" | grep --color=never t
             if [[ $? = "1" ]]; then
                 exec $EMACSCLIENT --create-frame --no-wait --alternate-editor="launch-emacsclient-fail.sh" "$@"
             else
@@ -90,10 +91,10 @@ case $1 in
         ;;
     protocol )
         shift
-        if ! ps -ef | grep '[e]macs --daemon' >/dev/null; then
+        if ! ps -ef | grep --color=never '[e]macs --daemon' >/dev/null; then
             $EMACSCLIENT --create-frame --no-wait --alternate-editor="launch-emacsclient-fail.sh" -c "$@"
         else
-            emacsclient --no-wait --eval "(if (> (length (frame-list)) 1) 't)" | grep t
+            emacsclient --no-wait --eval "(if (> (length (frame-list)) 1) 't)" | grep --color=never t
             if [[ $? = "1" ]]; then
                 exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" --create-frame --no-wait "$@"
             else

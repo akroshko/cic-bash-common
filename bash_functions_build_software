@@ -64,7 +64,7 @@ build-software () {
     build-software-feh
     build-software-mupdf
     # TODO: compile against downloaded poppler
-    build-software-xpdf
+    # build-software-xpdf
     build-software-zathura
     popd >/dev/null
 }
@@ -112,6 +112,8 @@ build-software-zathura () {
     sudo ninja install
     cd ..
     [[ -d ./build ]] && \rm -rf ./build
+    # TODO: this is temporary too
+    git checkout develop
     popd >/dev/null
     ################################################################################
     h2 "zathura-poppler"
@@ -216,24 +218,24 @@ build-software-zathura () {
     sudo ldconfig
 }
 
-build-software-xpdf () {
-    # build and installs xpdf
-    h2 "xpdf"
-    [[ ! -d "xpdf-3.04-external" ]] && yell "Directory xpdf-3.04-external not found!" && return 1
-    sudo true || { echo "Failed to sudo!"; return 1; }
-    pushd . >/dev/null
-    cd xpdf-3.04-external
-    make clean
-    ./configure --with-freetype2-library=/usr/lib/x86_64-linux-gnu \
-                --with-freetype2-includes=/usr/include/freetype2 \
-                --with-libpng-library=/usr/lib/x86_64-linux-gnu \
-                --with-libpng-includes=/usr/lib/libpng \
-                --with-Xm-library=/usr/lib \
-                --with-Xm-includes=/usr/include/Xm
-    make
-    sudo make install
-    popd >/dev/null
-}
+# build-software-xpdf () {
+#     # build and installs xpdf
+#     h2 "xpdf"
+#     [[ ! -d "xpdf-3.04-external" ]] && yell "Directory xpdf-3.04-external not found!" && return 1
+#     sudo true || { echo "Failed to sudo!"; return 1; }
+#     pushd . >/dev/null
+#     cd xpdf-3.04-external
+#     make clean
+#     ./configure --with-freetype2-library=/usr/lib/x86_64-linux-gnu \
+#                 --with-freetype2-includes=/usr/include/freetype2 \
+#                 --with-libpng-library=/usr/lib/x86_64-linux-gnu \
+#                 --with-libpng-includes=/usr/lib/libpng \
+#                 --with-Xm-library=/usr/lib \
+#                 --with-Xm-includes=/usr/include/Xm
+#     make
+#     sudo make install
+#     popd >/dev/null
+# }
 
 build-software-mupdf () {
     # builds and installs mupdf

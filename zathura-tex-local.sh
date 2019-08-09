@@ -6,7 +6,7 @@ main () {
     zathura "$@"
     # TODO: want something that does not raise
     sleep 0.2
-    WINNAME=$(wmctrl -lx | awk '{print $1 " " $3 " " $5}' | grep zathura.Zathura | grep -- "$DOCUMENTMASTER" | awk '{print $3}')
+    WINNAME=$(wmctrl -lx | awk '{print $1 " " $3 " " $5}' | grep --color=never zathura.Zathura | grep --color=never -- "$DOCUMENTMASTER" | awk '{print $3}')
     wmctrl -a "$WINNAME"
 }
 main "$@"
