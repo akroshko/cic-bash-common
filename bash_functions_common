@@ -315,7 +315,7 @@ lpr-double-sided-landscape () {
 
 ls-sort-date () {
     # ls and sort by reverse date
-    ls -ltr
+    \ls -ltr
 }
 
 need_new_symlink () {
@@ -1422,7 +1422,7 @@ function ls-mime-files2 () {
     # TODO: make more robust and more usefully named next time this is need
     for thedir in /usr/share/applications $HOME/.local/share/applications; do
         h2 "$thedir"
-        for thefile in $(ls --color=never "$thedir" 2>/dev/null | grep --color=never "\\.desktop$"); do
+        for thefile in $(\ls --color=never "$thedir" 2>/dev/null | grep --color=never "\\.desktop$"); do
             h3 "$thefile"
             for m in $(grep --color=never MimeType "$thedir/$thefile" | cut -d= -f2 | tr ";" " "); do
                 echo xdg-mime default "$thefile" "$m"
@@ -1520,7 +1520,7 @@ grep-commands () {
     alias | grep -- "$1"
 }
 
-rsync-remove-source () {
+sync-remove-source-1 () {
     # rsync and remove source, but also backup just in case
     # TODO: better interface and safety
     if [[ ! -d "$2" ]]; then
@@ -1539,8 +1539,9 @@ rsync-remove-source () {
     fi
 }
 
-rsync-check-source () {
-    # check before running rsync-remove-source with same arguments
+# TODO: unused
+sync-check-source () {
+    # check before running sync-remove-source-1 with same arguments
     if ssh "$1" true; then
         # TODO: make explicitly that contents of that directory come into current directory
         rsync --verbose --checksum --progress --archive  --rsh='ssh' "$1:$2/" .
@@ -1875,26 +1876,26 @@ pdftk-split () {
 alias cdf="cd-first"
 cd-first () {
     # go to the first directory matching pattern
-    local FIRST=$(ls --color=never -dtr1 "$1"* | head -1)
+    local FIRST=$(\ls --color=never -dtr1 "$1"* | head -1)
     cd "$FIRST"
 }
 alias lsf="ls-first"
 ls-first () {
     # ls the first directory matching pattern
-    local FIRST=$(ls --color=never -dtr1 "$1"* | head -1)
+    local FIRST=$(\ls --color=never -dtr1 "$1"* | head -1)
     ls "$FIRST"
 }
 
 alias cdl="cd-latest"
 cd-latest () {
     # go to the lastest matching pattern based on alphabetically ordered datestamps
-    local LATEST=$(ls --color=never -dtr1 "$1"* | tail -1)
+    local LATEST=$(\ls --color=never -dtr1 "$1"* | tail -1)
     cd "$LATEST"
 }
 alias lsl="ls-latest"
 ls-latest () {
     # ls the lastest matching pattern based on alphabetically ordered datestamps
-    local LATEST=$(ls --color=never -dtr1 "$1"* | tail -1)
+    local LATEST=$(\ls --color=never -dtr1 "$1"* | tail -1)
     ls "$LATEST"
 }
 
@@ -2024,7 +2025,7 @@ tar-ls () {
 
 ls-grep () {
     # a simple function for easily searches of a directory, one of my most used function
-    ls --color=always -1 | grep --color=always -i -- "$1"
+    \ls --color=always -1 | grep --color=always -i -- "$1"
 
 }
 alias grep-ls="ls-grep"

@@ -65,7 +65,9 @@ build-software () {
     build-software-mupdf
     # TODO: compile against downloaded poppler
     # build-software-xpdf
+    # TODO: why not dockapps here?
     build-software-zathura
+    build-software-yacreader
     popd >/dev/null
 }
 
@@ -218,6 +220,7 @@ build-software-zathura () {
     sudo ldconfig
 }
 
+# TODO: just install with debian now...
 # build-software-xpdf () {
 #     # build and installs xpdf
 #     h2 "xpdf"
@@ -267,6 +270,30 @@ build-software-feh () {
     check-host-main && git pull
     make clean
     make exif=1 help=1 xinerama=0
+    sudo make install
+    popd >/dev/null
+}
+
+build-software-yacreader () {
+    h2 "unarr (for yacreader)"
+    [[ ! -d "unarr-external" ]] && yell "Directory unarr-external not found!" && return 1
+    sudo true || { echo "Failed to sudo!"; return 1; }
+    pushd . >/dev/null
+    cd unarr-external
+    [[ -d "build" ]] && rm -rf build
+    mkdir -p build
+    cd build
+    cmake ..
+    make
+    sudo make install
+    popd >/dev/null
+    h2 "yacreader"
+    [[ ! -d "yacreader-external" ]] && yell "Directory yacreader-external not found!" && return 1
+    pushd . >/dev/null
+    cd yacreader-external
+    make clean
+    /usr/lib/x86_64-linux-gnu/qt5/bin/qmake PREFIX=/usr/local
+    make
     sudo make install
     popd >/dev/null
 }
