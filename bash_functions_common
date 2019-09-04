@@ -37,7 +37,7 @@ verify-operation () {
     local RMARG="$3"
     while true; do
         while read -r -t 0;do read -r; done
-        read -n 1 -p "$ASKMESSAGE" YN
+        read -n 1 -s -r -p "$ASKMESSAGE" YN
         echo ""
         case $YN in
             # TODO: make a bit more general so I can select a command
@@ -67,17 +67,17 @@ home-trash () {
 
 date-time-stamp () {
     # return a time-stamp with date in standard format
-    echo $(date +%Y%m%d%H%M%S)
+    date +%Y%m%d%H%M%S
 }
 
 date-time-stamp-t () {
     # return a time-stamp with date in standard format
-    echo $(date +%Y%m%dt%H%M%S)
+    date +%Y%m%dt%H%M%S
 }
 
 date-stamp () {
     # a date stamp with just the date
-    echo $(date +%Y%m%d)
+    date +%Y%m%d
 }
 
 memory-log () {
@@ -615,6 +615,7 @@ backlight-percentage () {
     # check the backlight percentage on
     # XXXX: very device dependent but I find this useful
     # TODO: check that directory exists
+    # TODO: don't have any computers to test this right now, but syntax can be improved
     echo $(cat /sys/class/backlight/intel_backlight/brightness*100)/$(cat /sys/class/backlight/intel_backlight/max_brightness) | bc -l | xargs printf "%1.0f\n"
 }
 
@@ -853,7 +854,7 @@ vcs-push-github () {
         while read -r -t 0;do read -r; done
         read -e -p "Enter commit message: " COMMITMESSAGE
         while read -r -t 0;do read -r; done
-        read -n 1 -p "Use commit message (y/n/q)? " COMMITCORRECT
+        read -n 1 -s -r -p "Use commit message (y/n/q)? " COMMITCORRECT
         echo ""
         if [[ "$COMMITCORRECT" == "q" ]]; then
             yell "Aborting!"
@@ -1145,7 +1146,7 @@ screen-select () {
             local count=$(( $count + 1 ))
         done
         while read -r -t 0;do read -r; done
-        read -n 1 -p "Enter the screen session: " SCREENSELECT
+        read -n 1 -s -r -p "Enter the screen session: " SCREENSELECT
         echo ""
         # TODO: hadnle invalid screen
         screen -dr $((sed -n "$SCREENSELECT"p | cut -f1 -d"." | sed -e 's/^[[:space:]]*//g') <<< "$SCREENSESSIONS")
@@ -1266,7 +1267,7 @@ select-disk-uuid-usb () {
     # echo "$count) Non-USB drive" >&2
     echo "-) Cancel" >&2
     while read -r -t 0;do read -r; done
-    read -n 1 -p "Enter the USB drive: " USBSELECT >&2
+    read -n 1 -s -r -p "Enter the USB drive: " USBSELECT >&2
     echo "" >&2
     if [[ "$USBSELECT" == "0" ]]; then
         echo /dev/disk/by-uuid/"$1"
@@ -1357,7 +1358,7 @@ repl-restartable () {
             return 255
         fi
         while read -r -t 0;do read -r; done
-        IFS= read -n 1 -s -p 'Press [Enter] to exit or [Space] to restart...' TRYAGAIN
+        IFS= read -n 1 -s -r -p 'Press [Enter] to exit or [Space] to restart...' TRYAGAIN
         if [[ "$TRYAGAIN" == " " ]]; then
             reset
         fi
@@ -1911,7 +1912,7 @@ x11-list-displays () {
 alias ls-x11-displays='x11-list-displays'
 
 screen-list-all-session-commands () {
-    # lists all non-bah child processes running in bash
+    # lists all non-bash child processes running in bash
     SCREEN_SESSIONS=( $(screen -ls | grep --color=never pts | cut -f1 -d"." | sed -e 's/^[[:space:]]*//g') )
     for SCREEN_SESSION_PID in ${SCREEN_SESSIONS[@]};do
         h2 "Screen session pid: $SCREEN_SESSION_PID"
@@ -1919,7 +1920,7 @@ screen-list-all-session-commands () {
         # TODO: will all screens have bash base
         SCREEN_CHILD=$(ps -el | grep -- $(ps -el | grep --color=never "$SCREEN_SESSION_PID" | grep --color=never bash | awk '{print $4}') | grep --color=never -v bash | awk '{print $4}')
         if [[ -n "$SCREEN_CHILD" ]]; then
-            echo $(ps u -p "$SCREEN_CHILD") | fold -w 160
+            ps u -p "$SCREEN_CHILD" | fold -w 160
         else
             warn "No non-bash child process!"
         fi
@@ -2167,7 +2168,7 @@ ask_yn () {
     local YN=
     while [[ "$YN" != 'y' && "$YN" != 'n' ]]; do
         while read -r -t 0;do read -r; done
-        read -n 1 -p "$1 (y/n)? " YN
+        read -n 1 -s -r -p "$1 (y/n)? " YN
         echo ""
     done
     if [[ "$YN" == 'y' ]]; then

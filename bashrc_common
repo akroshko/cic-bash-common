@@ -105,9 +105,9 @@ alias scr='screen -dr'
 alias scs='screen-select'
 alias scw='screen -wipe'
 # fallback ssh
-alias scp-fallback='scp -o "BatchMode no" -o "ChallengeResponseAuthentication yes" -o "PasswordAuthentication yes"'
-alias ssh-fallback='ssh -o "BatchMode no" -o "ChallengeResponseAuthentication yes" -o "PasswordAuthentication yes"'
-alias sftp-fallback='sftp -o "BatchMode no" -o "ChallengeResponseAuthentication yes" -o "PasswordAuthentication yes"'
+alias scp-fallback='scp -o "BatchMode no"   -o "ChallengeResponseAuthentication no" -o "PubkeyAuthentication no" -o "PasswordAuthentication yes"'
+alias ssh-fallback='ssh -o "BatchMode no"   -o "ChallengeResponseAuthentication no" -o "PubkeyAuthentication no" -o "PasswordAuthentication yes"'
+alias sftp-fallback='sftp -o "BatchMode no" -o "ChallengeResponseAuthentication no" -o "PubkeyAuthentication no" -o "PasswordAuthentication yes"'
 # sage
 alias svn-log-full='svn log -l 100 -v | less'
 alias sagepy='sage -python'
@@ -154,19 +154,28 @@ esac
 if [[ "$TERM" =~ linux|xterm*|rxvt* ]];then
     SHORTPWD=$(sed -r 's|'"$HOME"'|~|g' <<< "$PWD")
     export PROMPT_COMMAND='history -a; history -n;echo -ne "\033]0;${HOSTNAME}:${SHORTPWD}\007"'
+
+    # Show the currently running command in the terminal title:
     # see http://askubuntu.com/questions/126737/make-gnome-terminal-show-the-command-running-as-title
     show_command_in_title_bar() {
-        export SHORTPWD=$(sed -r 's|'"$HOME"'|~|g' <<< "$PWD")
-        case "$BASH_COMMAND" in
-            *"\033]0"*)
-                ;;
-            *)
-                echo -ne "\033]0;${BASH_COMMAND}: ${HOSTNAME}\007"
-                ;;
-        esac
+        # TODO: this is needed here
+        if [[ -n "$PS1" ]]; then
+            export SHORTPWD=$(sed -r 's|'"$HOME"'|~|g' <<< "$PWD")
+            case "$BASH_COMMAND" in
+                *"\033]0"*)
+                    # The command is trying to set the title bar as well;
+                    # this is most likely the execution of $PROMPT_COMMAND.
+                    # In any case nested escapes confuse the terminal, so don't
+                    # output them.
+                    ;;
+                *)
+                    echo -ne "\033]0;${BASH_COMMAND}: ${HOSTNAME}\007"
+                    ;;
+            esac
+        fi
     }
     # XXXX: is there ever a nicer way to do this?
-    trap show_command_in_title_bar DEBUG
+    trap -- show_command_in_title_bar DEBUG
 else
     export PROMPT_COMMAND='history -a; history -n'
 fi
@@ -181,5 +190,7 @@ shopt -s autocd extglob histappend
 export IGNOREEOF=99
 shopt -s expand_aliases
 force_color_prompt=yes
-# this allows C-s to be useful ina  terminal
+# this ensures the variables set by keychain are correct in the shell
+[[ -f "$HOME/.keychain/$HOSTNAME-sh" ]] && source "$HOME/.keychain/$HOSTNAME-sh" >/dev/null
+# this allows C-s to be useful in aterminal
 [[ $- == *i* ]] && stty -ixon
