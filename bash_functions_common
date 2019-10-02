@@ -485,6 +485,12 @@ watch-xclip-show-all () {
     watch -n 1 --color --exec bash -c "source $HOME/.bash_library;xclip-show-all"
 }
 
+xclip-clear-all () {
+    echo "" | xclip -i -selection primary
+    echo "" | xclip -i -selection secondary
+    echo "" | xclip -i -selection clipboard
+}
+
 du-sort () {
     # sort by size after using du
     \du --total --summarize --human-readable -- * 2>/dev/null | sort --human-numeric-sort
@@ -1625,7 +1631,7 @@ youtube-normalize-volume () {
             xdotool windowactivate --sync "$line"
             # TODO: very arbitrary delay, perhaps wait for something to return
             sleep 0.05
-            conkeror-batch -f youtube-normalize-volume
+            conkeror-batch -P default -f youtube-normalize-volume
         fi
     done
     # TODO: very arbitrary, perhaps wait for something to return
@@ -1854,23 +1860,25 @@ benchmark-compression-all () {
     benchmark-compression-zip "$1"
 }
 
-pdftk-cat () {
+pdf-cat () {
     # create pdf from alphabetically-order pdfs in current directory, using pdftk
     if [[ -z "$1" ]]; then
-        echo "pdftk-cat <<pdf basename to create>>"
+        echo "pdf-cat <<pdf basename to create>>"
     else
 
         pdftk *.pdf cat output "$1".pdf
     fi
 }
 
-pdftk-split () {
+# TODO: change to qpdf...
+pdf-split () {
     # split pdf from start page to end page
     if [[ -z "$1" ]]; then
-        echo "pdftk-split <<pdf filename in>> <<start page>> <<end page>>" "<<pdf filename out>>"
+        echo "pdf-split <<pdf filename in>> <<start page>> <<end page>>" "<<pdf filename out>>"
         echo "Use page numbering and not page naming."
     else
-        pdftk "$1" cat "$2"-"$3" output "$4"
+        qpdf "$1" --pages "$1" "$2"-"$3" -- "$4"
+        # pdftk "$1" cat "$2"-"$3" output "$4"
     fi
 }
 

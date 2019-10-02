@@ -115,8 +115,6 @@ alias sageipy='sage -ipython'
 alias xmodmap-ls='xmodmap -pm'
 alias ls-xmodmap='xmodmap -pm'
 alias ls-xrandr='xrandr --listmonitors;xrandr'
-alias wine-desktop='wine explorer /desktop=shell,1280x1024'
-alias wine-desktop-wide='wine explorer /desktop=shell,1600x900'
 alias vlc-full-help='unbuffer vlc --longhelp --advanced | less-raw'
 
 ################################################################################

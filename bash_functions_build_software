@@ -106,7 +106,7 @@ build-software-zathura () {
     fi
     # TODO: temporary until I upgrade debian, Debian's synctex version not new enough
     # this branch is from April 5th 2018, so other ones can be adjusted accordingly if they cease working
-    git checkout acf9a3bcc160492d389e77ac8a74a43aa0151503
+    # git checkout acf9a3bcc160492d389e77ac8a74a43aa0151503
     [[ -d ./build ]] && \rm -rf ./build
     meson build
     cd build
@@ -240,13 +240,95 @@ build-software-zathura () {
 #     popd >/dev/null
 # }
 
+
 build-software-mupdf () {
+    # https://serverfault.com/questions/72476/clean-way-to-write-complex-multi-line-string-to-a-variable
+    read -r -d '' MUPDFPATCH << "EOF"
+diff -ru mupdf-clean-external/Makerules mupdf-modify-external/Makerules
+--- mupdf-clean-external/Makerules	2019-09-26 09:48:41.320010898 -0600
++++ mupdf-modify-external/Makerules	2019-09-26 09:49:58.532566310 -0600
+@@ -21,41 +21,41 @@
+ SANITIZE_FLAGS += -fsanitize=leak
+
+ ifeq ($(build),debug)
+-  CFLAGS += -pipe -g
++  CFLAGS += -fPIC -pipe -g
+   LDFLAGS += -g
+ else ifeq ($(build),release)
+-  CFLAGS += -pipe -O2 -DNDEBUG -fomit-frame-pointer
++  CFLAGS += -fPIC -pipe -O2 -DNDEBUG -fomit-frame-pointer
+   LDFLAGS += $(LDREMOVEUNREACH) -Wl,-s
+ else ifeq ($(build),small)
+-  CFLAGS += -pipe -Os -DNDEBUG -fomit-frame-pointer
++  CFLAGS += -fPIC -pipe -Os -DNDEBUG -fomit-frame-pointer
+   LDFLAGS += $(LDREMOVEUNREACH) -Wl,-s
+ else ifeq ($(build),valgrind)
+-  CFLAGS += -pipe -O2 -DNDEBUG -DPACIFY_VALGRIND -fno-omit-frame-pointer
++  CFLAGS += -fPIC -pipe -O2 -DNDEBUG -DPACIFY_VALGRIND -fno-omit-frame-pointer
+   LDFLAGS += $(LDREMOVEUNREACH) -Wl,-s
+ else ifeq ($(build),sanitize)
+-  CFLAGS += -pipe -g -fno-omit-frame-pointer $(SANITIZE_FLAGS)
++  CFLAGS += -fPIC -pipe -g -fno-omit-frame-pointer $(SANITIZE_FLAGS)
+   LDFLAGS += -g $(SANITIZE_FLAGS)
+ else ifeq ($(build),sanitize-release)
+-  CFLAGS += -pipe -O2 -DNDEBUG -fno-omit-frame-pointer $(SANITIZE_FLAGS)
++  CFLAGS += -fPIC -pipe -O2 -DNDEBUG -fno-omit-frame-pointer $(SANITIZE_FLAGS)
+   LDFLAGS += $(LDREMOVEUNREACH) -Wl,-s $(SANITIZE_FLAGS)
+ else ifeq ($(build),profile)
+-  CFLAGS += -pipe -O2 -DNDEBUG -pg
++  CFLAGS += -fPIC -pipe -O2 -DNDEBUG -pg
+   LDFLAGS += -pg
+ else ifeq ($(build),coverage)
+-  CFLAGS += -pipe -g -pg -fprofile-arcs -ftest-coverage
++  CFLAGS += -fPIC -pipe -g -pg -fprofile-arcs -ftest-coverage
+   LIBS += -lgcov
+ else ifeq ($(build),native)
+-  CFLAGS += -pipe -O2 -DNDEBUG -fomit-frame-pointer -march=native
++  CFLAGS += -fPIC -pipe -O2 -DNDEBUG -fomit-frame-pointer -march=native
+   LDFLAGS += $(LDREMOVEUNREACH) -Wl,-s
+ else ifeq ($(build),memento)
+-  CFLAGS += -pipe -g -DMEMENTO
++  CFLAGS += -fPIC -pipe -g -DMEMENTO
+   LDFLAGS += -g -rdynamic
+   ifneq ($(HAVE_LIBDL),no)
+     CFLAGS += -DHAVE_LIBDL
+     LIBS += -ldl
+   endif
+ else ifeq ($(build),gperf)
+-  CFLAGS += -pipe -O2 -DNDEBUG -fomit-frame-pointer -DGPERF
++  CFLAGS += -fPIC -pipe -O2 -DNDEBUG -fomit-frame-pointer -DGPERF
+   LIBS += -lprofiler
+ else
+   $(error unknown build setting: '$(build)')
+diff -ru mupdf-clean-external/platform/wasm/Makefile mupdf-modify-external/platform/wasm/Makefile
+--- mupdf-clean-external/platform/wasm/Makefile	2019-09-26 09:48:41.684013529 -0600
++++ mupdf-modify-external/platform/wasm/Makefile	2019-09-26 09:51:00.117005210 -0600
+@@ -10,13 +10,13 @@
+ $(MUPDF_CORE) : .FORCE
+ 	$(MAKE) -j4 -C ../.. \
+ 		OUT=wasm build=release \
+-		XCFLAGS='-DTOFU -DTOFU_CJK -DFZ_ENABLE_SVG=0 -DFZ_ENABLE_HTML=0 -DFZ_ENABLE_EPUB=0 -DFZ_ENABLE_JS=0' \
++		XCFLAGS='-fPIC -DTOFU -DTOFU_CJK -DFZ_ENABLE_SVG=0 -DFZ_ENABLE_HTML=0 -DFZ_ENABLE_EPUB=0 -DFZ_ENABLE_JS=0' \
+ 		generate
+ 	BASH_SOURCE=$(EMSDK_DIR)/emsdk_env.sh; \
+ 	. $(EMSDK_DIR)/emsdk_env.sh; \
+ 	$(MAKE) -j4 -C ../.. \
+ 		OS=wasm build=release \
+-		XCFLAGS='-DTOFU -DTOFU_CJK -DFZ_ENABLE_SVG=0 -DFZ_ENABLE_HTML=0 -DFZ_ENABLE_EPUB=0 -DFZ_ENABLE_JS=0' \
++		XCFLAGS='-fPIC -DTOFU -DTOFU_CJK -DFZ_ENABLE_SVG=0 -DFZ_ENABLE_HTML=0 -DFZ_ENABLE_EPUB=0 -DFZ_ENABLE_JS=0' \
+ 		libs
+
+ wasm: $(MUPDF_JS) $(MUPDF_WASM)
+EOF
     # builds and installs mupdf
     h2 "mupdf"
     [[ ! -d "mupdf-external" ]] && yell "Directory mupdf-external not found!" && return 1
     sudo true || { echo "Failed to sudo!"; return 1; }
     pushd . >/dev/null
     cd mupdf-external
+    make clean
+    git reset --hard HEAD
+    patch -p1 <<< "$MUPDFPATCH"
     make clean
     [[ -d "thirdparty" ]] && \rm -rf thirdparty
     make clean
@@ -255,6 +337,9 @@ build-software-mupdf () {
     # seems to be necessary for this one
     make prefix=/usr/local
     sudo make prefix=/usr/local install
+    make clean
+    # undo the patch
+    git reset --hard HEAD
     make clean
     popd >/dev/null
 }
