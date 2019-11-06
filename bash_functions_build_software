@@ -30,7 +30,7 @@ build-software () {
     # different version than the curren Debian
 
     # assumes I'm in directory with appropriate subdirectories
-    sudo true || { echo "Failed to sudo!"; return 1; }
+    sudo true || { echo 'Failed to sudo!'; return 1; }
     # at least for now, download and build a few select pieces of software
     [[ ! -d "$HOME/cic-external-vcs" ]] && mkdir -p "$HOME/cic-external-vcs"
     pushd . >/dev/null
@@ -76,7 +76,7 @@ build-software-zathura () {
     ################################################################################
     h2 "girara"
     [[ ! -d "girara-external" ]] && { yell "Directory girara-external not found!"; return 1; }
-    sudo true || { echo "Failed to sudo!"; return 1; }
+    sudo true || { echo 'Failed to sudo!'; return 1; }
     pushd . >/dev/null
     cd girara-external
     check-host-main && git pull
@@ -85,6 +85,7 @@ build-software-zathura () {
     else
         git checkout --track -b develop origin/develop
     fi
+    git checkout 53b862825d7fdb0618d6b7b8680bc7ef53407925
     [[ -d ./build ]] && \rm -rf ./build
     meson build
     cd build
@@ -92,6 +93,7 @@ build-software-zathura () {
     sudo ninja install
     cd ..
     [[ -d ./build ]] && \rm -rf ./build
+    git checkout develop
     popd >/dev/null
     ################################################################################
     h2 "zathura"
@@ -106,7 +108,7 @@ build-software-zathura () {
     fi
     # TODO: temporary until I upgrade debian, Debian's synctex version not new enough
     # this branch is from April 5th 2018, so other ones can be adjusted accordingly if they cease working
-    # git checkout acf9a3bcc160492d389e77ac8a74a43aa0151503
+    git checkout 9fe07d39d09058a3c8ac5dfdc169cda36ba45896
     [[ -d ./build ]] && \rm -rf ./build
     meson build
     cd build
@@ -130,6 +132,7 @@ build-software-zathura () {
     else
         git checkout --track -b develop origin/develop
     fi
+    git checkout ebdd7185db0421e411b08667e849596a13c5abda
     [[ -d ./build ]] && \rm -rf ./build
     meson build
     cd build
@@ -137,6 +140,7 @@ build-software-zathura () {
     sudo ninja install
     cd ..
     [[ -d ./build ]] && \rm -rf ./build
+    git checkout develop
     popd >/dev/null
     ################################################################################
     h2 "zathura-mupdf"
@@ -151,6 +155,8 @@ build-software-zathura () {
     else
         git checkout --track -b develop origin/develop
     fi
+    # git checkout 43e7027eae61f591b5af3062011156eccad98a5f
+    git checkout 95c830c9f6cfe4ba99535ecfba0a700ceb15a25a
     [[ -d ./build ]] && \rm -rf ./build
     meson build
     cd build
@@ -158,6 +164,7 @@ build-software-zathura () {
     sudo ninja install
     cd ..
     [[ -d ./build ]] && \rm -rf ./build
+    git checkout develop
     popd >/dev/null
     ################################################################################
     h2 "zathura-djvu"
@@ -177,6 +184,7 @@ build-software-zathura () {
     sudo ninja install
     cd ..
     [[ -d ./build ]] && \rm -rf ./build
+    git checkout develop
     popd >/dev/null
     ################################################################################
     h2 "zathura-cb"
@@ -196,6 +204,7 @@ build-software-zathura () {
     sudo ninja install
     cd ..
     [[ -d ./build ]] && \rm -rf ./build
+    git checkout develop
     popd >/dev/null
     ################################################################################
     h2 "zathura-ps"
@@ -215,6 +224,7 @@ build-software-zathura () {
     sudo ninja install
     cd ..
     [[ -d ./build ]] && \rm -rf ./build
+    git checkout develop
     popd >/dev/null
     # because I've had issues with libraries installed until I run this
     sudo ldconfig
@@ -225,7 +235,7 @@ build-software-zathura () {
 #     # build and installs xpdf
 #     h2 "xpdf"
 #     [[ ! -d "xpdf-3.04-external" ]] && yell "Directory xpdf-3.04-external not found!" && return 1
-#     sudo true || { echo "Failed to sudo!"; return 1; }
+#     sudo true || { echo 'Failed to sudo!'; return 1; }
 #     pushd . >/dev/null
 #     cd xpdf-3.04-external
 #     make clean
@@ -321,11 +331,13 @@ diff -ru mupdf-clean-external/platform/wasm/Makefile mupdf-modify-external/platf
  wasm: $(MUPDF_JS) $(MUPDF_WASM)
 EOF
     # builds and installs mupdf
+    # TODO: some of the commands below are probably excessive
     h2 "mupdf"
     [[ ! -d "mupdf-external" ]] && yell "Directory mupdf-external not found!" && return 1
-    sudo true || { echo "Failed to sudo!"; return 1; }
+    sudo true || { echo 'Failed to sudo!'; return 1; }
     pushd . >/dev/null
     cd mupdf-external
+    git checkout b1cc2167d698404014d79b9f3794af03312c7ec6
     make clean
     git reset --hard HEAD
     patch -p1 <<< "$MUPDFPATCH"
@@ -341,6 +353,8 @@ EOF
     # undo the patch
     git reset --hard HEAD
     make clean
+    # get to master in case I checked out wierd branch
+    git checkout master
     popd >/dev/null
 }
 
@@ -348,7 +362,7 @@ build-software-feh () {
     # builds and installs the feh image viewer
     h2 "feh"
     [[ ! -d "feh-external" ]] && yell "Directory feh-external not found!" && return 1
-    sudo true || { echo "Failed to sudo!"; return 1; }
+    sudo true || { echo 'Failed to sudo!'; return 1; }
     # must be in proper directory
     pushd . >/dev/null
     cd feh-external
@@ -362,7 +376,7 @@ build-software-feh () {
 build-software-yacreader () {
     h2 "unarr (for yacreader)"
     [[ ! -d "unarr-external" ]] && yell "Directory unarr-external not found!" && return 1
-    sudo true || { echo "Failed to sudo!"; return 1; }
+    sudo true || { echo 'Failed to sudo!'; return 1; }
     pushd . >/dev/null
     cd unarr-external
     [[ -d "build" ]] && rm -rf build
@@ -391,7 +405,7 @@ build-software-dockapps () {
     # https://unix.stackexchange.com/questions/67781/use-shared-libraries-in-usr-local-lib
     h2 "libdockapps"
     [[ ! -d "dockapps-external" ]] && yell "Directory dockapps-external not found!" && return 1
-    sudo true || { echo "Failed to sudo!"; return 1; }
+    sudo true || { echo 'Failed to sudo!'; return 1; }
     pushd . >/dev/null
     cd dockapps-external
     check-host-main && git pull

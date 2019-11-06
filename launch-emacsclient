@@ -27,96 +27,99 @@
 # check if the Emacs server is running, if not start the server
 # see http://www.emacswiki.org/emacs/EmacsClient, although this is outdated
 
-# start emacs daemon if not already started
-# XXXX: avoid starting daemon if computer is configured with systemd service
-# TODO: better way to do this
-# if ! [[ -e "$HOME/.config/systemd/user/emacs.service" ]] && ! ps -ef | grep --color=never '[e]macs --daemon' >/dev/null; then
-if ! ps -ef | grep --color=never '[e]macs --daemon' >/dev/null; then
-    notify-send 'launching emacs --daemon!!!' -t 5000
-    emacs --daemon --no-init-file --load "$HOME/.emacs-cic.el"
-    sleep 3
-fi
-# set up emacsclient command based on nice value
-if [[ $(ulimit -e) -gt "29" ]]; then
-    EMACSCLIENT="nice --adjustment=-10 emacsclient"
-else
-    EMACSCLIENT="emacsclient"
-fi
-if ! ps -ef | grep --color=never '[e]macs --daemon' >/dev/null; then
-    echo "Emacs daemon failed to run!"
-    return 1
-fi
-case $1 in
-    batch )
-        shift
-        ;;
-    capture )
-        shift
-        # check if the server is running, if not start the server
-        # XXXX: select-frame-by-name does not work all the time but the let statement does
-        # (user-position . t)
-        exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --eval "(let ((the-new-frame (make-frame '((name . \"*capture*\") (fullscreen . maximized)  (user-size . t) (window-system . x))))) (select-frame the-new-frame))" "$@"
-        ;;
-    # similar to capture but with different name
-    # TODO: decide have "maximized" as frame name, decide if I really want to do this or if it's useful?
-    maximized )
-        shift
-        # check if the server is running, if not start the server
-        # XXXX: select-frame-by-name does not work all the time but the let statement does
-        exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --eval "(let ((the-new-frame (make-frame '((name . \"*maximized*\") (fullscreen . maximized) (user-size . t) (window-system . x))))) (select-frame the-new-frame))" "$@"
-        ;;
+main () {
+    # start emacs daemon if not already started
+    # XXXX: avoid starting daemon if computer is configured with systemd service
+    # TODO: better way to do this
+    # if ! [[ -e "$HOME/.config/systemd/user/emacs.service" ]] && ! ps -ef | grep --color=never '[e]macs --daemon' >/dev/null; then
+    if ! ps -ef | grep --color=never '[e]macs --daemon' >/dev/null; then
+        notify-send 'launching emacs --daemon!!!' -t 5000
+        emacs --daemon --no-init-file --load "$HOME/.emacs-cic.el"
+        sleep 3
+    fi
+    # set up emacsclient command based on nice value
+    if [[ $(ulimit -e) -gt "29" ]]; then
+        local EMACSCLIENT="nice --adjustment=-10 emacsclient"
+    else
+        local EMACSCLIENT="emacsclient"
+    fi
+    if ! ps -ef | grep --color=never '[e]macs --daemon' >/dev/null; then
+        echo "Emacs daemon failed to run!"
+        return 1
+    fi
+    case $1 in
+        batch )
+            shift
+            ;;
+        capture )
+            shift
+            # check if the server is running, if not start the server
+            # XXXX: select-frame-by-name does not work all the time but the let statement does
+            # (user-position . t)
+            exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --eval "(let ((the-new-frame (make-frame '((name . \"*capture*\") (fullscreen . maximized)  (user-size . t) (window-system . x))))) (select-frame the-new-frame))" "$@"
+            ;;
+        # similar to capture but with different name
+        # TODO: decide have "maximized" as frame name, decide if I really want to do this or if it's useful?
+        maximized )
+            shift
+            # check if the server is running, if not start the server
+            # XXXX: select-frame-by-name does not work all the time but the let statement does
+            exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --eval "(let ((the-new-frame (make-frame '((name . \"*maximized*\") (fullscreen . maximized) (user-size . t) (window-system . x))))) (select-frame the-new-frame))" "$@"
+            ;;
 
-    # similar to capture but with different name
-    # TODO: decide have "*transient*" as frame name, decide if I really want to do this?
-    # TODO: figure out size from window
-    transient )
-        shift
-        # check if the server is running, if not start the server
-        # XXXX: select-frame-by-name does not work all the time but the let statement does
-        exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --eval "(let ((the-new-frame (make-frame '((name . \"*transient*\") (fullscreen . maximized) (user-size . t) (window-system . x))))) (select-frame the-new-frame))" "$@"
-        ;;
-    # no frame,
-    noframe )
-        shift
-        if ! ps -ef | grep --color=never '[e]macs --daemon' >/dev/null; then
-            $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" -c "$@"
-        else
-            emacsclient --no-wait --eval "(if (> (length (frame-list)) 1) 't)" | grep --color=never t
-            if [[ $? = "1" ]]; then
-                exec $EMACSCLIENT --create-frame --no-wait --alternate-editor="launch-emacsclient-fail.sh" "$@"
+        # similar to capture but with different name
+        # TODO: decide have "*transient*" as frame name, decide if I really want to do this?
+        # TODO: figure out size from window
+        transient )
+            shift
+            # check if the server is running, if not start the server
+            # XXXX: select-frame-by-name does not work all the time but the let statement does
+            exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --eval "(let ((the-new-frame (make-frame '((name . \"*transient*\") (fullscreen . maximized) (user-size . t) (window-system . x) (auto-raise t) (wait-for-wm t))))) (select-frame the-new-frame))" "$@"
+            ;;
+        # no frame,
+        noframe )
+            shift
+            if ! ps -ef | grep --color=never '[e]macs --daemon' >/dev/null; then
+                $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" -c "$@"
             else
-                # TODO: why does this seem to be creating a frame anyways?
-                exec $EMACSCLIENT                --no-wait --alternate-editor="launch-emacsclient-fail.sh" "$@"
+                emacsclient --no-wait --eval "(if (> (length (frame-list)) 1) 't)" | grep --color=never t
+                if [[ $? = "1" ]]; then
+                    exec $EMACSCLIENT --create-frame --no-wait --alternate-editor="launch-emacsclient-fail.sh" "$@"
+                else
+                    # TODO: why does this seem to be creating a frame anyways?
+                    exec $EMACSCLIENT                --no-wait --alternate-editor="launch-emacsclient-fail.sh" "$@"
+                fi
             fi
-        fi
-        ;;
-    protocol )
-        shift
-        if ! ps -ef | grep --color=never '[e]macs --daemon' >/dev/null; then
-            $EMACSCLIENT --create-frame --no-wait --alternate-editor="launch-emacsclient-fail.sh" -c "$@"
-        else
-            emacsclient --no-wait --eval "(if (> (length (frame-list)) 1) 't)" | grep --color=never t
-            if [[ $? = "1" ]]; then
-                exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" --create-frame --no-wait "$@"
+            ;;
+        protocol )
+            shift
+            if ! ps -ef | grep --color=never '[e]macs --daemon' >/dev/null; then
+                $EMACSCLIENT --create-frame --no-wait --alternate-editor="launch-emacsclient-fail.sh" -c "$@"
             else
-                exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --no-wait "$@"
+                emacsclient --no-wait --eval "(if (> (length (frame-list)) 1) 't)" | grep --color=never t
+                if [[ $? = "1" ]]; then
+                    exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" --create-frame --no-wait "$@"
+                else
+                    exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh"                --no-wait "$@"
+                fi
             fi
-        fi
-        ;;
-    nohup )
-        shift
-        # TODO: should nohup use exec?
-        # TODO: things highlighted red, if I try to put this in a subshell, is this a real error?
-        nohup $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" --create-frame "$@" &>/dev/null &
-        ;;
-    sameframe )
-        shift
-        exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" "$@"
-        ;;
-    * )
-        exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" --create-frame "$@"
-        ;;
-esac
+            ;;
+        nohup )
+            shift
+            # TODO: should nohup use exec?
+            # TODO: things highlighted red, if I try to put this in a subshell, is this a real error?
+            nohup $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" --create-frame "$@" &>/dev/null &
+            ;;
+        sameframe )
+            shift
+            exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" "$@"
+            ;;
+        * )
+            exec $EMACSCLIENT --alternate-editor="launch-emacsclient-fail.sh" --create-frame "$@"
+            ;;
+    esac
+}
+main "$@"
 # TODO: do I need these here and do they affect anything?
 export EDITOR="launch-emacsclient -nw"
 export ALTERNATE_EDITOR="launch-emacsclient -nw"

@@ -252,7 +252,7 @@ nmap-host-ports () {
 
 nmap-host-ports-super () {
     # really slowly look for ports open on a host
-    sudo true || { echo "Failed to sudo!"; return 1; }
+    sudo true || { echo 'Failed to sudo!'; return 1; }
     if [[ -z "$1" ]]; then
         yell "Requires argument!"
         return 1
@@ -741,6 +741,23 @@ vcs-check-root-pull-all () {
             # popd >/dev/null
         else
             h1 "Not pulling $dirname"
+        fi
+    done
+}
+
+vcs-check-root-branches-all () {
+    if [[ "$PWD" == "$HOME" ]]; then
+        yell "Cannot run in home directory!!!"
+        return 1
+    fi
+    for dirname in ${PWD}/*; do
+        [[ -d "$dirname" ]] || continue
+        if [[ -d "$dirname/.git" ]]; then
+            h1 "Checking $dirname/.git"
+            pushd . >/dev/null
+            cd "$dirname"
+            git branch -a
+            popd >/dev/null
         fi
     done
 }
@@ -1527,36 +1544,6 @@ grep-commands () {
     alias | grep -- "$1"
 }
 
-sync-remove-source-1 () {
-    # rsync and remove source, but also backup just in case
-    # TODO: better interface and safety
-    if [[ ! -d "$2" ]]; then
-        yell "Empty directory argument!!!"
-        return 1
-    fi
-    # TODO: check here!
-    if ssh "$1" true; then
-        msg "Incoming from $1"
-        local BACKUPDIR="rsync-backups-$1-$(date-time-stamp)"
-        rsync --progress --archive --checksum --backup --backup-dir="$BACKUPDIR" --rsh='ssh' --remove-source-files "$1:$2/" .
-        # will cause error if there are no backups
-        rmdir --ignore-fail-on-non-empty "$BACKUPDIR"
-    else
-        warn "Hostname $1 not found!"
-    fi
-}
-
-# TODO: unused
-sync-check-source () {
-    # check before running sync-remove-source-1 with same arguments
-    if ssh "$1" true; then
-        # TODO: make explicitly that contents of that directory come into current directory
-        rsync --verbose --checksum --progress --archive  --rsh='ssh' "$1:$2/" .
-    else
-        warn "Hostname $1 not found!"
-    fi
-}
-
 vcs-incoming () {
     # see what would be changed with a git pull
     h2 "The log: "
@@ -1625,7 +1612,8 @@ youtube-normalize-volume () {
     # global function to normalize volume in youtube windows
     # often tied to a hotkey
     local CURRENTWINDOW=$(xdotool getwindowfocus)
-    xdotool search --name youtube | while IFS= read -r line; do
+    local LINES=$(xdotool search --name youtube)
+    while IFS= read -r line; do
         if [[ -n "$line" ]] && xdotool search --class conkeror | grep --color=never -- "$line" >/dev/null; then
             xdotool windowfocus --sync "$line"
             xdotool windowactivate --sync "$line"
@@ -1633,7 +1621,7 @@ youtube-normalize-volume () {
             sleep 0.05
             conkeror-batch -P default -f youtube-normalize-volume
         fi
-    done
+    done <<< "$LINES"
     # TODO: very arbitrary, perhaps wait for something to return
     sleep 0.05
     xdotool windowactivate --sync "$CURRENTWINDOW"
@@ -1678,7 +1666,7 @@ benchmark-compression-gzip () {
     # TODO: this isn't what is wanted for benchmarking extremely large things that might fill up the disk
     mkdir -p "$HOME/tmp"
     du -sh "$1"
-    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX" --suffix=.tgz)
+    local THETEMPFILE=$(mktemp --suffix=.tgz -- "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX")
     time {
         tar --create --file - "$1" | gzip -1 > "$THETEMPFILE"
     }
@@ -1697,7 +1685,7 @@ benchmark-compression-bzip2 () {
     # TODO: this isn't what is wanted for benchmarking extremely large things that might fill up the disk
     mkdir -p "$HOME/tmp"
     du -sh "$1"
-    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX" --suffix=.tar.bz2)
+    local THETEMPFILE=$(mktemp --suffix=.tar.bz2 -- "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX")
     time {
         tar --create --file - "$1" | bzip2 -9 > "$THETEMPFILE"
     }
@@ -1716,7 +1704,7 @@ benchmark-compression-lz4 () {
     # TODO: this isn't what is wanted for benchmarking extremely large things that might fill up the disk
     mkdir -p "$HOME/tmp"
     du -sh "$1"
-    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX" --suffix=.tar.lz4)
+    local THETEMPFILE=$(mktemp --suffix=.tar.lz4 -- "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX")
     time {
         tar --create --file - "$1" | lz4 -1 > "$THETEMPFILE"
     }
@@ -1734,7 +1722,7 @@ benchmark-compression-lzop () {
     # TODO: this isn't what is wanted for benchmarking extremely large things that might fill up the disk
     mkdir -p "$HOME/tmp"
     du -sh "$1"
-    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX" --suffix=.tar.lzop)
+    local THETEMPFILE=$(mktemp --suffix=.tar.lzop -- "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX")
     time {
         tar --create --file - "$1" | lzop -6 > "$THETEMPFILE"
     }
@@ -1752,7 +1740,7 @@ benchmark-compression-rzip () {
     # TODO: this isn't what is wanted for benchmarking extremely large things that might fill up the disk
     mkdir -p "$HOME/tmp"
     du -sh "$1"
-    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX" --dry-run --suffix=.tar.rz)
+    local THETEMPFILE=$(mktemp --dry-run --suffix=.tar.rz -- "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX")
     time {
         tar --create --file - "$1" > test.tar
         rzip -3 test.tar -o "$THETEMPFILE"
@@ -1772,7 +1760,7 @@ benchmark-compression-rzip () {
 # benchmark-compression-lrzip () {
 #     # benchmark lzip compression
 #     du -sh "$1"
-#     local THETEMPFILE=$(mktemp tmp-benchmark-compression-XXXXXXXXXX --dry-run --suffix=.tar.lrzip)
+#     local THETEMPFILE=$(mktemp --dry-run --suffix=.tar.lrzip -- tmp-benchmark-compression-XXXXXXXXXX)
 #     time {
 #         lrzip --level 9 "$1" --outfile "$THETEMPFILE"
 #     }
@@ -1790,7 +1778,7 @@ benchmark-compression-lzip () {
     # TODO: this isn't what is wanted for benchmarking extremely large things that might fill up the disk
     mkdir -p "$HOME/tmp"
     du -sh "$1"
-    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX" --suffix=.tar.lzip)
+    local THETEMPFILE=$(mktemp --suffix=.tar.lzip -- "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX")
     time {
         tar --create --file - "$1" | lzip -9 > "$THETEMPFILE"
     }
@@ -1808,7 +1796,7 @@ benchmark-compression-xz () {
     # TODO: this isn't what is wanted for benchmarking extremely large things that might fill up the disk
     mkdir -p "$HOME/tmp"
     du -sh "$1"
-    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX" --suffix=.tar.xz)
+    local THETEMPFILE=$(mktemp --suffix=.tar.xz -- "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX")
     time {
         tar --create --file - "$1" | xz -9 > "$THETEMPFILE"
     }
@@ -1827,7 +1815,7 @@ benchmark-compression-zip () {
     # TODO: this isn't what is wanted for benchmarking extremely large things that might fill up the disk
     mkdir -p "$HOME/tmp"
     du -sh "$1"
-    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX" --dry-run --suffix=.zip)
+    local THETEMPFILE=$(mktemp --dry-run --suffix=.zip -- "$HOME/tmp/tmp-benchmark-compression-XXXXXXXXXX")
     time {
         zip "$THETEMPFILE" "$1"
     }
@@ -2242,7 +2230,7 @@ tar-bzip2-remove () {
     fi
     # check if successful, need temp files
     # https://stackoverflow.com/questions/1550933/catching-error-codes-in-a-shell-pipe
-    local THETEMPFILE=$(mktemp "$HOME/tmp/tmp-bzip-remove-XXXXXXXXXX" --suffix=.tar)
+    local THETEMPFILE=$(mktemp --suffix=.tar -- "$HOME/tmp/tmp-bzip-remove-XXXXXXXXXX")
     echo "Tarring $1 to $THETEMPFILE..."
     time {
         tar --create --file - "$1" > "$THETEMPFILE"
@@ -2279,6 +2267,21 @@ ssh-check-host () {
     nc -z "$1" 22 >/dev/null
 }
 
+ssh-check-host-login () {
+    # check if an ssh host port 22 is alive
+    if [[ -z "$1" ]]; then
+        return 1
+    fi
+    if nc -z "$1" 22 >/dev/null 2>&1; then
+        return 0
+    elif ssh "$1" true >/dev/null 2>&1; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# TODO: more verbose
 ssh-check-host-verbose () {
     # check if an ssh host port 22 is alive but be verbose
     if [[ -z "$1" ]];then
