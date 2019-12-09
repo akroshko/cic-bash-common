@@ -6,7 +6,7 @@
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Wed Sep 19, 2018
-# Version: 20190728
+# Version: 20191209
 # URL: https://github.com/akroshko/cic-bash-common
 #
 # This program is free software: you can redistribute it and/or modify
@@ -33,7 +33,7 @@ main () {
     # different version than the curren Debian
 
     # assumes I'm in directory with appropriate subdirectories
-    sudo true || { echo 'Failed to sudo!'; return 1; }
+    sudo true || { echo 'Failed to sudo!' 1>&2; return 1; }
     # at least for now, download and build a few select pieces of software
     [[ ! -d "$HOME/cic-external-vcs" ]] && mkdir -p "$HOME/cic-external-vcs"
     pushd . >/dev/null
@@ -85,7 +85,7 @@ build-software-zathura () {
     ################################################################################
     h2 "girara"
     [[ ! -d "girara-external" ]] && { yell "Directory girara-external not found!"; return 1; }
-    sudo true || { echo 'Failed to sudo!'; return 1; }
+    sudo true || { echo 'Failed to sudo!' 1>&2; return 1; }
     pushd . >/dev/null
     cd girara-external
     check-host-main && git pull
@@ -244,7 +244,7 @@ build-software-zathura () {
 #     # build and installs xpdf
 #     h2 "xpdf"
 #     [[ ! -d "xpdf-3.04-external" ]] && yell "Directory xpdf-3.04-external not found!" && return 1
-#     sudo true || { echo 'Failed to sudo!'; return 1; }
+#     sudo true || { echo 'Failed to sudo!' 1>&2; return 1; }
 #     pushd . >/dev/null
 #     cd xpdf-3.04-external
 #     make clean
@@ -343,7 +343,7 @@ EOF
     # TODO: some of the commands below are probably excessive
     h2 "mupdf"
     [[ ! -d "mupdf-external" ]] && yell "Directory mupdf-external not found!" && return 1
-    sudo true || { echo 'Failed to sudo!'; return 1; }
+    sudo true || { echo 'Failed to sudo!' 1>&2; return 1; }
     pushd . >/dev/null
     cd mupdf-external
     git checkout b1cc2167d698404014d79b9f3794af03312c7ec6
@@ -371,7 +371,7 @@ build-software-feh () {
     # builds and installs the feh image viewer
     h2 "feh"
     [[ ! -d "feh-external" ]] && yell "Directory feh-external not found!" && return 1
-    sudo true || { echo 'Failed to sudo!'; return 1; }
+    sudo true || { echo 'Failed to sudo!' 1>&2; return 1; }
     # must be in proper directory
     pushd . >/dev/null
     cd feh-external
@@ -385,10 +385,10 @@ build-software-feh () {
 build-software-yacreader () {
     h2 "unarr (for yacreader)"
     [[ ! -d "unarr-external" ]] && yell "Directory unarr-external not found!" && return 1
-    sudo true || { echo 'Failed to sudo!'; return 1; }
+    sudo true || { echo 'Failed to sudo!' 1>&2; return 1; }
     pushd . >/dev/null
     cd unarr-external
-    [[ -d "build" ]] && rm -rf build
+    [[ -d "build" ]] && \rm -rf build
     mkdir -p build
     cd build
     cmake ..
@@ -414,7 +414,7 @@ build-software-dockapps () {
     # https://unix.stackexchange.com/questions/67781/use-shared-libraries-in-usr-local-lib
     h2 "libdockapps"
     [[ ! -d "dockapps-external" ]] && yell "Directory dockapps-external not found!" && return 1
-    sudo true || { echo 'Failed to sudo!'; return 1; }
+    sudo true || { echo 'Failed to sudo!' 1>&2; return 1; }
     pushd . >/dev/null
     cd dockapps-external
     check-host-main && git pull

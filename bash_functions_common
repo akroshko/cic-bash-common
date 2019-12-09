@@ -7,7 +7,7 @@
 # Author: Andrew Kroshko
 # Maintainer: Andrew Kroshko <akroshko.public+devel@gmail.com>
 # Created: Fri Mar 27, 2015
-# Version: 20190728
+# Version: 20191209
 # URL: https://github.com/akroshko/cic-bash-common
 #
 # This program is free software: you can redistribute it and/or modify
@@ -107,7 +107,7 @@ ag-install () {
     # TODO: no sudo for dry run??? abort if can't sudo?
     # TODO: check if apt-get update needed
     apt-get install --dry-run "$@"
-    echo "Do install for real?"
+    echo "Do install for real?" 1>&2
     # install a Debian package
     if ask_yn "Install?";  then
         sudo apt-get install "$@"
@@ -252,7 +252,7 @@ nmap-host-ports () {
 
 nmap-host-ports-super () {
     # really slowly look for ports open on a host
-    sudo true || { echo 'Failed to sudo!'; return 1; }
+    sudo true || { echo 'Failed to sudo!' 1>&2; return 1; }
     if [[ -z "$1" ]]; then
         yell "Requires argument!"
         return 1
@@ -328,7 +328,7 @@ need_new_symlink () {
         ln -s "$1" "$2"
     elif [[ -h "$2" && ! -e "$2" ]]; then
         # symlink exists but is invalid
-        rm -f "$2"
+        \rm -f "$2"
         ln -s "$1" "$2"
     elif [[ -h "$2" && $(readlink -f -- "$2") != $(readlink -f -- "$1") ]]; then
         # symlink exists but points to different location than we are going to
@@ -528,7 +528,8 @@ du-sort-symlinks () {
     # sort by size after using du
     \du --total --summarize --human-readable --dereference -- * 2>/dev/null | sort --human-numeric-sort
 }
-
+# TODO: move this alias
+alias du-sort-deference='du-sort-symlinks'
 
 du-sort-directories () {
     # sort by size after using du, but show directories only
@@ -959,6 +960,18 @@ msg () {
     local NEWCOM=$(sed -r 's|'"$HOME"'|~|g' <<< "$0")
     echo -e "${BGreen}$NEWCOM${Green}: $*${Color_Off}" >&2
 }
+
+hscript () {
+    local OUTSTR=$(printf "%.160s" ">>>> $0 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    echo -e "${BRed}${On_White}$OUTSTR${Color_Off}" >&2
+}
+
+hscript-end () {
+    local OUTSTR=$(printf "%.80s" "<<<< $0 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+    echo -e "${BRed}${On_White}$OUTSTR${Color_Off}" >&2
+}
+
+# 1;32;41:
 
 h1 () {
     # a top level heading with color
@@ -1501,7 +1514,7 @@ inhibit-powersave () {
     # TODO: inhibit power management too
     # TODO: quite loop and reenable disabled features
     while true; do
-        echo "Trying..."
+        echo "Trying..." 1>&2
         xscreensaver-command -exit
         # https://bbs.archlinux.org/viewtopic.php?id=134289
         screensaver-builtin-disable
@@ -1676,8 +1689,8 @@ benchmark-compression-gzip () {
         gzip -d "$THETEMPFILE" >/dev/null
     }
     sleep 2
-    [[ -f "${THETEMPFILE%%.*}".tar ]] && rm "${THETEMPFILE%%.*}".tar
-    [[ -f "$THETEMPFILE" ]] && rm "$THETEMPFILE"
+    [[ -f "${THETEMPFILE%%.*}".tar ]] && \rm "${THETEMPFILE%%.*}".tar
+    [[ -f "$THETEMPFILE" ]] && \rm "$THETEMPFILE"
 }
 
 benchmark-compression-bzip2 () {
@@ -1695,8 +1708,8 @@ benchmark-compression-bzip2 () {
         bzip2 -d "$THETEMPFILE" >/dev/null
     }
     sleep 2
-    [[ -f "${THETEMPFILE%%.*}".tar ]] && rm "${THETEMPFILE%%.*}".tar
-    [[ -f "$THETEMPFILE" ]] && rm "$THETEMPFILE"
+    [[ -f "${THETEMPFILE%%.*}".tar ]] && \rm "${THETEMPFILE%%.*}".tar
+    [[ -f "$THETEMPFILE" ]] && \rm "$THETEMPFILE"
 }
 
 benchmark-compression-lz4 () {
@@ -1714,7 +1727,7 @@ benchmark-compression-lz4 () {
         lz4 -d "$THETEMPFILE" &>/dev/null
     }
     sleep 2
-    [[ -f "$THETEMPFILE" ]] && rm "$THETEMPFILE"
+    [[ -f "$THETEMPFILE" ]] && \rm "$THETEMPFILE"
 }
 
 benchmark-compression-lzop () {
@@ -1732,7 +1745,7 @@ benchmark-compression-lzop () {
         lzop -d -c "$THETEMPFILE" >/dev/null
     }
     sleep 2
-    [[ -f "$THETEMPFILE" ]] && rm "$THETEMPFILE"
+    [[ -f "$THETEMPFILE" ]] && \rm "$THETEMPFILE"
 }
 
 benchmark-compression-rzip () {
@@ -1751,8 +1764,8 @@ benchmark-compression-rzip () {
         rzip -d "$THETEMPFILE"
     }
     sleep 2
-    [[ -f "${THETEMPFILE%%.*}".tar ]] && rm "${THETEMPFILE%%.*}".tar
-    [[ -f "$THETEMPFILE" ]] && rm "$THETEMPFILE"
+    [[ -f "${THETEMPFILE%%.*}.tar" ]] && \rm "${THETEMPFILE%%.*}.tar"
+    [[ -f "$THETEMPFILE" ]] && \rm "$THETEMPFILE"
 }
 
 # TODO: will not work on directories for now
@@ -1770,7 +1783,7 @@ benchmark-compression-rzip () {
 #         lrzip -d "$THETEMPFILE" --outfile /dev/null
 #     }
 #     sleep 2
-#     rm "$THETEMPFILE"
+#     \rm "$THETEMPFILE"
 # }
 
 benchmark-compression-lzip () {
@@ -1788,7 +1801,7 @@ benchmark-compression-lzip () {
         lzip -d -c "$THETEMPFILE" >/dev/null
     }
     sleep 2
-    [[ -f "$THETEMPFILE" ]] && rm "$THETEMPFILE"
+    [[ -f "$THETEMPFILE" ]] && \rm "$THETEMPFILE"
 }
 
 benchmark-compression-xz () {
@@ -1806,8 +1819,8 @@ benchmark-compression-xz () {
         xz -d "$THETEMPFILE" >/dev/null
     }
     sleep 2
-    [[ -f "${THETEMPFILE%%.*}".tar ]] && rm "${THETEMPFILE%%.*}".tar
-    [[ -f "$THETEMPFILE" ]] && rm "$THETEMPFILE"
+    [[ -f "${THETEMPFILE%%.*}.tar" ]] && \rm "${THETEMPFILE%%.*}.tar"
+    [[ -f "$THETEMPFILE" ]] && \rm "$THETEMPFILE"
 }
 
 benchmark-compression-zip () {
@@ -1825,7 +1838,7 @@ benchmark-compression-zip () {
         unzip -p "$THETEMPFILE" >/dev/null
     }
     sleep 2
-    [[ -f "$THETEMPFILE" ]] && rm "$THETEMPFILE"
+    [[ -f "$THETEMPFILE" ]] && \rm "$THETEMPFILE"
 }
 
 benchmark-compression-all () {
@@ -1851,9 +1864,8 @@ benchmark-compression-all () {
 pdf-cat () {
     # create pdf from alphabetically-order pdfs in current directory, using pdftk
     if [[ -z "$1" ]]; then
-        echo "pdf-cat <<pdf basename to create>>"
+        echo "pdf-cat <<pdf basename to create>>" 1>&2
     else
-
         pdftk *.pdf cat output "$1".pdf
     fi
 }
@@ -1862,8 +1874,8 @@ pdf-cat () {
 pdf-split () {
     # split pdf from start page to end page
     if [[ -z "$1" ]]; then
-        echo "pdf-split <<pdf filename in>> <<start page>> <<end page>>" "<<pdf filename out>>"
-        echo "Use page numbering and not page naming."
+        echo "pdf-split <<pdf filename in>> <<start page>> <<end page>>" "<<pdf filename out>>" 1>&2
+        echo "Use page numbering and not page naming." 1>&2
     else
         qpdf "$1" --pages "$1" "$2"-"$3" -- "$4"
         # pdftk "$1" cat "$2"-"$3" output "$4"
@@ -2083,11 +2095,11 @@ less-highlight () {
     # use less and highlight using Python pygments
     # TODO: a bit slow but looks really good
     if [[ -z "$1" ]]; then
-        echo "A filename is required for less-highlight!"
+        echo "A filename is required for less-highlight!" 1>&2
     elif [[ -e "$1" ]]; then
         pygmentize -O style=native -g -f terminal256 "$1" | less --IGNORE-CASE --LONG-PROMPT --RAW-CONTROL-CHARS +Gg
     else
-        echo "File $1 does does not exist!"
+        echo "File $1 does does not exist!" 1>&2
     fi
 }
 # one of my host used aliases
@@ -2196,20 +2208,20 @@ tar-bzip2-remove () {
     # XXXX: this uses $HOME/tmp as temp directory because that has often more space than /tmp on my machines
     # make sure there are no errors except sockets
     # make sure source exists and destination does not
-    echo "----------------------------------------"
+    echo "----------------------------------------" 1>&2
     if [[ -n "$3" ]]; then
-        echo "Too many arguments!"
+        echo "Too many arguments!" 1>&2
         return 1
     fi
-    echo "Dangerous function! Sleeping for 10s!"
+    echo "Dangerous function! Sleeping for 10s!" 1>&2
     sleep 10
     mkdir -p "$HOME/tmp"
     if [[ -z "$1" && ! -d "$1" ]]; then
-        echo "First argument $1 must be specificed and it must exist as a directory!"
+        echo "First argument $1 must be specificed and it must exist as a directory!" 1>&2
         return 1
     fi
     if [[ -z "$2" && -e "$2" ]]; then
-        echo "Second argument $2 must be specificed as destination and it must not exist!"
+        echo "Second argument $2 must be specificed as destination and it must not exist!" 1>&2
         return 1
     fi
     local INFULLPATH=$(readlink -f -- "$1")
@@ -2217,43 +2229,43 @@ tar-bzip2-remove () {
     # TODO: quit if readlink fails?
     local INSIZE=$(du -sh "$1")
     if [[ "$OUTFULLPATH" == "$INFULLPATH"/ ]]; then
-        echo "$OUTFULLPATH must not be contained in $INFULLPATH!"
+        echo "$OUTFULLPATH must not be contained in $INFULLPATH!" 1>&2
         return 1
     fi
     if [[ "$INFULLPATH" != "$HOME"/?*/?* ]];then
-        echo "$INFULLPATH must be contained in a top level directory of $HOME!"
+        echo "$INFULLPATH must be contained in a top level directory of $HOME!" 1>&2
         return 1
     fi
     if [[ "$OUTFULLPATH" != "$HOME"/?*/?* ]];then
-        echo "$OUTFULLPATH must be contained in a top level directory of $HOME!"
+        echo "$OUTFULLPATH must be contained in a top level directory of $HOME!" 1>&2
         return 1
     fi
     # check if successful, need temp files
     # https://stackoverflow.com/questions/1550933/catching-error-codes-in-a-shell-pipe
     local THETEMPFILE=$(mktemp --suffix=.tar -- "$HOME/tmp/tmp-bzip-remove-XXXXXXXXXX")
-    echo "Tarring $1 to $THETEMPFILE..."
+    echo "Tarring $1 to $THETEMPFILE..." 1>&2
     time {
         tar --create --file - "$1" > "$THETEMPFILE"
     }
     if [[ $? != 0 ]]; then
-        echo "Error creating $1 while creating $THETEMPFILE!"
+        echo "Error creating $1 while creating $THETEMPFILE!" 1>&2
         [[ -e "$THETEMPFILE" ]] && \rm "$THETEMPFILE"
         return 1
     fi
-    echo "Compressing $THETEMPFILE to $2..."
+    echo "Compressing $THETEMPFILE to $2..." 1>&2
     time {
         bzip2 --stdout -9 "$THETEMPFILE" > "$2"
     }
     if [[ $? != 0 ]];then
-        echo "Error during compression!"
+        echo "Error during compression!" 1>&2
         [[ -e "$THETEMPFILE" ]] && \rm "$THETEMPFILE"
         return 1
     fi
     [[ -e "$THETEMPFILE" ]] && \rm "$THETEMPFILE"
     local OUTSIZE=$(du -sh "$2")
-    echo "Size reduced from $INSIZE to $OUTSIZE."
-    echo "Creating $2 from $1 successful!"
-    echo "Deleting $1 in 10s!"
+    echo "Size reduced from $INSIZE to $OUTSIZE." 1>&2
+    echo "Creating $2 from $1 successful!" 1>&2
+    echo "Deleting $1 in 10s!" 1>&2
     sleep 10
     # TODO: this is dangerous
     \rm -rf "$1"
